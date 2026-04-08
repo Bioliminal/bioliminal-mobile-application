@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/report/views/report_view.dart';
+
 final goRouter = GoRouter(
   routes: [
     GoRoute(
@@ -17,7 +19,7 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/report/:id',
-      builder: (context, state) => _ReportView(
+      builder: (context, state) => ReportView(
         id: state.pathParameters['id']!,
       ),
     ),
@@ -57,15 +59,3 @@ class _ScreeningView extends StatelessWidget {
   }
 }
 
-class _ReportView extends StatelessWidget {
-  const _ReportView({required this.id});
-
-  final String id;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text('ReportView: $id')),
-    );
-  }
-}
