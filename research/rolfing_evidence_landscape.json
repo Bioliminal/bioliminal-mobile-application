@@ -1,0 +1,130 @@
+{
+  "angle": "Rolfing SI complete evidence landscape",
+  "findings": [
+    {
+      "claim": "Australian Government Natural Therapies Review (2024) identified only 6 RCTs for Rolfing/SI across all indications (cerebral palsy, low back pain, fibromyalgia, hamstring tightness), concluding 'low certainty' of evidence due to small sample sizes and incomplete reporting.",
+      "source_url": "https://www.health.gov.au/resources/publications/natural-therapies-review-2023-structural-intervention-evidence-review",
+      "confidence": "high"
+    },
+    {
+      "claim": "Chaudhry et al. (2008) mathematically modeled that 1% deformation of fascia lata requires approximately 9,075 Newtons (~925 kg), and plantar fascia requires ~852 kg — forces far beyond what any manual therapist can produce. This fundamentally undermines the 'tissue sculpting' model of Rolfing.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/18723456/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Post-Chaudhry, the mechanism for Rolfing's clinical effects shifted from mechanical tissue deformation to neurophysiological explanations: stimulation of fascial mechanoreceptors (Ruffini endings, Pacinian corpuscles) triggering CNS-mediated reductions in muscle tone. This was co-authored by Rolfer Robert Schleip.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/18723456/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Brandl et al. (2022) retrospective study of n=383 subjects found statistically significant increases (p < 0.0001) in shoulder flexion, internal/external rotation, and hip flexion after the Rolfing 10-series.",
+      "source_url": "https://doi.org/10.3390/jcm11123441",
+      "confidence": "high"
+    },
+    {
+      "claim": "Brandl et al. (2025) study of n=563 subjects validated improvements in lower limb mobility, trunk symmetry, and thoracic (breathing) expansion after the 10-session series.",
+      "source_url": "https://www.researchgate.net/publication/387431336_Mobility_and_Symmetry_Improvements_after_a_Ten-Session_Manual_Therapy_Series",
+      "confidence": "medium"
+    },
+    {
+      "claim": "A 2020 prospective study of 13 healthy women measured significant reductions in fascial stiffness (brachioradialis, biceps brachii, trapezius; p < 0.05) and increased tissue elasticity and blood perfusion after the Rolfing 10-series, using IndentoPRO and ultrasound elastography.",
+      "source_url": "https://www.frontiersin.org/articles/10.3389/fphys.2020.00417/full",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Science-Based Medicine and Quackwatch categorize Rolfing as pseudoscience/quackery, citing: (1) biological implausibility of fascial deformation, (2) metaphysical origins in Ida Rolf's 'energy field' theories, (3) the 'Recipe' as non-individualized care, and (4) placebo/regression-to-mean explanations for clinical effects.",
+      "source_url": "https://sciencebasedmedicine.org/tag/rolfing/",
+      "confidence": "high"
+    },
+    {
+      "claim": "The 2015 Australian Government Department of Health report found no clear evidence Rolfing is effective for any health condition, leading to removal of insurance subsidies.",
+      "source_url": "https://www1.health.gov.au/internet/main/publishing.nsf/Content/phi-natural-therapies-review-report",
+      "confidence": "high"
+    },
+    {
+      "claim": "Modern pain science has largely debunked the posture-pain causal link central to Rolfing's theory. Systematic reviews (Swain et al. 2020) show people with 'poor' posture do not experience back/neck pain at higher rates than those with 'ideal' posture.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/32014781/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Wilke et al. (2016) systematic review of 62 cadaveric studies validated structural continuity for Superficial Back Line (strong), Back Functional Line (strong), and Front Functional Line (strong), but found NO evidence for the Superficial Front Line (no connection between rectus femoris and rectus abdominis).",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26281954/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Wilke et al. (2023, n=56) found myofascial force transmission explains only about 10% of variance (R-squared=0.103, p=0.017) in remote tissue displacement along the Superficial Back Line, down from pilot study estimates of R-squared ~0.58. Effect exists but is modest.",
+      "source_url": "https://www.nature.com/articles/s41598-023-30775-x",
+      "confidence": "high"
+    },
+    {
+      "claim": "Huijing and Maas demonstrated 15-37% of muscle force can transmit through epimuscular (fascial) pathways rather than tendons. Intraoperative human measurements confirmed proximal-distal force differences in forearm muscles during tendon transfer surgery.",
+      "source_url": "https://doi.org/10.1016/j.jbiomech.2003.11.018",
+      "confidence": "high"
+    },
+    {
+      "claim": "Stecco Fascial Manipulation: 2025 meta-analysis of 15 RCTs found significant favoring effect (Effect Size = -0.80) for pain-related outcomes, but certainty rated 'very low' due to small samples and blinding limitations.",
+      "source_url": "https://www.researchgate.net/publication/387532386_Effectiveness_of_Fascial_Manipulation_Method_on_Pain_and_Disability_in_Individuals_with_Musculoskeletal_Pain_A_Systematic_Review_and_Meta-analysis",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Stecco FM chain-reasoning (Standard Treatment Protocol) achieved significant pain reduction after 1 session vs 3 sessions for local/modified treatment, with greater magnitude and durability at 30-day follow-up (Gnat et al. 2022 RCT).",
+      "source_url": "https://www.mdpi.com/2075-1729/12/2/222",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Stecco's hyaluronan densification model: chronic pain correlates with thickened fascial layers (25% increase in thoracolumbar fascia thickness in chronic low back pain). Treatment targets restoration of hyaluronic acid sliding properties between fascial layers.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/24131461/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Shear Wave Elastography achieves ICC 0.85-0.96 for fascial structures and can isolate 1mm fascial planes. MyotonPRO achieves ICC 0.80-0.99 but measures 2cm bulk tissue and is confounded by adipose tissue thickness. The two are NOT interchangeable for fascial measurement.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/32890520/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Self-myofascial release (foam rolling) produces comparable acute ROM gains to manual fascial therapy without impairing muscle performance, but manual therapy is superior for long-term pain reduction in chronic conditions and for directional shear forces needed to trigger fibroblast-mediated tissue remodeling.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/25603358/",
+      "confidence": "high"
+    },
+    {
+      "claim": "SMR applied to the plantar fascia immediately increases hamstring flexibility (Sit and Reach test), demonstrating functional myofascial chain effects even with self-administered tools — a 'remote ROM' effect.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/29037637/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Rolfing shows a median 26mm drop in VAS pain scores for chronic pain. Physical therapy is the gold standard for long-term functional recovery (ODI). Massage provides best immediate quality-of-life improvement but effects plateau.",
+      "source_url": "https://www.researchgate.net/publication/362084795_The_Effect_of_Rolfing_Structural_Integration_on_Active_Range_of_Motion",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Digital fascial assessment tools now exist: PostureScreen Mobile has an integrated Anatomy Trains module; Moti Physio evaluates 87 muscles mapped to myofascial lines with 3D visualization; AI-assisted shear strain imaging (Lucas-Kanade Pyramid) quantifies fascial layer gliding in ultrasound cine-loops.",
+      "source_url": "https://www.posturescreen.com/product/anatomy-trains-module/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "True fascial tissue remodeling (collagen reorganization) takes 6-24 months. Manual therapy is considered superior for this because it provides directional shear forces that trigger fibroblast activity, while foam rolling provides broad non-directional compression.",
+      "source_url": "https://www.anatomytrains.com/fascia-and-the-remodeling-of-tissue/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "UCLA 5-year study (Hunt & Massey, 1977) found Rolfing subjects exhibited more erect carriage with less muscular strain (reduced EMG activity) to maintain it, and these 'economical' movement patterns persisted months after treatment.",
+      "source_url": "https://www.rolf.org/research.php",
+      "confidence": "low"
+    }
+  ],
+  "key_insights": [
+    "Rolfing's original biomechanical model (manual tissue sculpting/deformation) is definitively debunked by Chaudhry's 9,075N force requirement, but clinical effects are real and explained by neurophysiological mechanisms (mechanoreceptor stimulation, CNS tone reduction). This means a technology tool encoding fascial chain reasoning should model NEURAL pathways and sensory feedback, not mechanical tissue deformation.",
+    "Fascial chain structural continuity is validated for some lines (SBL, BFL, FFL) but NOT all (SFL has no evidence). Force transmission through chains is real (Huijing: 15-37% of force) but explains only ~10% of remote ROM variance (Wilke 2023). A technology tool should use chains as probabilistic heuristics, not deterministic rules — chain effects exist but are modest and compete with neural and local factors.",
+    "Stecco Fascial Manipulation provides the most encodable framework for a technology tool: it distinguishes Centers of Coordination (where restriction lives) from Centers of Perception (where pain is felt), and RCT evidence shows chain-reasoning treatment achieves faster, larger, and more durable results than local-only treatment. This CC/CP distinction is directly translatable to algorithmic reasoning.",
+    "The posture-pain causal link that underpins Rolfing's theory is not supported by modern evidence. A technology tool should NOT use static postural deviation as the primary pain predictor. Instead, it should focus on movement variability, regional interdependence, and tissue quality metrics (stiffness via SWE, gliding via shear strain imaging).",
+    "Measurement technology is mature enough for fascial chain tools: SWE (ICC 0.85-0.96) can isolate 1mm fascial planes; AI posture apps already map Anatomy Trains lines; shear strain imaging quantifies fascial gliding. The gap is not measurement capability but rather the integration of chain reasoning into clinical decision-support algorithms."
+  ],
+  "gaps": [
+    "No head-to-head RCTs directly comparing Rolfing vs Stecco Fascial Manipulation vs standard physical therapy with identical outcome measures and adequate sample sizes",
+    "Long-term follow-up data (>12 months) for any fascial chain intervention is essentially nonexistent in peer-reviewed literature",
+    "No studies found quantifying whether fascial chain reasoning encoded in software/AI produces better clinical recommendations than joint-by-joint or local assessment approaches",
+    "The Deep Front Line — arguably the most clinically important line in Anatomy Trains — lacks adequate cadaveric or in-vivo validation studies compared to the SBL",
+    "No evidence found on inter-rater reliability of fascial chain attribution — how consistently do different practitioners identify the same chain as the source of a patient's problem",
+    "Limited data on how fascial chain effects scale with age, body composition, or activity level — most studies use young healthy or athletic populations"
+  ]
+}

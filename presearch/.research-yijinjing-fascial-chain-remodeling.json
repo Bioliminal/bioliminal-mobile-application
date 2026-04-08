@@ -1,0 +1,137 @@
+{
+  "slug": "yijinjing-fascial-chain-remodeling",
+  "skill": "research",
+  "scope": {
+    "files": null,
+    "stories": null,
+    "complexity": null
+  },
+  "route_hint": null,
+  "prev": [".scope-yijinjing-fascial-chain-remodeling.json"],
+  "data": {
+    "topic": "Yi Jin Jing tendon changing and fascial chain remodeling for AI movement screening tool",
+    "angles_generated": 7,
+    "partial_research": false,
+    "synthesized_findings": [
+      {
+        "theme": "Posture-to-chain mapping",
+        "claims": [
+          {"claim": "SBL mapped to postures 11, 3, 10 (rear leg) via forward fold/extension loading plantar fascia through erector spinae", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/26281953/"], "confidence": "medium", "agent_attribution": "both"},
+          {"claim": "BFL mapped to postures 5, 12 via cross-body rotational patterns loading lat through contralateral glute", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/26281953/"], "confidence": "medium", "agent_attribution": "both"},
+          {"claim": "FFL mapped to postures 6, 10 via anterior chest opening loading pectoralis through contralateral adductor", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/26281953/"], "confidence": "low", "agent_attribution": "both"},
+          {"claim": "Posture 11 straight knees loads full SBL; posture 8 bent knees breaks SBL at knee — exploits Anatomy Trains 'knee rule'", "source_urls": ["https://www.anatomytrains.com/at/lines/sbl/"], "confidence": "medium", "agent_attribution": "gemini"},
+          {"claim": "No peer-reviewed study has empirically validated any YJJ posture-to-chain mapping with EMG or elastography", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/26281953/"], "confidence": "high", "agent_attribution": "both"}
+        ],
+        "key_insight": "Yi Jin Jing postures map to validated chains by anatomical reasoning but all mappings are inference — this is the research opportunity, not the established evidence."
+      },
+      {
+        "theme": "Mechanotransduction: sustained loading",
+        "claims": [
+          {"claim": "24h sustained strain upregulates collagen synthesis; 10-min loading inhibits it", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/17719009/"], "confidence": "high", "agent_attribution": "claude"},
+          {"claim": "Isometric loading increases type I collagen + scleraxis; dynamic loading increases type II collagen (scar)", "source_urls": ["https://www.sciencedirect.com/science/article/pii/S0945053X22000464"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "20s isometric holds increased tendon stiffness; 1s pulses produced zero tendon change (Kubo)", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/25739556/"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "Fibroblasts go mechanically deaf after ~10 min; 6-hour refractory period (Baar)", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/27834241/"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "Rest intervals between loading cycles outperform continuous loading for collagen synthesis", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC4256895/"], "confidence": "high", "agent_attribution": "claude"},
+          {"claim": "Sustained stretching triggers Resolvin production + fibroblast expansion up to 200% (Langevin)", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC4946323/"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "15g gelatin + 50mg Vitamin C before loading doubled collagen synthesis markers (Shaw 2017)", "source_urls": ["https://academic.oup.com/ajcn/article/105/1/136/4569849"], "confidence": "high", "agent_attribution": "gemini"}
+        ],
+        "key_insight": "Loading mode determines tissue identity — isometric produces tendon, dynamic produces scar. YJJ's structure (30-60s holds, short daily bouts, rest intervals) maps onto optimal mechanotransduction protocol. But in vitro to in vivo translation is unproven."
+      },
+      {
+        "theme": "TCM meridian-fascial chain correspondence",
+        "claims": [
+          {"claim": "80% of acupuncture points coincide with fascial planes (Langevin 2002)", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/12467083/"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "89% correspondence across 9 meridian-to-chain pairings; SBL/Bladder = 91% (Dorsher 2009)", "source_urls": ["https://www.researchgate.net/publication/228503992"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "92% overlap between 255 trigger points and acupuncture points (Dorsher 2006-2008)", "source_urls": ["https://www.researchgate.net/publication/228503992"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "VCH project 3D reconstructions show fascia network overlaps meridian trajectories", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC3092510/"], "confidence": "medium", "agent_attribution": "claude"}
+        ],
+        "key_insight": "SBL/Bladder meridian correspondence is the single best-validated pairing in the literature — independent convergence from anatomy (Wilke) and TCM mapping (Dorsher)."
+      },
+      {
+        "theme": "Clinical evidence",
+        "claims": [
+          {"claim": "YJJ functional mobility: Hedges' g = 1.06-1.08 (10 RCTs, n=590)", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC11543491/"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "YJJ + Tuina: cervical ROM +14.1°, tissue hardness -12.2% (JAMA Network Open, n=102)", "source_urls": ["https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2799438"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "YJJ improves functional ROM (g=1.06) but NOT passive flexibility (g=0.15) — tissue remodeling not muscle lengthening", "source_urls": ["https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1378891/full"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "Baduanjin 12 weeks improves axial muscle fascia stiffness/elasticity (direct fascial measurement)", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC11019141/"], "confidence": "medium", "agent_attribution": "gemini"},
+          {"claim": "Qigong outcomes comparable to (not superior to) structured conventional exercise in multiple comparisons", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/38236789/"], "confidence": "high", "agent_attribution": "both"}
+        ],
+        "key_insight": "YJJ has real clinical evidence but the loaded-ROM vs passive-flexibility distinction is the most important finding — it suggests a mechanism different from generic exercise."
+      },
+      {
+        "theme": "Intervention gap",
+        "claims": [
+          {"claim": "FMS corrective exercise improves scores but does NOT reduce injury (Bahr 2016, multiple trials)", "source_urls": ["https://bjsm.bmj.com/content/50/13/776"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "Posterior chain-specific training outperforms generic exercise for LBP (SMD ~0.6)", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC7940464/"], "confidence": "high", "agent_attribution": "claude"},
+          {"claim": "No RCT runs the full pipeline: screen → chain attribution → chain-specific intervention → measured outcome", "source_urls": [], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "Anatomy Trains framework has no independent RCT evidence as a clinical exercise protocol", "source_urls": ["https://www.anatomytrains.com/"], "confidence": "medium", "agent_attribution": "claude"}
+        ],
+        "key_insight": "The screening-to-outcome link is broken in all existing tools. The gap is structural, not incremental — chain-level reasoning between detection and intervention is absent from every product."
+      },
+      {
+        "theme": "Interoception and attention",
+        "claims": [
+          {"claim": "Fascia contains ~250M sensory endings; masseter fascia 404.5 fibers/mm² vs muscle 227.6/mm²", "source_urls": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC9143136/"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "Ruffini endings stimulated by slow deep pressure → lowers sympathetic tone (Schleip 2003)", "source_urls": ["https://www.sciencedirect.com/science/article/abs/pii/S1360859202000670"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "Internal focus advantageous for proprioceptive tasks at low-moderate loads", "source_urls": ["https://www.sciencedirect.com/science/article/abs/pii/S1469029219304340"], "confidence": "medium", "agent_attribution": "claude"},
+          {"claim": "McKay 2024: external focus advantage drops to g=0.01 (null) after correcting for publication bias", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/38315516/"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "Lehman endorses Schleip's neurological model over mechanical transmission", "source_urls": ["https://www.greglehman.ca/blog/2012/10/28/fascial-neurobiology-an-explanation-for-possible-manual-therapy-treatment-effects"], "confidence": "medium", "agent_attribution": "claude"}
+        ],
+        "key_insight": "The neurological pathway is the strongest defense against Lehman's critique, and McKay 2024 dissolves the 'internal focus is bad' counter-argument. But if the mechanism is purely neurological, chain-specificity may not matter — the tool must measure this."
+      },
+      {
+        "theme": "Counter-evidence and adversarial findings",
+        "claims": [
+          {"claim": "In vitro substrates are orders of magnitude stiffer than living tissue, pre-activating fibroblasts", "source_urls": ["https://www.nature.com/articles/s41598-021-93710-1"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "~2,000 lbs force needed for 1% deformation of dense fascia lata (Chaudhry 2008)", "source_urls": ["https://www.painscience.com/articles/does-fascia-matter.php"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "Remote fascial displacement measured at 0.076mm — near instrument error", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "97-99% positive publication rate in Chinese qigong trials; only 6.8% of Chinese RCTs genuinely randomized", "source_urls": ["https://pubmed.ncbi.nlm.nih.gov/9551280/", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9345638/"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "YJJ vs active controls (stretching, walking) shows no significant difference on primary physical outcomes", "source_urls": ["https://www.frontiersin.org/articles/10.3389/fmed.2022.951111/full"], "confidence": "high", "agent_attribution": "both"},
+          {"claim": "Sham qigong produces results identical to real qigong for subjective symptoms", "source_urls": ["https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3055515/"], "confidence": "medium", "agent_attribution": "gemini"},
+          {"claim": "Fascial chains may be dissection artifacts — omnidirectional 3D web selectively cut to create lines", "source_urls": ["https://www.functionalfascia.com"], "confidence": "high", "agent_attribution": "gemini"},
+          {"claim": "If mechanism is global neurological response, chain-specific interventions are no more effective than generic massage", "source_urls": ["https://www.thebodymechanic.ca/2012/03/15/robert-schleip-fascia-as-a-sensory-organ/"], "confidence": "high", "agent_attribution": "gemini"}
+        ],
+        "key_insight": "The strongest counter-arguments target the in vitro translation gap and the inability to distinguish YJJ from generic exercise. The tool's defense is empirical measurement, not mechanistic assertion."
+      }
+    ],
+    "angle_summaries": [
+      {"angle": "Yi Jin Jing posture-to-chain mapping", "source": "both", "finding_count": 17, "key_insights": ["SBL mapping strongest, FFL weakest", "Knee rule encoded in posture design", "All mappings are anatomical inference"]},
+      {"angle": "Mechanotransduction slow sustained loading", "source": "both", "finding_count": 25, "key_insights": ["Loading mode determines tissue identity", "Baar refractory period matches YJJ practice", "In vitro to in vivo gap is critical"]},
+      {"angle": "TCM meridian-fascial chain correspondence", "source": "both", "finding_count": 18, "key_insights": ["SBL/Bladder = 91% correspondence", "80% of acupoints on fascial planes", "Independent convergence from Wilke and Dorsher"]},
+      {"angle": "Clinical evidence qigong fascial outcomes", "source": "both", "finding_count": 27, "key_insights": ["Functional ROM improves but passive flexibility does not", "JAMA trial measures tissue hardness directly", "Publication bias in Chinese trials is severe"]},
+      {"angle": "Intervention gap chain-specific vs generic", "source": "both", "finding_count": 25, "key_insights": ["Screening-to-outcome link is broken", "Chain-specific > generic for LBP", "Full pipeline has never been tested"]},
+      {"angle": "Interoception attention fascia Schleip", "source": "both", "finding_count": 14, "key_insights": ["Lehman endorses neurological model", "McKay 2024 dissolves external focus argument", "Yi as independent variable untested"]},
+      {"angle": "Counter-evidence and adversarial", "source": "both", "finding_count": 38, "key_insights": ["In vitro translation gap is genuine", "YJJ not superior to active controls", "Publication bias is systemic not incidental", "Tool defense is measurement not assertion"]}
+    ],
+    "citations": [
+      {"url": "https://pubmed.ncbi.nlm.nih.gov/26281953/", "title": "Wilke et al. 2016 — What Is Evidence-Based About Myofascial Chains", "quality": "authoritative", "referenced_by": ["posture mapping", "TCM correspondence", "intervention gap", "counter-evidence"]},
+      {"url": "https://pubmed.ncbi.nlm.nih.gov/12467083/", "title": "Langevin & Yandow 2002 — Acupuncture points and connective tissue planes", "quality": "authoritative", "referenced_by": ["TCM correspondence"]},
+      {"url": "https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2799438", "title": "YJJ + Tuina RCT — JAMA Network Open 2022", "quality": "authoritative", "referenced_by": ["clinical evidence"]},
+      {"url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11543491/", "title": "YJJ meta-analysis 2024", "quality": "authoritative", "referenced_by": ["clinical evidence", "interoception"]},
+      {"url": "https://pubmed.ncbi.nlm.nih.gov/38315516/", "title": "McKay 2024 — Attentional focus re-analysis", "quality": "authoritative", "referenced_by": ["interoception", "counter-evidence"]},
+      {"url": "https://bjsm.bmj.com/content/50/13/776", "title": "Bahr 2016 — Screening critique", "quality": "authoritative", "referenced_by": ["intervention gap", "counter-evidence"]}
+    ],
+    "conflicts": [
+      {
+        "topic": "Whether fascial chain effects are mechanical or neurological",
+        "gemini_claim": {"claim": "If mechanism is neurological, chain-specific interventions are meaningless — any movement produces equivalent CNS effects", "source_urls": ["https://www.thebodymechanic.ca/2012/03/15/robert-schleip-fascia-as-a-sensory-organ/"]},
+        "claude_claim": {"claim": "Chain-specificity can be empirically tested regardless of mechanism — if SBL postures improve SBL metrics more than generic exercise, specificity is confirmed by outcome, not mechanism", "source_urls": []},
+        "credibility_assessment": "Both positions are defensible. The tool resolves this by measuring outcomes per chain rather than asserting a mechanism."
+      },
+      {
+        "topic": "Whether YJJ is superior to generic exercise",
+        "gemini_claim": {"claim": "YJJ vs active controls shows no significant difference on primary physical outcomes", "source_urls": ["https://www.frontiersin.org/articles/10.3389/fmed.2022.951111/full"]},
+        "claude_claim": {"claim": "YJJ improves functional ROM (g=1.06) but NOT passive flexibility (g=0.15), suggesting a different mechanism than generic exercise", "source_urls": ["https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1378891/full"]},
+        "credibility_assessment": "Both are from peer-reviewed sources. The loaded-ROM vs passive-flexibility distinction is the strongest evidence for a unique YJJ mechanism, but more studies needed."
+      }
+    ],
+    "gaps": [
+      "No study has measured fascial chain activation during specific YJJ postures with EMG or elastography",
+      "No study has tested yi (intentional focus) as an independent variable during fascial loading",
+      "No study has run the full detect-attribute-intervene-measure pipeline",
+      "In vivo human data on fascial collagen synthesis under YJJ-specific loading is absent",
+      "Long-term follow-up (>6 months) on YJJ fascial outcomes is largely absent",
+      "Direct fascial imaging during YJJ practice has not been published"
+    ]
+  }
+}

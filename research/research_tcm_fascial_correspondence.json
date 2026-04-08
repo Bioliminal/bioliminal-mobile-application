@@ -1,0 +1,107 @@
+{
+  "angle": "TCM meridian-fascial chain correspondence",
+  "findings": [
+    {
+      "claim": "Dorsher (2009) found 89% correspondence (8 of 9 comparisons) between Myers' Anatomy Trains myofascial meridians and the 12 Principal TCM Meridians, published in Medical Acupuncture.",
+      "source_url": "https://www.liebertpub.com/doi/10.1089/acu.2009.0701",
+      "confidence": "high"
+    },
+    {
+      "claim": "Langevin & Yandow (2002) demonstrated that over 80% of acupuncture points coincide with intermuscular or intramuscular connective tissue (fascial) planes, using ultrasound and gross anatomical sections.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/12447927/",
+      "confidence": "high"
+    },
+    {
+      "claim": "The Bladder Meridian maps to the Superficial Back Line (SBL) with 91% correspondence according to Dorsher (2009). Both follow the same anatomical path: galea aponeurotica, erector spinae, sacrotuberous ligament, hamstrings, gastrocnemius, and plantar fascia.",
+      "source_url": "https://www.researchgate.net/publication/232064560_Myofascial_Meridians_as_Anatomical_Evidence_of_Acupuncture_Channels",
+      "confidence": "high"
+    },
+    {
+      "claim": "Wilke et al. (2016) systematic review confirmed the anatomical existence of the Superficial Back Line (SBL) via cadaveric dissection: all 3 fascial transitions (plantar fascia to gastrocnemius, gastrocnemius to hamstrings, hamstrings to erector spinae/thoracolumbar fascia) were verified across 14 studies.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26767733/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Wilke et al. (2016) found NO dissection evidence for the Superficial Front Line (SFL) -- specifically, 7 studies failed to demonstrate a direct structural connection between rectus femoris and rectus abdominis. This weakens the Stomach meridian-to-SFL correspondence.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26767733/",
+      "confidence": "high"
+    },
+    {
+      "claim": "The Stomach Meridian corresponds to the Superficial Front Line (SFL), following the SCM, rectus abdominis, quadriceps, and tibialis anterior. However, dissection evidence for SFL continuity is weaker than for the SBL.",
+      "source_url": "https://www.anatomytrains.com/blog/2016/10/24/evidence-based-myofascial-chains/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "The Gallbladder Meridian corresponds to the Lateral Line (LL), following the lateral body including the IT band and peroneal muscles. Wilke (2016) found only 2 of 5 transitions verified for the LL.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26767733/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "The Deep Front Line (DFL) corresponds to the Liver and Kidney Meridians, encompassing the psoas, diaphragm, and deep leg adductors. This mapping comes from Dorsher (2009) but has less dissection-level verification than the SBL.",
+      "source_url": "https://www.liebertpub.com/doi/10.1089/acu.2009.0701",
+      "confidence": "medium"
+    },
+    {
+      "claim": "The Spiral Line does NOT map to a single TCM meridian -- Dorsher found it is a composite of Bladder and Stomach meridians. This was the only Anatomy Train that failed to correspond to a single Principal Meridian.",
+      "source_url": "https://www.researchgate.net/publication/232064560_Myofascial_Meridians_as_Anatomical_Evidence_of_Acupuncture_Channels",
+      "confidence": "high"
+    },
+    {
+      "claim": "The six Arm Lines in Anatomy Trains map closely to the six meridians of the upper extremities (Lung, Heart, Small Intestine, Triple Energizer, Large Intestine, Pericardium).",
+      "source_url": "https://www.liebertpub.com/doi/10.1089/acu.2009.0701",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Dorsher (2006-2008) found 92% anatomical overlap between 255 common myofascial trigger points and classical acupuncture points, with 79.5% sharing identical clinical indications.",
+      "source_url": "https://www.researchgate.net/publication/232064560_Myofascial_Meridians_as_Anatomical_Evidence_of_Acupuncture_Channels",
+      "confidence": "high"
+    },
+    {
+      "claim": "Langevin demonstrated that acupuncture needle rotation causes collagen fibers to wind around the needle, creating mechanical tug on fibroblasts that respond by expanding surface area up to 200% within 10-30 minutes -- a mechanism for fascial remodeling along meridian/fascial planes.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/11584242/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Specific Bladder Meridian acupuncture points map to SBL anatomical landmarks: BL-40 (Weizhong) at the popliteal fossa (hamstring-gastrocnemius transition), BL-60 (Kunlun) at the Achilles/calcaneus transition, BL-3 to BL-9 at the galea aponeurotica.",
+      "source_url": "https://www.semanticscholar.org/paper/Myofascial-meridians-as-anatomical-evidence-of-the-Dorsher/64c398644611684c9823901b54f49495146c6861",
+      "confidence": "high"
+    },
+    {
+      "claim": "The Back Functional Line (BFL) was fully verified by dissection (Wilke 2016): latissimus dorsi to thoracolumbar fascia, TLF to contralateral gluteus maximus, gluteus maximus to vastus lateralis via IT tract. All 3 transitions confirmed across 8 studies.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26767733/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Fluorescein tracer studies (Li et al., 2021) visualized interstitial fluid pathways by injecting tracers at acupoints; tracers migrated along linear paths matching traditional meridians, distinct from blood and lymphatic vessels.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7952402/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "The Visible Chinese Human (VCH) project 3D reconstructions showed the fascial network forms line-like structures overlapping significantly with classical meridian trajectories.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3136273/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Langevin (2011) quantified reduced thoracolumbar fascia shear strain in chronic low back pain patients, showing how fascial dysfunction along the SBL/Bladder Meridian corridor correlates with pathology.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/21921319/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Bai & Yuan proposed 'Fasciaology' theory identifying the fascial network as the anatomical substrate of the meridian system, with meridians as regulation pathways within the supporting-storing (fascial) system.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3136273/",
+      "confidence": "medium"
+    }
+  ],
+  "key_insights": [
+    "The strongest evidence is for the Bladder Meridian-to-Superficial Back Line correspondence: Dorsher found 91% overlap, and Wilke independently confirmed all 3 SBL fascial transitions via cadaveric dissection across 14 studies. This is the single best-validated meridian-fascial chain pairing in the literature.",
+    "Langevin's connective tissue research provides the mechanistic bridge: 80% of acupuncture points sit on fascial planes, needle rotation creates measurable mechanical signaling through collagen/fibroblast coupling, and fascial continuity explains how stimulating one point transmits force along an entire meridian/chain. Her work is the most cited and methodologically rigorous in this field.",
+    "Critical caveat: the Superficial Front Line (Stomach Meridian correspondence) FAILED dissection validation in Wilke 2016 -- 7 studies found no structural continuity between rectus femoris and rectus abdominis. This means not all meridian-chain mappings are equally supported; the SBL/BFL/FFL have strong anatomical evidence while the SFL and Lateral Line remain partially unverified."
+  ],
+  "gaps": [
+    "No peer-reviewed imaging study has directly overlaid TCM meridian pathways onto Anatomy Trains fascial chains in the same subjects using modern imaging (MRI, CT). The correspondences are inferred from separate anatomical analyses rather than direct co-registration.",
+    "The Deep Front Line correspondence to Liver/Kidney Meridians has the least dissection evidence of all proposed mappings -- Wilke 2016 did not evaluate the DFL at all.",
+    "The arm line correspondences (6 arm meridians to 4 Anatomy Trains arm lines) are asserted by Dorsher but lack the same level of detailed point-by-point anatomical validation as the trunk/leg correspondences.",
+    "No studies were found that systematically test whether mechanical force applied along a fascial chain propagates in a pattern that matches the directional flow described in TCM meridian theory (centripetal vs centrifugal).",
+    "The fluorescein tracer and biophotonic signaling studies are intriguing but have small sample sizes and limited independent replication. The 'quantum birefringence' claims from some sources appear speculative and not peer-reviewed."
+  ]
+}

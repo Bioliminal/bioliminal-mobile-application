@@ -1,0 +1,97 @@
+{
+  "angle": "Interoception attention fascia Schleip",
+  "findings": [
+    {
+      "claim": "Schleip estimates fascia contains approximately 250 million sensory receptors, exceeding the ~200 million found in skin, making the fascial network the body's richest sensory interface.",
+      "source_url": "https://www.researchgate.net/publication/224050212_Interoception_A_new_correlate_for_intricate_connections_between_fascial_receptors_emotion_and_self_recognition",
+      "confidence": "high"
+    },
+    {
+      "claim": "Approximately 80% of sensory fibers in fascia are interstitial Type III (A-delta) and Type IV (C-fiber) free nerve endings rather than specialized mechanoreceptors like Golgi or Pacini corpuscles.",
+      "source_url": "https://www.researchgate.net/publication/224050212_Interoception_A_new_correlate_for_intricate_connections_between_fascial_receptors_emotion_and_self_recognition",
+      "confidence": "high"
+    },
+    {
+      "claim": "Fascial Type III and IV afferents project primarily to the insular cortex (not somatosensory cortex), linking fascial sensory input to interoception, emotional processing, and self-awareness rather than purely spatial proprioception.",
+      "source_url": "https://www.researchgate.net/publication/224050212_Interoception_A_new_correlate_for_intricate_connections_between_fascial_receptors_emotion_and_self_recognition",
+      "confidence": "high"
+    },
+    {
+      "claim": "Fascia contains myofibroblasts with smooth muscle-like contractile properties that respond to sympathetic nervous system activation (adrenaline, TGF-beta1), changing fascial tone independently of skeletal muscle contraction.",
+      "source_url": "https://www.sciencedirect.com/science/article/abs/pii/S174606890500004X",
+      "confidence": "high"
+    },
+    {
+      "claim": "Internal focus of attention increases muscle co-contraction and EMG activity by 22% compared to external focus for the same task, per the Constrained Action Hypothesis (Wulf). This increased co-contraction creates internal resistance and mechanical stiffness.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/11404271/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Internal focus coupled with sympathetic nervous system activation stimulates fascial myofibroblasts to increase fascial tone, causing tissue stiffening independent of skeletal muscle activation. This creates a distinct physiological state from external/relaxed focus.",
+      "source_url": "https://www.frontiersin.org/articles/10.3389/fphys.2019.01106/full",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Schoenfeld et al. (2018) RCT found that internal focus ('squeeze the muscle') produced nearly double the biceps hypertrophy (12.4% vs 6.9%) compared to external focus over 8 weeks, demonstrating measurably different tissue outcomes from attentional state alone.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/29533715/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Recent evidence (Behm et al., 2024) indicates that changes in deep fascia stiffness -- not muscle stiffness -- are more strongly correlated with acute ROM increases during stretching, suggesting fascia is the primary mechanical target.",
+      "source_url": "https://www.researchgate.net/publication/377314641_Acute_effects_of_stretching_on_muscle_and_fascia_stiffness",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Yi Jin Jing uses intentional motor imagery ('Yi') that creates neural blueprints in the motor cortex, increasing excitability of spinal motor neurons and priming muscles for more coordinated contraction -- a qualitatively different neuromuscular activation pattern from unfocused loading.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11221762/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Yi Jin Jing's slow, intentional movement refines the proprioceptive feedback loop between joint receptors/muscle spindles and the brain by 'eliminating neural noise,' dramatically improving body awareness (proprioceptive acuity).",
+      "source_url": "https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2023.1294871/full",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Ruffini receptors in fascia respond to slow, steady tangential pressure and their stimulation decreases sympathetic nervous system activity, directly linking specific loading patterns to autonomic state changes.",
+      "source_url": "https://pro-osteo.com/courses/fascia-as-a-sensory-organ-robert-schleip/",
+      "confidence": "high"
+    },
+    {
+      "claim": "A 2025 finding identifies A-delta low-threshold mechanoreceptors (LTMRs) deep in fascia as essential for 'pleasant deep touch' perception. When A-fibers are blocked, the pleasantness of deep pressure is abolished, proving these fascial receptors are critical for hedonic valuation of deep mechanical stimuli.",
+      "source_url": "https://www.researchgate.net/publication/372023456_A-delta_fibers_mediate_pleasant_deep_touch",
+      "confidence": "medium"
+    },
+    {
+      "claim": "External focus during stretching produces immediate ROM increases not from tissue length changes but from neurological 'release' of protective tension -- the brain shifts its threat threshold, bypassing fascial guarding mechanisms.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5530111/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Fascia transmits approximately 30% of muscle force laterally into surrounding intramuscular fascia (epimysium) rather than through the tendon, meaning attentional states that alter muscle activation patterns directly change fascial loading patterns.",
+      "source_url": "https://themovementparadigm.com/the-role-of-fascia-in-movement-and-pain/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Yi Jin Jing's integration of diaphragmatic breathing with isometric tension shifts the autonomic nervous system from sympathetic (fight/flight) to parasympathetic (rest/repair) dominance, which is essential for long-term tissue remodeling since collagen synthesis requires parasympathetic conditions.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11221762/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Internal/somatic focus is essential for interoception (sensing the body's internal state). Fascia contains significantly more interoceptive receptors than proprioceptive ones, making somatic awareness a key driver for resolving 'sensory-motor amnesia' and facilitating long-term tissue remodeling.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3430451/",
+      "confidence": "medium"
+    }
+  ],
+  "key_insights": [
+    "Schleip's fascia-as-sensory-organ thesis is strongly supported: fascia has ~250M receptors (exceeding skin), 80% are interstitial Type III/IV afferents projecting to the insular cortex for interoception rather than the somatosensory cortex for proprioception. This means attentional focus during loading is not merely a performance variable -- it determines WHICH neural pathways process the mechanical stimulus and whether the outcome is proprioceptive refinement vs. interoceptive remodeling signaling.",
+    "The chain from attention to fascial outcome has identifiable physiological links: (1) Internal focus increases co-contraction and SNS activation (Wulf's Constrained Action Hypothesis), (2) SNS activation directly increases fascial tone via myofibroblast contractility (Schleip 2005/2019), (3) different fascial mechanoreceptors respond to different loading qualities (Ruffini = slow/steady = parasympathetic; Pacini = rapid = sympathetic). Yi Jin Jing's deliberate slow loading with parasympathetic-promoting breath may specifically stimulate Ruffini receptors and suppress SNS-driven fascial stiffening, creating conditions favorable for remodeling rather than guarding.",
+    "The critical gap is that no controlled study has directly compared 'focused loading' vs 'unfocused loading' with fascial tissue outcomes (e.g., shear wave elastography, collagen markers) as the primary endpoint. The Schoenfeld 2018 RCT proved attentional focus produces different MUSCLE tissue outcomes (hypertrophy), and Behm 2024 showed fascia stiffness drives ROM more than muscle stiffness, but no one has yet closed the loop by measuring fascial remodeling as a function of attentional state during the same loading protocol."
+  ],
+  "gaps": [
+    "No controlled study directly measuring fascial tissue outcomes (elastography, collagen biomarkers, histological changes) as a function of attentional focus during identical loading protocols -- this is the key missing experiment",
+    "No peer-reviewed study specifically isolating Yi Jin Jing's 'Yi' (mental intention) component from its mechanical loading component to test whether intention alone produces measurably different fascial/neuromuscular outcomes",
+    "Limited evidence on long-term fascial remodeling timescales under different attentional conditions -- most attentional focus studies measure acute EMG or ROM, not 6-24 month tissue architectural changes",
+    "The Schleip insular cortex projection pathway for fascial interoception is theorized but not yet confirmed with neuroimaging (fMRI) during fascial loading with controlled attentional conditions",
+    "No direct measurement of myofibroblast contractility or fascial tone (via shear wave elastography) during different attentional states in real-time during exercise"
+  ]
+}

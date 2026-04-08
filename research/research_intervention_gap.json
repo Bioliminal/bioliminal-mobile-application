@@ -1,0 +1,107 @@
+{
+  "angle": "Intervention gap chain-specific vs generic",
+  "findings": [
+    {
+      "claim": "The FMS has high specificity (~85.7%) but very low sensitivity (~24.7%), meaning it fails to identify approximately 75% of athletes who will sustain an injury despite having 'passing' scores above 14.",
+      "source_url": "https://bmjopensem.bmj.com/content/1/1/e000083",
+      "confidence": "high"
+    },
+    {
+      "claim": "Systematic reviews show FMS-based corrective exercise programs improve composite scores by a mean of 3.28 points over 6-12 weeks, but there is limited evidence (Grade D) that this improvement directly reduces injury rates.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9311543/",
+      "confidence": "high"
+    },
+    {
+      "claim": "A 2022 randomized trial of high school baseball players found that a 12-week corrective exercise program significantly increased FMS scores but produced no difference in injury incidence compared to the control group.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9346141/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Bahr (2016) argued that no movement screen has successfully validated all three steps (prospective relationship, adequate sensitivity/specificity, and intervention superiority over universal programs), making individual injury prediction via screening a mathematical and biological impossibility.",
+      "source_url": "https://bjsm.bmj.com/content/50/13/776",
+      "confidence": "high"
+    },
+    {
+      "claim": "Wilke et al. (2016) systematic review verified the anatomical existence of the Superficial Back Line, Back Functional Line, and Front Functional Line through cadaveric dissection, providing peer-reviewed structural evidence for myofascial chains as real anatomical entities.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/26763512/",
+      "confidence": "high"
+    },
+    {
+      "claim": "The Superficial Front Line showed no anatomical continuity evidence in the Wilke et al. systematic review -- no peer-reviewed dissection studies verified a morphological connection between tibialis anterior and rectus femoris, or rectus abdominis and sternochondral fascia.",
+      "source_url": "https://www.archives-pmr.org/article/S0003-9993(15)01140-5/fulltext",
+      "confidence": "high"
+    },
+    {
+      "claim": "RCTs comparing myofascial chain stretching (GPR) versus isolated segmental stretching show equivalent ROM gains for the targeted joint, but chain stretching produces superior pain reduction and global postural correction in chronic conditions.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/18797175/",
+      "confidence": "medium"
+    },
+    {
+      "claim": "GPR (Global Postural Reeducation) chain-based stretching holds postures for 15-20 minutes compared to 30-60 seconds for segmental stretching, engaging viscoelastic creep and triggering fibroblast-mediated ECM remodeling for more permanent structural change.",
+      "source_url": "https://www.mdpi.com/1660-4601/20/1/654",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Clinical trials found that releasing the entire Superficial Back Line (scalp to feet) was more effective for pain reduction and lumbar extension ROM than isolated trigger point release for chronic low back pain.",
+      "source_url": "https://www.ijcrr.com",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Meta-analyses confirm that hip strengthening combined with local knee exercises is superior to knee exercises alone for patellofemoral pain syndrome, providing high-quality evidence for the regional interdependence (kinetic chain) treatment model.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/25732145/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Thoracic spine manipulation as an adjunct to local shoulder/neck treatment shows strong evidence of superiority over local treatment alone for immediate and short-term pain relief and ROM improvement.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov/19443555/",
+      "confidence": "high"
+    },
+    {
+      "claim": "Remote myofascial effects (e.g., stretching the plantar fascia to improve hamstring flexibility) are documented but may be neurological (CNS-mediated stretch tolerance changes) rather than mechanical force transmission through fascial chains.",
+      "source_url": "https://journals.humankinetics.com/view/journals/jsr/28/6/article-p783.xml",
+      "confidence": "medium"
+    },
+    {
+      "claim": "The SFMA (Selective Functional Movement Assessment) attempts to bridge the detection-prescription gap by differentiating mobility dysfunction from motor control dysfunction and prescribing 'mobility first' then stability retraining, but currently lacks large-scale RCT evidence (Grade B/C only).",
+      "source_url": "https://www.functionalmovement.com",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Core stability training shows the highest effect size (MD = 2.89) for improving FMS scores among corrective exercise modalities, followed by neuromuscular training (MD = 2.31), suggesting generic stability work may be as effective as targeted protocols for score improvement.",
+      "source_url": "https://www.researchgate.net/publication/359251842_The_Effectiveness_of_Corrective_Exercises_on_Functional_Movement_Screen_Scores_A_Systematic_Review_and_Meta-Analysis",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Biomechanical critics argue that epimuscular force transmission along fascial chains is often less than 5% of a muscle's total output under physiological conditions, questioning whether chain-specific interventions produce their effects through mechanical force transmission or neurological mechanisms.",
+      "source_url": "https://pubmed.ncbi.nlm.nih.gov",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Yi Jin Jing (a chain-specific fascial loading protocol) showed large effect sizes (Hedges' g > 1.0) for functional tests like Chair Sit-to-Stand and Squatting-to-Standing but no significant improvement in isolated sit-and-reach flexibility, suggesting it improves integrated chain function rather than isolated muscle length.",
+      "source_url": "https://www.frontiersin.org/journals/medicine/articles/10.3389/fmed.2024.1378891/full",
+      "confidence": "medium"
+    },
+    {
+      "claim": "Previous injury history remains the single strongest predictor of future injury, significantly outperforming any movement screening tool including the FMS, underscoring the limitation of screen-based prediction models.",
+      "source_url": "https://link.springer.com/journal/40279",
+      "confidence": "high"
+    },
+    {
+      "claim": "Improving FMS scores does not significantly improve raw physical performance metrics like vertical jump or sprint speed, indicating that movement quality screening and performance optimization may require different intervention approaches.",
+      "source_url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9311543/",
+      "confidence": "medium"
+    }
+  ],
+  "key_insights": [
+    "A clear intervention gap exists: movement screening tools like the FMS reliably detect dysfunction and corrective exercises reliably improve scores, but improving scores does not reliably reduce injury rates or improve performance -- the chain from detection to meaningful clinical outcome is broken at the prescription stage.",
+    "Chain-specific interventions (GPR, Anatomy Trains-based protocols) show equivalent ROM gains but superior pain reduction and postural correction compared to generic isolated exercise, with the strongest evidence in chronic conditions and cases where regional interdependence is a factor (e.g., hip weakness causing knee pain, thoracic stiffness causing shoulder pain).",
+    "The mechanism debate remains unresolved: whether chain-specific interventions work through actual mechanical force transmission along fascial meridians or through neurological mechanisms (CNS-mediated stretch tolerance, regional interdependence reflex arcs) has major implications for protocol design -- if the effect is neurological, the specificity of the 'chain' targeted may matter less than the global stimulus provided."
+  ],
+  "gaps": [
+    "No head-to-head RCTs directly comparing fascial-chain-specific loading protocols against generic exercise for the same dysfunction identified by a movement screen (the exact comparison the hypothesis requires).",
+    "No published studies that use movement screening to identify a specific fascial chain dysfunction and then randomize participants to chain-specific vs. generic corrective exercise with injury rate as a primary outcome.",
+    "The SFMA's treatment algorithm (which comes closest to chain-specific prescription from screening) lacks large-scale independent RCT validation -- most evidence is Level 2-4 (case reports and small cohorts).",
+    "Insufficient evidence to determine whether the superior pain outcomes of chain-specific stretching (GPR) are due to fascial chain mechanics specifically or simply due to longer intervention duration (15-20 min vs 30-60 sec holds) and greater total tissue loading.",
+    "No peer-reviewed dose-response data comparing chain-specific loading parameters (intensity, frequency, duration) against equivalent-dose generic exercise for matched fascial chain dysfunctions."
+  ]
+}

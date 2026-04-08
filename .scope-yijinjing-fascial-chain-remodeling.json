@@ -1,0 +1,25 @@
+{
+  "slug": "yijinjing-fascial-chain-remodeling",
+  "skill": "scope",
+  "scope": {
+    "files": null,
+    "stories": null,
+    "complexity": null
+  },
+  "route_hint": "research",
+  "prev": [],
+  "data": {
+    "topic": "Yi Jin Jing tendon changing and fascial chain remodeling for AI movement screening tool",
+    "what": null,
+    "audience": null,
+    "platform": null,
+    "in_scope": null,
+    "out_of_scope": null,
+    "stack_detected": [],
+    "problem": null,
+    "why": null,
+    "end_goal": null,
+    "needs_research": true,
+    "complexity_reasoning": "Domain requires specialized knowledge spanning TCM practice (Yi Jin Jing), fascial biomechanics, mechanotransduction science, and their intersection — none derivable from codebase."
+  }
+}

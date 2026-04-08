@@ -1,0 +1,57 @@
+{
+  "slug": "auralink-ai-movement-screening",
+  "scope": {
+    "files": 30,
+    "stories": 6,
+    "complexity": "large"
+  },
+  "route_hint": "standard",
+  "prev": "presearch/auralink-product.md",
+  "skill": "plan-stories",
+  "data": {
+    "epics": [
+      {
+        "epic_id": "epic-265",
+        "dev_branch": "dev/auralink-ai-movement-screening-app",
+        "stories": [
+          {
+            "id": "story-1293",
+            "title": "Bootstrap — flutter create + Firebase setup + shared domain models + interfaces + routing + DI + theme",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1293.md"
+          },
+          {
+            "id": "story-1294",
+            "title": "Camera Pipeline + Setup — camera access, skeleton overlay with per-joint confidence colors, setup checklist",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1294.md"
+          },
+          {
+            "id": "story-1296",
+            "title": "Logic Engine Interfaces + Mocks — PoseEstimationService, AngleCalculator, ChainMapper with mock implementations",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1296.md"
+          },
+          {
+            "id": "story-1295",
+            "title": "Movement Assessment Flow — 4 movements, rep counter, progress indicator, preliminary findings",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1295.md"
+          },
+          {
+            "id": "story-1297",
+            "title": "Report Generation — compensation patterns, layered findings, citations, confidence annotations, PDF export, share",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1297.md"
+          },
+          {
+            "id": "story-1298",
+            "title": "Data Persistence — local storage + Firestore sync, anonymous auth, save/load assessments + PDFs",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1298.md"
+          }
+        ]
+      }
+    ]
+  }
+}
