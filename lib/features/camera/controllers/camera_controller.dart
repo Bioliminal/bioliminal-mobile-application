@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/providers.dart';
-import '../../../domain/models.dart';
+import 'package:auralink/core/providers.dart';
+import 'package:auralink/domain/models.dart';
+import 'package:auralink/domain/services/pose_estimation_service.dart';
 
 // ---------------------------------------------------------------------------
 // CameraState — sealed class covering the full permission + lifecycle surface

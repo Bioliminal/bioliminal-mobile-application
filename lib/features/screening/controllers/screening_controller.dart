@@ -381,9 +381,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
 final screeningControllerProvider =
     StateNotifierProvider<ScreeningController, ScreeningState>((ref) {
   return ScreeningController(
-    angleCalculator:
-        ref.watch(core_providers.angleCalculatorProvider) as AngleCalculator,
-    chainMapper:
-        ref.watch(core_providers.chainMapperProvider) as ChainMapper,
+    angleCalculator: ref.watch(core_providers.angleCalculatorProvider),
+    chainMapper: ref.watch(core_providers.chainMapperProvider),
   );
 });
