@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:auralink/core/theme.dart';
 import '../models/movement.dart';
 
 class PreliminaryFindings extends StatelessWidget {
@@ -18,10 +19,10 @@ class PreliminaryFindings extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final completedConfig = screeningMovements[completedMovementIndex];
-    final isFinalNext = completedMovementIndex == 2;
+    final isFinalNext = completedMovementIndex == screeningMovements.length - 2;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: AuraLinkTheme.screenBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),

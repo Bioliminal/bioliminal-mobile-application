@@ -206,9 +206,10 @@ class _ReportViewState extends State<ReportView> {
       ));
     }
 
-    // 4. Practitioner discussion points.
-    final practitionerPoints = <String>[];
-    for (final f in findings) {
+    // 4. Practitioner discussion points — keyed per finding.
+    final practitionerPointsByFinding = <int, String>{};
+    for (var i = 0; i < findings.length; i++) {
+      final f = findings[i];
       if (f.upstreamDriver != null) {
         final symptomJoints = f.compensations
             .where((c) =>
@@ -216,19 +217,18 @@ class _ReportViewState extends State<ReportView> {
             .map((c) => c.joint)
             .toSet();
         if (symptomJoints.isNotEmpty) {
-          practitionerPoints.add(
-            'Ask about ${f.upstreamDriver} and how it affects ${symptomJoints.join(', ')}',
-          );
+          practitionerPointsByFinding[i] =
+            'Ask about ${f.upstreamDriver} and how it affects ${symptomJoints.join(', ')}';
         } else {
-          practitionerPoints
-              .add('Ask about ${f.upstreamDriver} as a possible driver');
+          practitionerPointsByFinding[i] =
+              'Ask about ${f.upstreamDriver} as a possible driver';
         }
       }
     }
 
     return Report(
       findings: findings,
-      practitionerPoints: practitionerPoints,
+      practitionerPoints: practitionerPointsByFinding.values.toList(),
     );
   }
 
@@ -460,9 +460,12 @@ class _ReportViewState extends State<ReportView> {
             // -- Finding cards --
             ...List.generate(report.findings.length, (i) {
               final finding = report.findings[i];
-              // Match practitioner point to finding by upstream driver.
-              final point = i < report.practitionerPoints.length
-                  ? report.practitionerPoints[i]
+              // Match practitioner point by upstream driver presence.
+              final point = finding.upstreamDriver != null
+                  ? report.practitionerPoints.cast<String?>().firstWhere(
+                        (p) => p != null && p.contains(finding.upstreamDriver!),
+                        orElse: () => null,
+                      )
                   : null;
               return FindingCard(
                 finding: finding,

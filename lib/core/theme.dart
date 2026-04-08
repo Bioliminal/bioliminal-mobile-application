@@ -6,6 +6,8 @@ class AuraLinkTheme {
   static const Color _primary = Color(0xFF00695C);
   static const Color _secondary = Color(0xFFFF6B6B);
 
+  static const Color screenBackground = Color(0xFF1A1A2E);
+
   static const Color confidenceHigh = Color(0xFF4CAF50);
   static const Color confidenceMedium = Color(0xFFFFC107);
   static const Color confidenceLow = Color(0xFFF44336);

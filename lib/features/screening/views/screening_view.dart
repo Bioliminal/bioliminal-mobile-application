@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:auralink/core/providers.dart' as core_providers;
+import 'package:auralink/core/theme.dart';
 import '../controllers/screening_controller.dart';
 import '../widgets/movement_instructions.dart';
 import '../widgets/preliminary_findings.dart';
@@ -61,7 +62,7 @@ class _SetupScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: AuraLinkTheme.screenBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -275,7 +276,7 @@ class _CompleteScreenState extends State<_CompleteScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: AuraLinkTheme.screenBackground,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

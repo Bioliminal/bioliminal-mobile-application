@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:auralink/core/theme.dart';
+
 /// Non-skippable educational disclaimer required by FDA wellness/CDS guidance.
 /// User must scroll to bottom and tap "I Understand" before proceeding.
 class DisclaimerView extends StatefulWidget {
@@ -18,7 +20,7 @@ class _DisclaimerViewState extends State<DisclaimerView> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1A1A2E),
+      backgroundColor: AuraLinkTheme.screenBackground,
       body: SafeArea(
         child: Column(
           children: [

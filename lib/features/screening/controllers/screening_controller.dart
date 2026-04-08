@@ -252,7 +252,6 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   List<Landmark> _averageFrameBuffer() {
     if (_frameBuffer.length == 1) return _frameBuffer.first;
 
-    final frameCount = _frameBuffer.length;
     final landmarkCount = _frameBuffer.first.length;
 
     return List.generate(landmarkCount, (i) {
@@ -260,6 +259,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
       var sumY = 0.0;
       var sumZ = 0.0;
       var sumVis = 0.0;
+      var count = 0;
 
       for (final frame in _frameBuffer) {
         if (i < frame.length) {
@@ -267,14 +267,19 @@ class ScreeningController extends StateNotifier<ScreeningState> {
           sumY += frame[i].y;
           sumZ += frame[i].z;
           sumVis += frame[i].visibility;
+          count++;
         }
       }
 
+      if (count == 0) {
+        return const Landmark(x: 0, y: 0, z: 0, visibility: 0);
+      }
+
       return Landmark(
-        x: sumX / frameCount,
-        y: sumY / frameCount,
-        z: sumZ / frameCount,
-        visibility: sumVis / frameCount,
+        x: sumX / count,
+        y: sumY / count,
+        z: sumZ / count,
+        visibility: sumVis / count,
       );
     });
   }
@@ -317,8 +322,9 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   }
 
   void _finishScreening() {
+    final now = DateTime.now();
     final assessment = Assessment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: '${now.millisecondsSinceEpoch}-${now.microsecond}',
       createdAt: DateTime.now(),
       movements: List.unmodifiable(_completedMovements),
       compensations: List.unmodifiable(_allCompensations),
