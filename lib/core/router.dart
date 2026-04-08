@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/report/views/report_view.dart';
+import '../features/screening/views/screening_view.dart';
 
 final goRouter = GoRouter(
   routes: [
@@ -20,7 +21,7 @@ final goRouter = GoRouter(
     ),
     GoRoute(
       path: '/screening',
-      builder: (context, state) => const _ScreeningView(),
+      builder: (context, state) => const ScreeningView(),
     ),
     GoRoute(
       path: '/report/:id',
@@ -53,14 +54,4 @@ class _CameraView extends StatelessWidget {
   }
 }
 
-class _ScreeningView extends StatelessWidget {
-  const _ScreeningView();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('ScreeningView')),
-    );
-  }
-}
 

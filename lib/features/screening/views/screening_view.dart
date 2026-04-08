@@ -2,16 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:auralink/core/providers.dart' as core_providers;
 import '../controllers/screening_controller.dart';
 import '../widgets/movement_instructions.dart';
 import '../widgets/preliminary_findings.dart';
 import '../models/movement.dart';
 
-class ScreeningView extends ConsumerWidget {
+class ScreeningView extends ConsumerStatefulWidget {
   const ScreeningView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ScreeningView> createState() => _ScreeningViewState();
+}
+
+class _ScreeningViewState extends ConsumerState<ScreeningView> {
+  @override
+  void initState() {
+    super.initState();
+    // Save assessment to local storage when screening completes.
+    ref.listenManual(screeningControllerProvider, (previous, next) {
+      if (next is ScreeningComplete) {
+        ref
+            .read(core_providers.localStorageServiceProvider)
+            .saveAssessment(next.assessment);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final screeningState = ref.watch(screeningControllerProvider);
 
     return switch (screeningState) {
