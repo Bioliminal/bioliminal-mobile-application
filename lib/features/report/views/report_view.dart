@@ -308,9 +308,11 @@ class _ReportViewState extends State<ReportView> {
     setState(() => _generating = true);
     try {
       final path = await _generatePdf(report, assessment);
-      await Share.shareXFiles(
-        [XFile(path)],
-        subject: 'AuraLink Movement Screen',
+      await SharePlus.instance.share(
+        ShareParams(
+          files: [XFile(path)],
+          subject: 'AuraLink Movement Screen',
+        ),
       );
     } catch (e) {
       if (mounted) {

@@ -17,6 +17,10 @@ import 'package:auralink/core/services/firestore_service.dart'
 import 'package:auralink/core/services/local_storage_service.dart'
     as local_impl;
 
+// Re-export camera providers so screening can import from one place.
+export 'package:auralink/features/camera/controllers/camera_controller.dart'
+    show currentLandmarksProvider, appCameraControllerProvider;
+
 // Providers — mock implementations wired by default, swap for real ones.
 
 final poseEstimationServiceProvider =

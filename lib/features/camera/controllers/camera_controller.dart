@@ -107,11 +107,19 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     try {
       final poseService = ref.read(poseEstimationServiceProvider);
 
+      // Cancel any previous subscription.
+      await _landmarkSubscription?.cancel();
+
+      // Start image stream. The first frame triggers the pose service
+      // subscription; subsequent frames are fed to _handleFrame.
+      var firstFrame = true;
       await controller.startImageStream((CameraImage image) {
-        // Fire-and-forget: hand each frame to pose estimation.
-        // PoseEstimationService.processFrame is expected to return
-        // Stream<List<Landmark>> but we drive it frame-by-frame.
-        // Concrete implementation decides whether to skip frames.
+        if (firstFrame) {
+          firstFrame = false;
+          _landmarkSubscription = poseService.processFrame(image).listen((landmarks) {
+            updateLandmarks(landmarks);
+          });
+        }
         _handleFrame(image, poseService);
       });
 
@@ -122,12 +130,9 @@ class AppCameraController extends AsyncNotifier<CameraState> {
   }
 
   void _handleFrame(CameraImage image, PoseEstimationService poseService) {
-    // The concrete PoseEstimationService will process the frame and
-    // update landmarks via the stream. We subscribe once in startStreaming
-    // and update state as landmarks arrive.
-    //
-    // For now, this is the integration seam — the ML developer's
-    // implementation of processFrame will drive landmark updates.
+    // In a production app, we would pass each frame to the ML service.
+    // The service would emit landmarks on its stream.
+    // poseService.addFrame(image); 
   }
 
   /// Stop streaming but keep camera initialized.

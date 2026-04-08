@@ -73,7 +73,7 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
                     .requestPermission();
               },
             ),
-          CameraReady(:final controller) => _CameraBody(
+          CameraReady(:final controller) => CameraBody(
               controller: controller,
               setupComplete: _setupComplete,
               onSetupComplete: () => setState(() => _setupComplete = true),
@@ -83,7 +83,7 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
                     .startStreaming();
               },
             ),
-          CameraStreaming(:final controller) => _CameraBody(
+          CameraStreaming(:final controller) => CameraBody(
               controller: controller,
               setupComplete: _setupComplete,
               onSetupComplete: () => setState(() => _setupComplete = true),
@@ -107,8 +107,9 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
 // Camera body — preview + overlays
 // ---------------------------------------------------------------------------
 
-class _CameraBody extends StatefulWidget {
-  const _CameraBody({
+class CameraBody extends StatefulWidget {
+  const CameraBody({
+    super.key,
     required this.controller,
     required this.setupComplete,
     required this.onSetupComplete,
@@ -121,10 +122,10 @@ class _CameraBody extends StatefulWidget {
   final VoidCallback? onStartStreaming;
 
   @override
-  State<_CameraBody> createState() => _CameraBodyState();
+  State<CameraBody> createState() => _CameraBodyState();
 }
 
-class _CameraBodyState extends State<_CameraBody> {
+class _CameraBodyState extends State<CameraBody> {
   bool _streamingStarted = false;
 
   @override
@@ -134,7 +135,7 @@ class _CameraBodyState extends State<_CameraBody> {
   }
 
   @override
-  void didUpdateWidget(_CameraBody oldWidget) {
+  void didUpdateWidget(CameraBody oldWidget) {
     super.didUpdateWidget(oldWidget);
     _maybeStartStreaming();
   }
