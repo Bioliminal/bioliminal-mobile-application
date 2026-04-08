@@ -155,13 +155,14 @@ class _ReportViewState extends State<ReportView> {
       String? upstreamDriver;
       if (chain != null) {
         final originJoint = _chainOriginJoint[chain];
-        final originComp = comps.cast<Compensation?>().firstWhere(
-              (c) => c!.joint.contains(originJoint!),
-              orElse: () => null,
-            );
-        if (originComp != null) {
-          upstreamDriver =
-              '${originComp.joint} ${_readableCompType(originComp.type)}';
+        if (originJoint != null) {
+          final originComp = comps
+              .where((c) => c.joint.contains(originJoint))
+              .firstOrNull;
+          if (originComp != null) {
+            upstreamDriver =
+                '${originComp.joint} ${_readableCompType(originComp.type)}';
+          }
         }
       }
 
@@ -464,10 +465,9 @@ class _ReportViewState extends State<ReportView> {
               final finding = report.findings[i];
               // Match practitioner point by upstream driver presence.
               final point = finding.upstreamDriver != null
-                  ? report.practitionerPoints.cast<String?>().firstWhere(
-                        (p) => p != null && p.contains(finding.upstreamDriver!),
-                        orElse: () => null,
-                      )
+                  ? report.practitionerPoints
+                        .where((p) => p.contains(finding.upstreamDriver!))
+                        .firstOrNull
                   : null;
               return FindingCard(
                 finding: finding,
