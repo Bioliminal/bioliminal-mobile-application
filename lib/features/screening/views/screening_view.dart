@@ -243,7 +243,10 @@ class _CompleteScreenState extends State<_CompleteScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
       if (mounted) {
-        context.go('/report/${widget.state.assessment.id}');
+        context.go(
+          '/report/${widget.state.assessment.id}',
+          extra: widget.state.assessment,
+        );
       }
     });
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/report/views/report_view.dart';
 
 final goRouter = GoRouter(
@@ -8,6 +9,10 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const _SplashView(),
+    ),
+    GoRoute(
+      path: '/disclaimer',
+      builder: (context, state) => const DisclaimerView(),
     ),
     GoRoute(
       path: '/camera',
