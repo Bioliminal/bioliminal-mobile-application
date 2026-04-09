@@ -1,6 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:auralink/domain/services/pose_estimation_service.dart'
@@ -69,7 +66,7 @@ final authServiceProvider = Provider<AuthService>(
         'Enable cloud sync in settings before accessing auth.',
       );
     }
-    return AuthService(FirebaseAuth.instance);
+    return AuthService.withFirebase();
   },
 );
 
@@ -81,11 +78,8 @@ final firestoreServiceProvider = Provider<firestore_impl.FirestoreService>(
         'Enable cloud sync in settings before accessing Firestore.',
       );
     }
-    return firestore_impl.FirestoreService(
-      FirebaseFirestore.instance,
-      FirebaseStorage.instance,
+    return firestore_impl.FirestoreService.withFirebase(
       ref.read(authServiceProvider),
-      cloudSyncEnabled: true,
     );
   },
 );

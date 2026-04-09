@@ -1,10 +1,16 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
 /// Firebase authentication wrapper. Opt-in only — not part of the default
-/// provider graph. Only instantiated when the user enables cloud sync in
-/// settings. See [cloudSyncEnabledProvider] in providers.dart.
+/// provider graph. Only instantiated after explicit user opt-in to cloud sync
+/// in settings. No Firebase SDK calls occur until this service is created.
+/// See [cloudSyncEnabledProvider] in providers.dart.
 class AuthService {
   AuthService(this._auth);
+
+  /// Creates an [AuthService] using the default [FirebaseAuth] instance.
+  /// This is the only call site that touches [FirebaseAuth.instance],
+  /// ensuring Firebase Auth SDK is not initialized until opt-in.
+  factory AuthService.withFirebase() => AuthService(FirebaseAuth.instance);
 
   final FirebaseAuth _auth;
 
