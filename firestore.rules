@@ -1,11 +1,31 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /assessments/{uid}/sessions/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
+
+    match /assessments/{uid}/sessions/{doc} {
+      allow read, delete: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['id', 'createdAt', 'movements', 'compensations', 'report'])
+        && request.resource.data.id is string
+        && request.resource.data.createdAt is timestamp
+        && request.resource.data.movements is list
+        && request.resource.data.compensations is list
+        && (!('report' in request.resource.data) || request.resource.data.report == null || request.resource.data.report is map);
+    }
+
     match /reports/{uid}/sessions/{doc} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if isOwner(uid);
+
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['findings', 'practitionerPoints', 'pdfUrl'])
+        && request.resource.data.findings is list
+        && request.resource.data.practitionerPoints is list
+        && (!('pdfUrl' in request.resource.data) || request.resource.data.pdfUrl == null || request.resource.data.pdfUrl is string);
     }
   }
 }
