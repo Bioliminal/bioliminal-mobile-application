@@ -9,8 +9,10 @@ import 'auth_service.dart';
 import 'local_storage_service.dart';
 
 /// Cloud persistence layer. Opt-in only — not part of the default provider
-/// graph. When [cloudSyncEnabled] is false, all public methods throw
-/// [StateError]. See [cloudSyncEnabledProvider] in providers.dart.
+/// graph. Only instantiated after explicit user opt-in to cloud sync. No
+/// Firebase SDK calls occur until this service is created. When
+/// [cloudSyncEnabled] is false, all public methods throw [StateError].
+/// See [cloudSyncEnabledProvider] in providers.dart.
 class FirestoreService {
   FirestoreService(
     this._firestore,
@@ -18,6 +20,17 @@ class FirestoreService {
     this._auth, {
     this.cloudSyncEnabled = false,
   });
+
+  /// Creates a [FirestoreService] using the default Firebase instances.
+  /// This is the only call site that touches [FirebaseFirestore.instance]
+  /// and [FirebaseStorage.instance], ensuring those SDKs are not initialized
+  /// until opt-in.
+  factory FirestoreService.withFirebase(AuthService auth) => FirestoreService(
+        FirebaseFirestore.instance,
+        FirebaseStorage.instance,
+        auth,
+        cloudSyncEnabled: true,
+      );
 
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
