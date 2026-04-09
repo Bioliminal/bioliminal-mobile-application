@@ -25,7 +25,15 @@ export 'package:auralink/features/camera/controllers/camera_controller.dart'
 // Cloud sync opt-in toggle — false by default (offline-first).
 // ---------------------------------------------------------------------------
 
-final cloudSyncEnabledProvider = StateProvider<bool>((ref) => false);
+class CloudSyncNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void enable() => state = true;
+  void disable() => state = false;
+}
+
+final cloudSyncEnabledProvider =
+    NotifierProvider<CloudSyncNotifier, bool>(CloudSyncNotifier.new);
 
 // ---------------------------------------------------------------------------
 // Core providers — always available, offline-first.

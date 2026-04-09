@@ -61,16 +61,29 @@ class ScreeningComplete extends ScreeningState {
 // ScreeningController
 // ---------------------------------------------------------------------------
 
-class ScreeningController extends StateNotifier<ScreeningState> {
-  ScreeningController({
-    required AngleCalculator angleCalculator,
-    required ChainMapper chainMapper,
-  })  : _angleCalculator = angleCalculator,
-        _chainMapper = chainMapper,
-        super(const ScreeningSetup());
+class ScreeningController extends Notifier<ScreeningState> {
+  late final AngleCalculator _angleCalculator;
+  late final ChainMapper _chainMapper;
 
-  final AngleCalculator _angleCalculator;
-  final ChainMapper _chainMapper;
+  @override
+  ScreeningState build() {
+    _angleCalculator = ref.read(core_providers.angleCalculatorProvider);
+    _chainMapper = ref.read(core_providers.chainMapperProvider);
+
+    // Listen to landmarks and forward to controller.
+    ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider,
+        (previous, next) {
+      if (next != null) onLandmarkFrame(next);
+    });
+
+    ref.onDispose(() {
+      _countdownTimer?.cancel();
+      _mockLandmarkSub?.cancel();
+      _mockPoseService?.dispose();
+    });
+
+    return const ScreeningSetup();
+  }
 
   // Internal tracking state
   final List<double> _angleHistory = [];
@@ -389,13 +402,6 @@ class ScreeningController extends StateNotifier<ScreeningState> {
     return 'movement';
   }
 
-  @override
-  void dispose() {
-    _countdownTimer?.cancel();
-    _mockLandmarkSub?.cancel();
-    _mockPoseService?.dispose();
-    super.dispose();
-  }
 }
 
 // ---------------------------------------------------------------------------
@@ -403,17 +409,6 @@ class ScreeningController extends StateNotifier<ScreeningState> {
 // ---------------------------------------------------------------------------
 
 final screeningControllerProvider =
-    StateNotifierProvider<ScreeningController, ScreeningState>((ref) {
-  final controller = ScreeningController(
-    angleCalculator: ref.watch(core_providers.angleCalculatorProvider),
-    chainMapper: ref.watch(core_providers.chainMapperProvider),
-  );
-
-  // Listen to landmarks and forward to controller.
-  ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider,
-      (previous, next) {
-    controller.onLandmarkFrame(next);
-  });
-
-  return controller;
-});
+    NotifierProvider<ScreeningController, ScreeningState>(
+  ScreeningController.new,
+);

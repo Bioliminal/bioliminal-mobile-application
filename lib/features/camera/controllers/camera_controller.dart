@@ -107,7 +107,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
   /// Begin streaming frames to the pose estimation service.
   Future<void> startStreaming() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current is! CameraReady && current is! CameraStreaming) return;
 
     final controller =
@@ -146,7 +146,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
   /// Stop streaming but keep camera initialized.
   Future<void> stopStreaming() async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current is! CameraStreaming) return;
 
     try {
@@ -167,7 +167,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
   /// Update landmarks from pose estimation (called by the service integration).
   void updateLandmarks(List<Landmark> landmarks) {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current is CameraStreaming) {
       state = AsyncData(
         CameraStreaming(controller: current.controller, landmarks: landmarks),
@@ -189,7 +189,7 @@ final appCameraControllerProvider =
 /// Widgets that only need landmark data watch this instead of the full
 /// camera state — avoids rebuilds on camera lifecycle transitions.
 final currentLandmarksProvider = Provider<List<Landmark>>((ref) {
-  final cameraState = ref.watch(appCameraControllerProvider).valueOrNull;
+  final cameraState = ref.watch(appCameraControllerProvider).value;
   if (cameraState is CameraStreaming) {
     return cameraState.landmarks;
   }

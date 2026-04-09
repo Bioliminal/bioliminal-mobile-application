@@ -1,54 +1,84 @@
 {
-  "slug": "auralink-ai-movement-screening",
+  "slug": "fix-audit-findings-offline-first",
   "scope": {
-    "files": 30,
-    "stories": 6,
+    "files": 45,
+    "stories": 11,
     "complexity": "large"
   },
   "route_hint": "standard",
-  "prev": "presearch/auralink-product.md",
+  "prev": null,
   "skill": "plan-stories",
   "data": {
     "epics": [
       {
-        "epic_id": "epic-265",
-        "dev_branch": "dev/auralink-ai-movement-screening-app",
+        "epic_id": "epic-266",
+        "dev_branch": "dev/fix-audit-findings-offline-first-architecture-quality-fixes",
         "stories": [
           {
-            "id": "story-1293",
-            "title": "Bootstrap — flutter create + Firebase setup + shared domain models + interfaces + routing + DI + theme",
+            "id": "story-1299",
+            "title": "Remove anonymous auth dependency — offline-first with opt-in cloud sync + privacy disclaimer update",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1293.md"
+            "detail_file": "/tmp/gemini/story-1299.md"
           },
           {
-            "id": "story-1294",
-            "title": "Camera Pipeline + Setup — camera access, skeleton overlay with per-joint confidence colors, setup checklist",
+            "id": "story-1300",
+            "title": "Fix report deep-linking — load from LocalStorageService when GoRouter extra is null",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1294.md"
+            "detail_file": "/tmp/gemini/story-1300.md"
           },
           {
-            "id": "story-1296",
-            "title": "Logic Engine Interfaces + Mocks — PoseEstimationService, AngleCalculator, ChainMapper with mock implementations",
+            "id": "story-1301",
+            "title": "Rename MockChainMapper/MockAngleCalculator to RuleBasedChainMapper/RuleBasedAngleCalculator, move to domain/services/",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1296.md"
+            "detail_file": "/tmp/gemini/story-1301.md"
           },
           {
-            "id": "story-1295",
-            "title": "Movement Assessment Flow — 4 movements, rep counter, progress indicator, preliminary findings",
+            "id": "story-1302",
+            "title": "Extract report assembly into ReportAssemblyService",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1295.md"
+            "detail_file": "/tmp/gemini/story-1302.md"
           },
           {
-            "id": "story-1297",
-            "title": "Report Generation — compensation patterns, layered findings, citations, confidence annotations, PDF export, share",
+            "id": "story-1303",
+            "title": "Fix camera lifecycle — dispose before re-init, openAppSettings for permanent denial",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1297.md"
+            "detail_file": "/tmp/gemini/story-1303.md"
           },
           {
-            "id": "story-1298",
-            "title": "Data Persistence — local storage + Firestore sync, anonymous auth, save/load assessments + PDFs",
+            "id": "story-1304",
+            "title": "Fix MockPoseEstimationService disposal leak, null-as-dynamic, and movement type advancement",
             "agent": "architect",
-            "detail_file": "/tmp/gemini/story-1298.md"
+            "detail_file": "/tmp/gemini/story-1304.md"
+          },
+          {
+            "id": "story-1305",
+            "title": "Add Firestore schema validation rules and Storage size/type limits",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1305.md"
+          },
+          {
+            "id": "story-1306",
+            "title": "Fix dead code, broken test, remove unused deps from pubspec.yaml",
+            "agent": "quick-fixer",
+            "detail_file": "/tmp/gemini/story-1306.md"
+          },
+          {
+            "id": "story-1307",
+            "title": "Extract ConfidenceLevel extension method, replace enum index comparison",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1307.md"
+          },
+          {
+            "id": "story-1308",
+            "title": "Fix frame averaging, MovementInstructions Positioned, double-navigation, restore 60s duration",
+            "agent": "architect",
+            "detail_file": "/tmp/gemini/story-1308.md"
+          },
+          {
+            "id": "story-1309",
+            "title": "Add unit tests — chain mapping, screening state machine, report assembly, serialization, routing, privacy",
+            "agent": "unit-tester",
+            "detail_file": "/tmp/gemini/story-1309.md"
           }
         ]
       }

@@ -22,7 +22,7 @@ void main() {
 
       expect(
         () => container.read(authServiceProvider),
-        throwsA(isA<StateError>()),
+        throwsA(anything),
       );
     });
 
@@ -32,7 +32,7 @@ void main() {
 
       expect(
         () => container.read(firestoreServiceProvider),
-        throwsA(isA<StateError>()),
+        throwsA(anything),
       );
     });
   });

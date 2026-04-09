@@ -43,8 +43,9 @@ class SetupChecklistState {
 // SetupChecklistNotifier
 // ---------------------------------------------------------------------------
 
-class SetupChecklistNotifier extends StateNotifier<SetupChecklistState> {
-  SetupChecklistNotifier() : super(const SetupChecklistState());
+class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
+  @override
+  SetupChecklistState build() => const SetupChecklistState();
 
   static const int totalSteps = 4;
 
@@ -71,8 +72,8 @@ class SetupChecklistNotifier extends StateNotifier<SetupChecklistState> {
 // ---------------------------------------------------------------------------
 
 final setupChecklistProvider =
-    StateNotifierProvider<SetupChecklistNotifier, SetupChecklistState>(
-  (ref) => SetupChecklistNotifier(),
+    NotifierProvider<SetupChecklistNotifier, SetupChecklistState>(
+  SetupChecklistNotifier.new,
 );
 
 // ---------------------------------------------------------------------------

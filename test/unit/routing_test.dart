@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:auralink/core/router.dart';
 
@@ -10,7 +11,7 @@ void main() {
 
     test('expected routes are configured', () {
       final routes = goRouter.configuration.routes;
-      final paths = routes.map((r) => r.path).toList();
+      final paths = routes.whereType<GoRoute>().map((r) => r.path).toList();
 
       expect(paths, contains('/disclaimer'));
       expect(paths, contains('/camera'));
@@ -20,7 +21,7 @@ void main() {
 
     test('dead / route has been removed', () {
       final routes = goRouter.configuration.routes;
-      final paths = routes.map((r) => r.path).toList();
+      final paths = routes.whereType<GoRoute>().map((r) => r.path).toList();
 
       expect(paths, isNot(contains('/')));
     });

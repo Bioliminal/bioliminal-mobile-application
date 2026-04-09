@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>AuraLink uses your camera to analyze movement patterns during screening.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Required by the camera framework.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

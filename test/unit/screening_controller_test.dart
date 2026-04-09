@@ -1,97 +1,98 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:auralink/domain/models.dart';
-import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
-import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
 import 'package:auralink/features/screening/controllers/screening_controller.dart';
 import 'package:auralink/features/screening/models/movement.dart';
 
 void main() {
-  late ScreeningController controller;
+  late ProviderContainer container;
 
   setUp(() {
-    controller = ScreeningController(
-      angleCalculator: RuleBasedAngleCalculator(),
-      chainMapper: RuleBasedChainMapper(),
-    );
+    container = ProviderContainer();
   });
 
   tearDown(() {
-    controller.dispose();
+    container.dispose();
   });
 
+  ScreeningController getController() =>
+      container.read(screeningControllerProvider.notifier);
+
+  ScreeningState getState() => container.read(screeningControllerProvider);
+
   test('initial state is ScreeningSetup', () {
-    expect(controller.state, isA<ScreeningSetup>());
+    expect(getState(), isA<ScreeningSetup>());
   });
 
   test('startScreening transitions to ActiveMovement', () {
-    controller.startScreening();
-    expect(controller.state, isA<ActiveMovement>());
-    final state = controller.state as ActiveMovement;
-    expect(state.movementIndex, 0);
-    expect(state.repsCompleted, 0);
-    expect(state.config.type, MovementType.overheadSquat);
+    getController().startScreening();
+    expect(getState(), isA<ActiveMovement>());
+    final s = getState() as ActiveMovement;
+    expect(s.movementIndex, 0);
+    expect(s.repsCompleted, 0);
+    expect(s.config.type, MovementType.overheadSquat);
   });
 
   test('startScreening only works from ScreeningSetup', () {
-    controller.startScreening();
-    final firstState = controller.state;
+    getController().startScreening();
+    final firstState = getState();
     // Calling startScreening again should be a no-op.
-    controller.startScreening();
-    expect(controller.state, firstState);
+    getController().startScreening();
+    expect(getState(), firstState);
   });
 
   test('skipMovement advances from ActiveMovement', () {
-    controller.startScreening();
-    expect(controller.state, isA<ActiveMovement>());
+    getController().startScreening();
+    expect(getState(), isA<ActiveMovement>());
 
-    controller.skipMovement();
+    getController().skipMovement();
     // After skipping the first movement, should show findings or advance.
     expect(
-      controller.state,
+      getState(),
       anyOf(isA<ShowingFindings>(), isA<ActiveMovement>()),
     );
   });
 
   test('skipMovement is no-op from non-ActiveMovement states', () {
     // From ScreeningSetup — should be no-op.
-    final initial = controller.state;
-    controller.skipMovement();
-    expect(controller.state, initial);
+    final initial = getState();
+    getController().skipMovement();
+    expect(getState(), initial);
   });
 
   test('full screening flow reaches ScreeningComplete', () {
-    controller.startScreening();
+    getController().startScreening();
 
     // Skip through all 4 movements.
     for (var i = 0; i < screeningMovements.length; i++) {
-      if (controller.state is ActiveMovement) {
-        controller.skipMovement();
+      if (getState() is ActiveMovement) {
+        getController().skipMovement();
       }
-      if (controller.state is ShowingFindings) {
-        controller.continueToNextMovement();
+      if (getState() is ShowingFindings) {
+        getController().continueToNextMovement();
       }
     }
 
-    expect(controller.state, isA<ScreeningComplete>());
+    expect(getState(), isA<ScreeningComplete>());
   });
 
   test('ScreeningComplete contains Assessment with correct structure', () {
-    controller.startScreening();
+    getController().startScreening();
 
     for (var i = 0; i < screeningMovements.length; i++) {
-      if (controller.state is ActiveMovement) {
-        controller.skipMovement();
+      if (getState() is ActiveMovement) {
+        getController().skipMovement();
       }
-      if (controller.state is ShowingFindings) {
-        controller.continueToNextMovement();
+      if (getState() is ShowingFindings) {
+        getController().continueToNextMovement();
       }
     }
 
-    final state = controller.state as ScreeningComplete;
-    expect(state.assessment.id, isNotEmpty);
-    expect(state.assessment.createdAt, isA<DateTime>());
-    expect(state.assessment.movements, isNotEmpty);
+    final s = getState() as ScreeningComplete;
+    expect(s.assessment.id, isNotEmpty);
+    expect(s.assessment.createdAt, isA<DateTime>());
+    expect(s.assessment.movements, isNotEmpty);
   });
 
   test('movement duration is 60 seconds', () {
@@ -102,10 +103,10 @@ void main() {
   });
 
   test('continueToNextMovement only works from ShowingFindings', () {
-    controller.startScreening();
+    getController().startScreening();
     // From ActiveMovement — should be no-op.
-    final state = controller.state;
-    controller.continueToNextMovement();
-    expect(controller.state, state);
+    final s = getState();
+    getController().continueToNextMovement();
+    expect(getState(), s);
   });
 }
