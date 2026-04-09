@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:auralink/domain/services/pose_estimation_service.dart'
@@ -39,11 +40,21 @@ final cloudSyncEnabledProvider =
 
 final useMockPoseServiceProvider = Provider<bool>((ref) => false);
 
+final cameraDescriptionProvider =
+    StateProvider<CameraDescription?>((ref) => null);
+
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>(
-  (ref) => ref.watch(useMockPoseServiceProvider)
-      ? MockPoseEstimationService()
-      : MlKitPoseEstimationService(),
+  (ref) {
+    if (ref.watch(useMockPoseServiceProvider)) {
+      return MockPoseEstimationService();
+    }
+    final cam = ref.watch(cameraDescriptionProvider);
+    return MlKitPoseEstimationService(
+      sensorOrientation: cam?.sensorOrientation ?? 0,
+      lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
+    );
+  },
 );
 
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(

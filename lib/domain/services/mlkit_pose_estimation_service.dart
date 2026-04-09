@@ -9,6 +9,14 @@ import '../models.dart';
 import 'pose_estimation_service.dart';
 
 class MlKitPoseEstimationService implements PoseEstimationService {
+  MlKitPoseEstimationService({
+    this.sensorOrientation = 0,
+    this.lensDirection = CameraLensDirection.back,
+  });
+
+  final int sensorOrientation;
+  final CameraLensDirection lensDirection;
+
   final PoseDetector _poseDetector = PoseDetector(
     options: PoseDetectorOptions(mode: PoseDetectionMode.stream),
   );
@@ -65,6 +73,27 @@ class MlKitPoseEstimationService implements PoseEstimationService {
     }
   }
 
+  static InputImageRotation _rotationFromSensor(
+    int sensorOrientation,
+    CameraLensDirection lens,
+  ) {
+    final rotationDegrees = (lens == CameraLensDirection.front)
+        ? (360 - sensorOrientation) % 360
+        : sensorOrientation;
+    switch (rotationDegrees) {
+      case 0:
+        return InputImageRotation.rotation0deg;
+      case 90:
+        return InputImageRotation.rotation90deg;
+      case 180:
+        return InputImageRotation.rotation180deg;
+      case 270:
+        return InputImageRotation.rotation270deg;
+      default:
+        return InputImageRotation.rotation0deg;
+    }
+  }
+
   InputImage? _convertCameraImage(CameraImage image) {
     final planes = image.planes;
     if (planes.isEmpty) return null;
@@ -84,7 +113,7 @@ class MlKitPoseEstimationService implements PoseEstimationService {
       bytes: bytes,
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: InputImageRotation.rotation0deg,
+        rotation: _rotationFromSensor(sensorOrientation, lensDirection),
         format: format,
         bytesPerRow: planes.first.bytesPerRow,
       ),

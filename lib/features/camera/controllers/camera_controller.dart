@@ -83,6 +83,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         orElse: () => cameras.first,
       );
 
+      ref.read(cameraDescriptionProvider.notifier).state = selected;
+
       _cameraController = CameraController(
         selected,
         ResolutionPreset.medium,
