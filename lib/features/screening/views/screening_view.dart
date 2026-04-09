@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:auralink/core/providers.dart' as core_providers;
 import 'package:auralink/core/theme.dart';
 import '../controllers/screening_controller.dart';
+import '../../camera/widgets/skeleton_overlay.dart';
 import '../widgets/movement_instructions.dart';
 import '../widgets/preliminary_findings.dart';
 import '../models/movement.dart';
@@ -148,6 +149,11 @@ class _ActiveMovementScreen extends StatelessWidget {
                 ),
               ),
             ),
+          ),
+
+          // Skeleton overlay — renders landmarks from pose estimation.
+          const Positioned.fill(
+            child: SkeletonOverlay(),
           ),
 
           // Movement instructions overlay at top.
