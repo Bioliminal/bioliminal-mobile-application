@@ -95,12 +95,30 @@ Movement _movementFromJson(Map<String, dynamic> m) => Movement(
       duration: Duration(milliseconds: m['durationMs'] as int),
     );
 
+Map<String, dynamic> _mobilityDrillToJson(MobilityDrill d) => {
+      'name': d.name,
+      'targetArea': d.targetArea,
+      'durationSeconds': d.durationSeconds,
+      'steps': d.steps,
+      'compensationType': d.compensationType.name,
+    };
+
+MobilityDrill _mobilityDrillFromJson(Map<String, dynamic> m) => MobilityDrill(
+      name: m['name'] as String,
+      targetArea: m['targetArea'] as String,
+      durationSeconds: m['durationSeconds'] as int,
+      steps: (m['steps'] as List).cast<String>(),
+      compensationType:
+          CompensationType.values.byName(m['compensationType'] as String),
+    );
+
 Map<String, dynamic> _findingToJson(Finding f) => {
       'bodyPathDescription': f.bodyPathDescription,
       'compensations': f.compensations.map(_compensationToJson).toList(),
       'upstreamDriver': f.upstreamDriver,
       'recommendation': f.recommendation,
       'citations': f.citations.map(_citationToJson).toList(),
+      'drills': f.drills.map(_mobilityDrillToJson).toList(),
     };
 
 Finding _findingFromJson(Map<String, dynamic> m) => Finding(
@@ -113,6 +131,11 @@ Finding _findingFromJson(Map<String, dynamic> m) => Finding(
       citations: (m['citations'] as List)
           .map((c) => _citationFromJson(c as Map<String, dynamic>))
           .toList(),
+      drills: m.containsKey('drills')
+          ? (m['drills'] as List)
+              .map((d) => _mobilityDrillFromJson(d as Map<String, dynamic>))
+              .toList()
+          : const [],
     );
 
 Map<String, dynamic> reportToJson(Report r) => {
