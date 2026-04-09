@@ -40,8 +40,16 @@ final cloudSyncEnabledProvider =
 
 final useMockPoseServiceProvider = Provider<bool>((ref) => false);
 
+class CameraDescriptionNotifier extends Notifier<CameraDescription?> {
+  @override
+  CameraDescription? build() => null;
+  void set(CameraDescription description) => state = description;
+}
+
 final cameraDescriptionProvider =
-    StateProvider<CameraDescription?>((ref) => null);
+    NotifierProvider<CameraDescriptionNotifier, CameraDescription?>(
+  CameraDescriptionNotifier.new,
+);
 
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>(
