@@ -33,22 +33,13 @@ class PdfGenerator {
     }
   }
 
-  static ConfidenceLevel _worstConfidence(List<Compensation> compensations) {
-    var worst = ConfidenceLevel.high;
-    for (final c in compensations) {
-      if (c.confidence.index > worst.index) worst = c.confidence;
-    }
-    return worst;
-  }
+  static ConfidenceLevel _worstConfidence(List<Compensation> compensations) =>
+      ConfidenceLevel.worstOf(compensations.map((c) => c.confidence));
 
-  static ConfidenceLevel _overallConfidence(List<Finding> findings) {
-    var worst = ConfidenceLevel.high;
-    for (final f in findings) {
-      final fc = _worstConfidence(f.compensations);
-      if (fc.index > worst.index) worst = fc;
-    }
-    return worst;
-  }
+  static ConfidenceLevel _overallConfidence(List<Finding> findings) =>
+      ConfidenceLevel.worstOf(findings.map(
+        (f) => _worstConfidence(f.compensations),
+      ));
 
   static Future<Uint8List> generate(
     Report report, {

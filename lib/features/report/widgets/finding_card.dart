@@ -15,10 +15,8 @@ class FindingCard extends StatelessWidget {
   final String? practitionerPoint;
 
   static Color _confidenceColor(List<Compensation> compensations) {
-    var worst = ConfidenceLevel.high;
-    for (final c in compensations) {
-      if (c.confidence.index > worst.index) worst = c.confidence;
-    }
+    final worst =
+        ConfidenceLevel.worstOf(compensations.map((c) => c.confidence));
     switch (worst) {
       case ConfidenceLevel.high:
         return AuraLinkTheme.confidenceHigh;
@@ -30,10 +28,8 @@ class FindingCard extends StatelessWidget {
   }
 
   static String _confidenceLabel(List<Compensation> compensations) {
-    var worst = ConfidenceLevel.high;
-    for (final c in compensations) {
-      if (c.confidence.index > worst.index) worst = c.confidence;
-    }
+    final worst =
+        ConfidenceLevel.worstOf(compensations.map((c) => c.confidence));
     switch (worst) {
       case ConfidenceLevel.high:
         return 'High';

@@ -21,7 +21,29 @@ enum ChainType {
 enum ConfidenceLevel {
   high,
   medium,
-  low,
+  low;
+
+  int get severityValue {
+    switch (this) {
+      case ConfidenceLevel.high:
+        return 0;
+      case ConfidenceLevel.medium:
+        return 1;
+      case ConfidenceLevel.low:
+        return 2;
+    }
+  }
+
+  bool isWorseThan(ConfidenceLevel other) =>
+      severityValue > other.severityValue;
+
+  static ConfidenceLevel worstOf(Iterable<ConfidenceLevel> levels) {
+    var worst = ConfidenceLevel.high;
+    for (final level in levels) {
+      if (level.isWorseThan(worst)) worst = level;
+    }
+    return worst;
+  }
 }
 
 enum CitationType {
