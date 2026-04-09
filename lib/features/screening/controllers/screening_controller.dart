@@ -81,6 +81,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   List<List<Landmark>> _currentCapturedFrames = [];
   Timer? _countdownTimer;
   StreamSubscription<List<Landmark>>? _mockLandmarkSub;
+  MockPoseEstimationService? _mockPoseService;
   int _currentReps = 0;
 
   static const int _frameBufferSize = 5;
@@ -90,17 +91,16 @@ class ScreeningController extends StateNotifier<ScreeningState> {
 
   void startScreening() {
     if (state is! ScreeningSetup) return;
-    _startMockLandmarkFeed();
     _startMovement(0);
   }
 
-  void _startMockLandmarkFeed() {
+  void _startMockLandmarkFeed(int movementIndex) {
     _mockLandmarkSub?.cancel();
-    final mock = MockPoseEstimationService(
-      movementType: screeningMovements.first.type,
+    _mockPoseService?.dispose();
+    _mockPoseService = MockPoseEstimationService(
+      movementType: screeningMovements[movementIndex].type,
     );
-    // processFrame starts the mock stream; CameraImage arg is ignored by mock.
-    _mockLandmarkSub = mock.processFrame(null as dynamic).listen((landmarks) {
+    _mockLandmarkSub = _mockPoseService!.processFrame(null).listen((landmarks) {
       onLandmarkFrame(landmarks);
     });
   }
@@ -163,6 +163,8 @@ class ScreeningController extends StateNotifier<ScreeningState> {
       capturedFrames: const [],
       movementCompensations: const [],
     );
+
+    _startMockLandmarkFeed(index);
 
     _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -391,6 +393,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   void dispose() {
     _countdownTimer?.cancel();
     _mockLandmarkSub?.cancel();
+    _mockPoseService?.dispose();
     super.dispose();
   }
 }

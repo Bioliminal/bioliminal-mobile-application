@@ -151,9 +151,14 @@ class _ActiveMovementScreen extends StatelessWidget {
           ),
 
           // Movement instructions overlay at top.
-          MovementInstructions(
-            config: state.config,
-            remaining: state.remaining,
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: MovementInstructions(
+              config: state.config,
+              remaining: state.remaining,
+            ),
           ),
 
           // Progress indicator — top left.
@@ -258,11 +263,14 @@ class _CompleteScreen extends StatefulWidget {
 }
 
 class _CompleteScreenState extends State<_CompleteScreen> {
+  bool _hasNavigated = false;
+
   @override
   void initState() {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
-      if (mounted) {
+      if (mounted && !_hasNavigated) {
+        _hasNavigated = true;
         context.go(
           '/report/${widget.state.assessment.id}',
           extra: widget.state.assessment,
