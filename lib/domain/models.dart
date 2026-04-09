@@ -128,6 +128,22 @@ class Movement {
   final Duration duration;
 }
 
+class MobilityDrill {
+  const MobilityDrill({
+    required this.name,
+    required this.targetArea,
+    required this.durationSeconds,
+    required this.steps,
+    required this.compensationType,
+  });
+
+  final String name;
+  final String targetArea;
+  final int durationSeconds;
+  final List<String> steps;
+  final CompensationType compensationType;
+}
+
 class Finding {
   const Finding({
     required this.bodyPathDescription,
@@ -135,6 +151,7 @@ class Finding {
     this.upstreamDriver,
     required this.recommendation,
     required this.citations,
+    this.drills = const [],
   });
 
   final String bodyPathDescription;
@@ -142,6 +159,7 @@ class Finding {
   final String? upstreamDriver;
   final String recommendation;
   final List<Citation> citations;
+  final List<MobilityDrill> drills;
 }
 
 class Report {

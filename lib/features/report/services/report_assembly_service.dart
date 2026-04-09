@@ -1,4 +1,5 @@
 import '../../../domain/models.dart';
+import '../data/mobility_drills.dart';
 
 // ---------------------------------------------------------------------------
 // Body-path language — NEVER expose chain names to users
@@ -176,12 +177,15 @@ class ReportAssemblyService {
       }
       citationSet[_bahrCitation.url] = _bahrCitation;
 
+      final drills = _selectDrills(comps, _hasHypermobilityIndicators(comps));
+
       findings.add(Finding(
         bodyPathDescription: bodyPath,
         compensations: comps,
         upstreamDriver: upstreamDriver,
         recommendation: recommendation,
         citations: citationSet.values.toList(),
+        drills: drills,
       ));
     }
 
@@ -228,6 +232,36 @@ class ReportAssemblyService {
     if (valgusComps.isEmpty) return false;
     return valgusComps
         .any((c) => c.value < 5.0 && c.chain == null);
+  }
+
+  static List<MobilityDrill> _selectDrills(
+    List<Compensation> comps,
+    bool isHypermobile,
+  ) {
+    if (isHypermobile) {
+      return stabilityDrills.take(2).toList();
+    }
+
+    // Collect candidate drills from each compensation type present.
+    // Prioritize ankle-specific drills when ankle restriction is involved.
+    final hasAnkle =
+        comps.any((c) => c.type == CompensationType.ankleRestriction);
+    final primaryType = comps.first.type;
+
+    if (hasAnkle) {
+      final ankleDrills =
+          mobilityDrillsByType[CompensationType.ankleRestriction];
+      if (ankleDrills != null && ankleDrills.length >= 2) {
+        return ankleDrills.take(2).toList();
+      }
+    }
+
+    final drills = mobilityDrillsByType[primaryType];
+    if (drills != null && drills.isNotEmpty) {
+      return drills.take(2).toList();
+    }
+
+    return const [];
   }
 
   static String _readableCompType(CompensationType type) {
