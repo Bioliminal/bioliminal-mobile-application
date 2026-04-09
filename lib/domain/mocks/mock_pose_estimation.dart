@@ -15,13 +15,25 @@ class MockPoseEstimationService implements PoseEstimationService {
   StreamController<List<Landmark>>? _controller;
   Timer? _timer;
 
+  bool _disposed = false;
+
   @override
   Stream<List<Landmark>> processFrame(CameraImage? frame) {
+    // Dispose previous timer/controller to prevent leaks on repeated calls.
+    _timer?.cancel();
+    _timer = null;
+    _controller?.close();
+
+    _disposed = false;
     _controller = StreamController<List<Landmark>>();
     final frames = _framesForMovement(movementType);
     var frameIndex = 0;
 
     _timer = Timer.periodic(const Duration(milliseconds: 33), (_) {
+      if (_disposed || (_controller?.isClosed ?? true)) {
+        _timer?.cancel();
+        return;
+      }
       if (frameIndex >= frames.length) {
         _controller?.close();
         _timer?.cancel();
@@ -36,8 +48,11 @@ class MockPoseEstimationService implements PoseEstimationService {
 
   @override
   void dispose() {
+    _disposed = true;
     _timer?.cancel();
+    _timer = null;
     _controller?.close();
+    _controller = null;
   }
 
   List<List<Landmark>> _framesForMovement(MovementType type) {

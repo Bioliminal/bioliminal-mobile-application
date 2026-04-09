@@ -1,6 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:auralink/core/providers.dart';
+import 'package:auralink/domain/models.dart';
+
+// ---------------------------------------------------------------------------
+// AI validation thresholds
+// ---------------------------------------------------------------------------
+
+const int kRequiredLandmarkCount = 33;
+const double kMinLandmarkVisibility = 0.5;
+const double kMinLightingVisibility = 0.7;
+const double kHipYMin = 0.4;
+const double kHipYMax = 0.6;
+
+const List<int> kKeyJointIndices = [11, 12, 23, 24, 25, 26, 27, 28];
+const int kLeftHipIndex = 23;
+const int kRightHipIndex = 24;
+
 // ---------------------------------------------------------------------------
 // SetupChecklistState
 // ---------------------------------------------------------------------------
@@ -11,59 +28,100 @@ class SetupChecklistState {
     this.distanceOk = false,
     this.lightingOk = false,
     this.clothingOk = false,
-    this.currentStep = 0,
   });
 
   final bool angleOk;
   final bool distanceOk;
   final bool lightingOk;
   final bool clothingOk;
-  final int currentStep;
 
   bool get allPassed => angleOk && distanceOk && lightingOk && clothingOk;
+
+  int get completedCount =>
+      (angleOk ? 1 : 0) +
+      (distanceOk ? 1 : 0) +
+      (lightingOk ? 1 : 0) +
+      (clothingOk ? 1 : 0);
 
   SetupChecklistState copyWith({
     bool? angleOk,
     bool? distanceOk,
     bool? lightingOk,
     bool? clothingOk,
-    int? currentStep,
   }) {
     return SetupChecklistState(
       angleOk: angleOk ?? this.angleOk,
       distanceOk: distanceOk ?? this.distanceOk,
       lightingOk: lightingOk ?? this.lightingOk,
       clothingOk: clothingOk ?? this.clothingOk,
-      currentStep: currentStep ?? this.currentStep,
     );
   }
 }
 
 // ---------------------------------------------------------------------------
-// SetupChecklistNotifier
+// SetupChecklistNotifier — watches landmarks, auto-validates conditions
 // ---------------------------------------------------------------------------
 
 class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
+  bool _clothingConfirmed = false;
+
   @override
-  SetupChecklistState build() => const SetupChecklistState();
+  SetupChecklistState build() {
+    final landmarks = ref.watch(currentLandmarksProvider);
+    final validated = _validateLandmarks(landmarks);
+    return validated.copyWith(clothingOk: _clothingConfirmed);
+  }
 
   static const int totalSteps = 4;
 
-  void confirmCurrentStep() {
-    switch (state.currentStep) {
-      case 0:
-        state = state.copyWith(angleOk: true, currentStep: 1);
-      case 1:
-        state = state.copyWith(distanceOk: true, currentStep: 2);
-      case 2:
-        state = state.copyWith(lightingOk: true, currentStep: 3);
-      case 3:
-        state = state.copyWith(clothingOk: true, currentStep: 4);
+  SetupChecklistState _validateLandmarks(List<Landmark> landmarks) {
+    if (landmarks.isEmpty) return const SetupChecklistState();
+
+    final distanceOk = _checkDistance(landmarks);
+    final lightingOk = _checkLighting(landmarks);
+    final angleOk = _checkCameraAngle(landmarks);
+
+    return SetupChecklistState(
+      distanceOk: distanceOk,
+      lightingOk: lightingOk,
+      angleOk: angleOk,
+    );
+  }
+
+  bool _checkDistance(List<Landmark> landmarks) {
+    if (landmarks.length < kRequiredLandmarkCount) return false;
+    return landmarks.every((lm) => lm.visibility > kMinLandmarkVisibility);
+  }
+
+  bool _checkLighting(List<Landmark> landmarks) {
+    if (landmarks.length <= kKeyJointIndices.reduce((a, b) => a > b ? a : b)) {
+      return false;
     }
+    double sum = 0;
+    for (final idx in kKeyJointIndices) {
+      sum += landmarks[idx].visibility;
+    }
+    return (sum / kKeyJointIndices.length) > kMinLightingVisibility;
+  }
+
+  bool _checkCameraAngle(List<Landmark> landmarks) {
+    if (landmarks.length <= kRightHipIndex) return false;
+    final leftHipY = landmarks[kLeftHipIndex].y;
+    final rightHipY = landmarks[kRightHipIndex].y;
+    return leftHipY >= kHipYMin &&
+        leftHipY <= kHipYMax &&
+        rightHipY >= kHipYMin &&
+        rightHipY <= kHipYMax;
+  }
+
+  void confirmClothing() {
+    _clothingConfirmed = true;
+    ref.invalidateSelf();
   }
 
   void reset() {
-    state = const SetupChecklistState();
+    _clothingConfirmed = false;
+    ref.invalidateSelf();
   }
 }
 
@@ -80,38 +138,44 @@ final setupChecklistProvider =
 // Setup step definitions
 // ---------------------------------------------------------------------------
 
-class _SetupStep {
-  const _SetupStep({
+class SetupStep {
+  const SetupStep({
     required this.title,
     required this.instruction,
     required this.icon,
+    required this.isManual,
   });
 
   final String title;
   final String instruction;
   final IconData icon;
+  final bool isManual;
 }
 
-const _steps = [
-  _SetupStep(
+const setupSteps = [
+  SetupStep(
     title: 'Camera Angle',
     instruction: 'Place your phone at waist height, 6\u20138 feet away.',
     icon: Icons.phone_android,
+    isManual: false,
   ),
-  _SetupStep(
+  SetupStep(
     title: 'Distance',
     instruction: 'Step back until your full body is visible.',
     icon: Icons.accessibility_new,
+    isManual: false,
   ),
-  _SetupStep(
+  SetupStep(
     title: 'Lighting',
     instruction: 'Make sure you\u2019re well-lit from the front.',
     icon: Icons.light_mode,
+    isManual: false,
   ),
-  _SetupStep(
+  SetupStep(
     title: 'Clothing',
     instruction: 'Wear fitted clothing so joints are visible.',
     icon: Icons.checkroom,
+    isManual: true,
   ),
 ];
 
@@ -179,9 +243,9 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
     return _buildOverlay(context, checklistState);
   }
 
-  Widget _buildOverlay(BuildContext context, SetupChecklistState checklistState) {
+  Widget _buildOverlay(
+      BuildContext context, SetupChecklistState checklistState) {
     final theme = Theme.of(context);
-    final currentStep = checklistState.currentStep;
 
     return Container(
       color: Colors.black54,
@@ -199,31 +263,26 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
               ),
               const SizedBox(height: 8),
               Text(
-                'Step ${currentStep < _steps.length ? currentStep + 1 : _steps.length} of ${_steps.length}',
+                '${checklistState.completedCount} of ${setupSteps.length} ready',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: Colors.white70,
                 ),
               ),
               const SizedBox(height: 32),
 
-              // Progress indicators for completed steps.
+              // Progress indicators.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(_steps.length, (i) {
+                children: List.generate(setupSteps.length, (i) {
                   final passed = _isStepPassed(checklistState, i);
-                  final isCurrent = i == currentStep;
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 6),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 250),
-                      width: isCurrent ? 32 : 12,
+                      width: 12,
                       height: 12,
                       decoration: BoxDecoration(
-                        color: passed
-                            ? Colors.green
-                            : isCurrent
-                                ? Colors.white
-                                : Colors.white24,
+                        color: passed ? Colors.green : Colors.white24,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
@@ -232,14 +291,23 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
               ),
               const SizedBox(height: 40),
 
-              // Current step card.
-              if (currentStep < _steps.length)
-                _StepCard(
-                  step: _steps[currentStep],
-                  onConfirm: () {
-                    ref.read(setupChecklistProvider.notifier).confirmCurrentStep();
-                  },
-                ),
+              // All step cards shown simultaneously.
+              ...List.generate(setupSteps.length, (i) {
+                final step = setupSteps[i];
+                final passed = _isStepPassed(checklistState, i);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _StepCard(
+                    step: step,
+                    passed: passed,
+                    onConfirm: step.isManual && !passed
+                        ? () => ref
+                            .read(setupChecklistProvider.notifier)
+                            .confirmClothing()
+                        : null,
+                  ),
+                );
+              }),
             ],
           ),
         ),
@@ -259,45 +327,69 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
 }
 
 // ---------------------------------------------------------------------------
-// Individual step card
+// Individual step card — AI-validated steps show status, manual steps show button
 // ---------------------------------------------------------------------------
 
 class _StepCard extends StatelessWidget {
-  const _StepCard({required this.step, required this.onConfirm});
+  const _StepCard({
+    required this.step,
+    required this.passed,
+    this.onConfirm,
+  });
 
-  final _SetupStep step;
-  final VoidCallback onConfirm;
+  final SetupStep step;
+  final bool passed;
+  final VoidCallback? onConfirm;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final statusColor = passed ? Colors.green : Colors.orange;
 
     return Card(
       color: Colors.white.withValues(alpha: 0.12),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
           children: [
-            Icon(step.icon, size: 48, color: Colors.white70),
-            const SizedBox(height: 16),
-            Text(
-              step.title,
-              style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+            Icon(step.icon, size: 32, color: statusColor),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    step.title,
+                    style: theme.textTheme.titleSmall
+                        ?.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    step.instruction,
+                    style: theme.textTheme.bodySmall
+                        ?.copyWith(color: Colors.white70),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              step.instruction,
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: onConfirm,
-              icon: const Icon(Icons.check),
-              label: const Text('Done'),
-            ),
+            const SizedBox(width: 12),
+            if (passed)
+              const Icon(Icons.check_circle, color: Colors.green, size: 28)
+            else if (onConfirm != null)
+              FilledButton(
+                onPressed: onConfirm,
+                child: const Text('Confirm'),
+              )
+            else
+              const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.orange,
+                ),
+              ),
           ],
         ),
       ),
