@@ -21,7 +21,15 @@ import 'package:auralink/core/services/local_storage_service.dart'
 export 'package:auralink/features/camera/controllers/camera_controller.dart'
     show currentLandmarksProvider, appCameraControllerProvider;
 
-// Providers — mock implementations wired by default, swap for real ones.
+// ---------------------------------------------------------------------------
+// Cloud sync opt-in toggle — false by default (offline-first).
+// ---------------------------------------------------------------------------
+
+final cloudSyncEnabledProvider = StateProvider<bool>((ref) => false);
+
+// ---------------------------------------------------------------------------
+// Core providers — always available, offline-first.
+// ---------------------------------------------------------------------------
 
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>(
@@ -36,18 +44,40 @@ final chainMapperProvider = Provider<chain_service.ChainMapper>(
   (ref) => RuleBasedChainMapper(),
 );
 
+final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
+  (ref) => local_impl.LocalStorageService(),
+);
+
+// ---------------------------------------------------------------------------
+// Cloud-only providers — throw when cloud sync is disabled.
+// Only instantiated when the user explicitly opts into cloud backup.
+// ---------------------------------------------------------------------------
+
 final authServiceProvider = Provider<AuthService>(
-  (ref) => AuthService(FirebaseAuth.instance),
+  (ref) {
+    if (!ref.watch(cloudSyncEnabledProvider)) {
+      throw StateError(
+        'AuthService is unavailable — cloud sync is disabled. '
+        'Enable cloud sync in settings before accessing auth.',
+      );
+    }
+    return AuthService(FirebaseAuth.instance);
+  },
 );
 
 final firestoreServiceProvider = Provider<firestore_impl.FirestoreService>(
-  (ref) => firestore_impl.FirestoreService(
-    FirebaseFirestore.instance,
-    FirebaseStorage.instance,
-    ref.read(authServiceProvider),
-  ),
-);
-
-final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
-  (ref) => local_impl.LocalStorageService(),
+  (ref) {
+    if (!ref.watch(cloudSyncEnabledProvider)) {
+      throw StateError(
+        'FirestoreService is unavailable — cloud sync is disabled. '
+        'Enable cloud sync in settings before accessing Firestore.',
+      );
+    }
+    return firestore_impl.FirestoreService(
+      FirebaseFirestore.instance,
+      FirebaseStorage.instance,
+      ref.read(authServiceProvider),
+      cloudSyncEnabled: true,
+    );
+  },
 );

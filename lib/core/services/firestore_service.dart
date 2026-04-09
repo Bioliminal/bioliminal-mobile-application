@@ -8,12 +8,30 @@ import '../../domain/models.dart';
 import 'auth_service.dart';
 import 'local_storage_service.dart';
 
+/// Cloud persistence layer. Opt-in only — not part of the default provider
+/// graph. When [cloudSyncEnabled] is false, all public methods throw
+/// [StateError]. See [cloudSyncEnabledProvider] in providers.dart.
 class FirestoreService {
-  FirestoreService(this._firestore, this._storage, this._auth);
+  FirestoreService(
+    this._firestore,
+    this._storage,
+    this._auth, {
+    this.cloudSyncEnabled = false,
+  });
 
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
   final AuthService _auth;
+  final bool cloudSyncEnabled;
+
+  void _requireCloudSync() {
+    if (!cloudSyncEnabled) {
+      throw StateError(
+        'Cloud sync is disabled. Enable it in settings before '
+        'calling FirestoreService methods.',
+      );
+    }
+  }
 
   String get _uid {
     final uid = _auth.uid;
@@ -63,18 +81,21 @@ class FirestoreService {
   // ---------------------------------------------------------------------------
 
   Future<void> saveAssessment(Assessment assessment) async {
+    _requireCloudSync();
     await _assessments
         .doc(assessment.id)
         .set(_assessmentToFirestore(assessment));
   }
 
   Future<Assessment?> loadAssessment(String id) async {
+    _requireCloudSync();
     final doc = await _assessments.doc(id).get();
     if (!doc.exists || doc.data() == null) return null;
     return _assessmentFromFirestore(doc.data()!);
   }
 
   Future<List<Assessment>> listAssessments() async {
+    _requireCloudSync();
     final snapshot =
         await _assessments.orderBy('createdAt', descending: true).get();
     return snapshot.docs
@@ -83,6 +104,7 @@ class FirestoreService {
   }
 
   Future<void> deleteAssessment(String id) async {
+    _requireCloudSync();
     await _assessments.doc(id).delete();
     await _reports.doc(id).delete();
 
@@ -98,10 +120,12 @@ class FirestoreService {
   // ---------------------------------------------------------------------------
 
   Future<void> saveReport(String assessmentId, Report report) async {
+    _requireCloudSync();
     await _reports.doc(assessmentId).set(_reportToFirestore(report));
   }
 
   Future<Report?> loadReport(String assessmentId) async {
+    _requireCloudSync();
     final doc = await _reports.doc(assessmentId).get();
     if (!doc.exists || doc.data() == null) return null;
     return _reportFromFirestore(doc.data()!);
@@ -112,6 +136,7 @@ class FirestoreService {
   // ---------------------------------------------------------------------------
 
   Future<String> uploadPdf(String assessmentId, List<int> bytes) async {
+    _requireCloudSync();
     final ref = _storage.ref('reports/$_uid/$assessmentId.pdf');
     await ref.putData(
       Uint8List.fromList(bytes),
@@ -133,6 +158,7 @@ class FirestoreService {
   // ---------------------------------------------------------------------------
 
   Future<void> syncLocalAssessments(LocalStorageService localStorage) async {
+    _requireCloudSync();
     final localAssessments = await localStorage.listAssessments();
 
     for (final assessment in localAssessments) {

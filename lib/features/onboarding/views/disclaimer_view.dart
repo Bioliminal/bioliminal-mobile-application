@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -79,9 +80,51 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                       _section(
                         'Your Privacy',
                         'All movement analysis happens on your device. No '
-                            'video is stored or transmitted. You control '
+                            'video is stored or transmitted. By default, your '
+                            'data stays on your device. You can optionally '
+                            'enable cloud backup in settings. You control '
                             'whether to save or share your report.',
                         theme,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 24),
+                        child: RichText(
+                          text: TextSpan(
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white54,
+                              height: 1.5,
+                            ),
+                            children: [
+                              const TextSpan(
+                                text: 'By continuing you agree to our ',
+                              ),
+                              TextSpan(
+                                text: 'Privacy Policy',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => _openLink(
+                                        'https://auralink.app/privacy',
+                                      ),
+                              ),
+                              const TextSpan(text: ' and '),
+                              TextSpan(
+                                text: 'Terms of Service',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  decoration: TextDecoration.underline,
+                                ),
+                                recognizer: TapGestureRecognizer()
+                                  ..onTap = () => _openLink(
+                                        'https://auralink.app/terms',
+                                      ),
+                              ),
+                              const TextSpan(text: '.'),
+                            ],
+                          ),
+                        ),
                       ),
                       const SizedBox(height: 32),
                     ],
@@ -110,6 +153,11 @@ class _DisclaimerViewState extends State<DisclaimerView> {
         ),
       ),
     );
+  }
+
+  void _openLink(String url) {
+    // TODO: launch URL via url_launcher once added to pubspec
+    debugPrint('Open: $url');
   }
 
   Widget _section(String title, String body, ThemeData theme) {
