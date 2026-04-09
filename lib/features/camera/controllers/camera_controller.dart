@@ -54,9 +54,18 @@ class AppCameraController extends AsyncNotifier<CameraState> {
   @override
   FutureOr<CameraState> build() => const CameraUninitialized();
 
+  /// Release all internal camera resources without touching provider state.
+  Future<void> _releaseCamera() async {
+    await _landmarkSubscription?.cancel();
+    _landmarkSubscription = null;
+    _cameraController?.dispose();
+    _cameraController = null;
+  }
+
   /// Request camera permission by attempting to list + initialize.
   /// The camera package triggers the native permission dialog on first access.
   Future<void> requestPermission() async {
+    await _releaseCamera();
     state = const AsyncValue.loading();
     try {
       final cameras = await availableCameras();
@@ -151,11 +160,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
   }
 
   /// Release all camera resources.
-  void disposeCamera() {
-    _landmarkSubscription?.cancel();
-    _landmarkSubscription = null;
-    _cameraController?.dispose();
-    _cameraController = null;
+  Future<void> disposeCamera() async {
+    await _releaseCamera();
     state = const AsyncData(CameraUninitialized());
   }
 
