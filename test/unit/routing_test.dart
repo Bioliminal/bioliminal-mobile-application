@@ -17,6 +17,7 @@ void main() {
       expect(paths, contains('/camera'));
       expect(paths, contains('/screening'));
       expect(paths, contains('/report/:id'));
+      expect(paths, contains('/history'));
     });
 
     test('dead / route has been removed', () {
@@ -26,8 +27,8 @@ void main() {
       expect(paths, isNot(contains('/')));
     });
 
-    test('exactly 4 routes exist', () {
-      expect(goRouter.configuration.routes.length, 4);
+    test('exactly 5 routes exist', () {
+      expect(goRouter.configuration.routes.length, 5);
     });
   });
 }
