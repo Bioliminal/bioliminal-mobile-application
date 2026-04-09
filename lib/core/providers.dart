@@ -6,6 +6,7 @@ import 'package:auralink/domain/services/angle_calculator.dart'
     as angle_service;
 import 'package:auralink/domain/services/chain_mapper.dart' as chain_service;
 import 'package:auralink/domain/mocks/mock_pose_estimation.dart';
+import 'package:auralink/domain/services/mlkit_pose_estimation_service.dart';
 import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
 import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
 import 'package:auralink/core/services/auth_service.dart';
@@ -36,9 +37,13 @@ final cloudSyncEnabledProvider =
 // Core providers — always available, offline-first.
 // ---------------------------------------------------------------------------
 
+final useMockPoseServiceProvider = Provider<bool>((ref) => false);
+
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>(
-  (ref) => MockPoseEstimationService(),
+  (ref) => ref.watch(useMockPoseServiceProvider)
+      ? MockPoseEstimationService()
+      : MlKitPoseEstimationService(),
 );
 
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(
