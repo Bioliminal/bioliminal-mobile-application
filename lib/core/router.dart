@@ -7,6 +7,7 @@ import '../features/report/views/report_view.dart';
 import '../features/screening/views/screening_view.dart';
 
 final goRouter = GoRouter(
+  initialLocation: '/disclaimer',
   routes: [
     GoRoute(
       path: '/',

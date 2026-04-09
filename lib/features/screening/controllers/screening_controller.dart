@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/models.dart';
+import '../../../domain/mocks/mock_pose_estimation.dart';
 import '../../../domain/services/angle_calculator.dart';
 import '../../../domain/services/chain_mapper.dart';
 import '../../../core/providers.dart' as core_providers;
@@ -79,6 +80,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   List<Compensation> _currentMovementCompensations = [];
   List<List<Landmark>> _currentCapturedFrames = [];
   Timer? _countdownTimer;
+  StreamSubscription<List<Landmark>>? _mockLandmarkSub;
   int _currentReps = 0;
 
   static const int _frameBufferSize = 5;
@@ -88,7 +90,19 @@ class ScreeningController extends StateNotifier<ScreeningState> {
 
   void startScreening() {
     if (state is! ScreeningSetup) return;
+    _startMockLandmarkFeed();
     _startMovement(0);
+  }
+
+  void _startMockLandmarkFeed() {
+    _mockLandmarkSub?.cancel();
+    final mock = MockPoseEstimationService(
+      movementType: screeningMovements.first.type,
+    );
+    // processFrame starts the mock stream; CameraImage arg is ignored by mock.
+    _mockLandmarkSub = mock.processFrame(null as dynamic).listen((landmarks) {
+      onLandmarkFrame(landmarks);
+    });
   }
 
   void continueToNextMovement() {
@@ -376,6 +390,7 @@ class ScreeningController extends StateNotifier<ScreeningState> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
+    _mockLandmarkSub?.cancel();
     super.dispose();
   }
 }
@@ -386,8 +401,16 @@ class ScreeningController extends StateNotifier<ScreeningState> {
 
 final screeningControllerProvider =
     StateNotifierProvider<ScreeningController, ScreeningState>((ref) {
-  return ScreeningController(
+  final controller = ScreeningController(
     angleCalculator: ref.watch(core_providers.angleCalculatorProvider),
     chainMapper: ref.watch(core_providers.chainMapperProvider),
   );
+
+  // Listen to landmarks and forward to controller.
+  ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider,
+      (previous, next) {
+    controller.onLandmarkFrame(next);
+  });
+
+  return controller;
 });

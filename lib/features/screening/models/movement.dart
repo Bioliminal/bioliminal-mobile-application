@@ -5,7 +5,7 @@ class MovementConfig {
     required this.type,
     required this.name,
     required this.instruction,
-    this.duration = const Duration(seconds: 60),
+    this.duration = const Duration(seconds: 15), // TODO: restore to 60 for production
     required this.targetReps,
     required this.primaryJoint,
     required this.peakIsMinimum,
