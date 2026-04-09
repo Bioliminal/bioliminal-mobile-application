@@ -16,7 +16,7 @@ class MockPoseEstimationService implements PoseEstimationService {
   Timer? _timer;
 
   @override
-  Stream<List<Landmark>> processFrame(CameraImage frame) {
+  Stream<List<Landmark>> processFrame(CameraImage? frame) {
     _controller = StreamController<List<Landmark>>();
     final frames = _framesForMovement(movementType);
     var frameIndex = 0;
