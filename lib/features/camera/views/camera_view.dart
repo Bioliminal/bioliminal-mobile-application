@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,21 +16,23 @@ class CameraView extends ConsumerStatefulWidget {
 
 class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObserver {
   bool _setupComplete = false;
+  late final AppCameraController _cameraNotifier;
 
   @override
   void initState() {
     super.initState();
+    _cameraNotifier = ref.read(appCameraControllerProvider.notifier);
     WidgetsBinding.instance.addObserver(this);
     // Kick off permission request on first build.
     Future.microtask(() {
-      ref.read(appCameraControllerProvider.notifier).requestPermission();
+      _cameraNotifier.requestPermission();
     });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ref.read(appCameraControllerProvider.notifier).disposeCamera();
+    _cameraNotifier.disposeCamera();
     super.dispose();
   }
 
@@ -67,11 +70,13 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
             ),
           CameraPermissionDenied(:final permanent) => _PermissionDeniedView(
               permanent: permanent,
-              onRetry: () {
-                ref
-                    .read(appCameraControllerProvider.notifier)
-                    .requestPermission();
-              },
+              onRetry: permanent
+                  ? () => AppSettings.openAppSettings()
+                  : () {
+                      ref
+                          .read(appCameraControllerProvider.notifier)
+                          .requestPermission();
+                    },
             ),
           CameraReady(:final controller) => CameraBody(
               controller: controller,
