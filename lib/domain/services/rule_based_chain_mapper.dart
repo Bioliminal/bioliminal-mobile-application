@@ -5,7 +5,7 @@ import '../services/chain_mapper.dart';
 /// Applies threshold detection, chain mapping, CC/CP logic, confidence
 /// assignment, and citations. Not hardcoded returns -- Person A vs
 /// Person B must produce different results.
-class MockChainMapper implements ChainMapper {
+class RuleBasedChainMapper implements ChainMapper {
   // -- Thresholds from scout data --
 
   static const double _kneeValgusThreshold = 10.0; // degrees

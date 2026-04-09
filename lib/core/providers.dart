@@ -9,8 +9,8 @@ import 'package:auralink/domain/services/angle_calculator.dart'
     as angle_service;
 import 'package:auralink/domain/services/chain_mapper.dart' as chain_service;
 import 'package:auralink/domain/mocks/mock_pose_estimation.dart';
-import 'package:auralink/domain/mocks/mock_angle_calculator.dart';
-import 'package:auralink/domain/mocks/mock_chain_mapper.dart';
+import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
+import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
 import 'package:auralink/core/services/auth_service.dart';
 import 'package:auralink/core/services/firestore_service.dart'
     as firestore_impl;
@@ -29,11 +29,11 @@ final poseEstimationServiceProvider =
 );
 
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(
-  (ref) => MockAngleCalculator(),
+  (ref) => RuleBasedAngleCalculator(),
 );
 
 final chainMapperProvider = Provider<chain_service.ChainMapper>(
-  (ref) => MockChainMapper(),
+  (ref) => RuleBasedChainMapper(),
 );
 
 final authServiceProvider = Provider<AuthService>(

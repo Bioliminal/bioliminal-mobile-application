@@ -1,7 +1,7 @@
 import '../models.dart';
 import '../services/angle_calculator.dart';
 
-/// Controls which compensation profile is returned by MockAngleCalculator.
+/// Controls which compensation profile is returned by RuleBasedAngleCalculator.
 enum CompensationProfile {
   sblPattern,
   bflPattern,
@@ -12,9 +12,9 @@ enum CompensationProfile {
 
 /// Returns deterministic joint angles that trigger specific compensation
 /// patterns. Each profile produces angles matching published thresholds
-/// from scout data so MockChainMapper can apply real rules against them.
-class MockAngleCalculator implements AngleCalculator {
-  MockAngleCalculator({this.profile = CompensationProfile.healthy});
+/// from scout data so RuleBasedChainMapper can apply real rules against them.
+class RuleBasedAngleCalculator implements AngleCalculator {
+  RuleBasedAngleCalculator({this.profile = CompensationProfile.healthy});
 
   final CompensationProfile profile;
 
