@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
 import '../services/pdf_generator.dart';
@@ -15,18 +17,21 @@ import '../widgets/finding_card.dart';
 // ReportView
 // ---------------------------------------------------------------------------
 
-class ReportView extends StatefulWidget {
+class ReportView extends ConsumerStatefulWidget {
   const ReportView({super.key, required this.id});
 
   final String id;
 
   @override
-  State<ReportView> createState() => _ReportViewState();
+  ConsumerState<ReportView> createState() => _ReportViewState();
 }
 
-class _ReportViewState extends State<ReportView> {
+class _ReportViewState extends ConsumerState<ReportView> {
   String? _cachedPdfPath;
   bool _generating = false;
+  Assessment? _assessment;
+  bool _didLoad = false;
+  bool _loading = false;
 
   // -- PDF / Share --
 
@@ -89,13 +94,48 @@ class _ReportViewState extends State<ReportView> {
     }
   }
 
+  // -- Lifecycle --
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didLoad) return;
+    _didLoad = true;
+
+    final extra = GoRouterState.of(context).extra as Assessment?;
+    if (extra != null) {
+      _assessment = extra;
+      return;
+    }
+
+    // Deep-link: no router extra, load from local storage.
+    setState(() => _loading = true);
+    ref
+        .read(localStorageServiceProvider)
+        .loadAssessment(widget.id)
+        .then((loaded) {
+      if (!mounted) return;
+      setState(() {
+        _assessment = loaded;
+        _loading = false;
+      });
+    });
+  }
+
   // -- Build --
 
   @override
   Widget build(BuildContext context) {
-    final assessment = GoRouterState.of(context).extra as Assessment?;
     final theme = Theme.of(context);
 
+    if (_loading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Report')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final assessment = _assessment;
     if (assessment == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Report')),
