@@ -50,6 +50,7 @@ class CameraError extends CameraState {
 class AppCameraController extends AsyncNotifier<CameraState> {
   CameraController? _cameraController;
   StreamSubscription<dynamic>? _landmarkSubscription;
+  bool _isProcessing = false;
 
   @override
   FutureOr<CameraState> build() => const CameraUninitialized();
@@ -119,16 +120,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
       // Cancel any previous subscription.
       await _landmarkSubscription?.cancel();
 
-      // Start image stream. The first frame triggers the pose service
-      // subscription; subsequent frames are fed to _handleFrame.
-      var firstFrame = true;
       await controller.startImageStream((CameraImage image) {
-        if (firstFrame) {
-          firstFrame = false;
-          _landmarkSubscription = poseService.processFrame(image).listen((landmarks) {
-            updateLandmarks(landmarks);
-          });
-        }
         _handleFrame(image, poseService);
       });
 
@@ -139,9 +131,22 @@ class AppCameraController extends AsyncNotifier<CameraState> {
   }
 
   void _handleFrame(CameraImage image, PoseEstimationService poseService) {
-    // In a production app, we would pass each frame to the ML service.
-    // The service would emit landmarks on its stream.
-    // poseService.addFrame(image); 
+    if (_isProcessing) return;
+    _isProcessing = true;
+
+    _landmarkSubscription?.cancel();
+    _landmarkSubscription = poseService.processFrame(image).listen(
+      (landmarks) {
+        updateLandmarks(landmarks);
+        _isProcessing = false;
+      },
+      onError: (_) {
+        _isProcessing = false;
+      },
+      onDone: () {
+        _isProcessing = false;
+      },
+    );
   }
 
   /// Stop streaming but keep camera initialized.
