@@ -1,5 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+/// Firebase authentication wrapper. Opt-in only — not part of the default
+/// provider graph. Only instantiated when the user enables cloud sync in
+/// settings. See [cloudSyncEnabledProvider] in providers.dart.
 class AuthService {
   AuthService(this._auth);
 
