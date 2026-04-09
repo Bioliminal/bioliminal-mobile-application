@@ -17,61 +17,56 @@ class MovementInstructions extends StatelessWidget {
     final theme = Theme.of(context);
     final isGetReady = remaining.inSeconds > (config.duration.inSeconds - 3);
 
-    return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xCC000000),
-              Color(0x00000000),
-            ],
-          ),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xCC000000),
+            Color(0x00000000),
+          ],
         ),
-        child: SafeArea(
-          bottom: false,
-          child: isGetReady
-              ? Center(
-                  child: Text(
-                    'Get Ready...',
-                    style: theme.textTheme.headlineLarge?.copyWith(
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: isGetReady
+            ? Center(
+                child: Text(
+                  'Get Ready...',
+                  style: theme.textTheme.headlineLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    config.name,
+                    style: theme.textTheme.titleLarge?.copyWith(
                       color: Colors.white,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      config.name,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                      ),
+                  const SizedBox(height: 8),
+                  Text(
+                    config.instruction,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: Colors.white70,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      config.instruction,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white70,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _formatDuration(remaining),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: Colors.white60,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _formatDuration(remaining),
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        color: Colors.white60,
-                      ),
-                    ),
-                  ],
-                ),
-        ),
+                  ),
+                ],
+              ),
       ),
     );
   }
