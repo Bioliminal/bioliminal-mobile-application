@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/camera/views/camera_view.dart';
@@ -9,10 +8,6 @@ import '../features/screening/views/screening_view.dart';
 final goRouter = GoRouter(
   initialLocation: '/disclaimer',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const _SplashView(),
-    ),
     GoRoute(
       path: '/disclaimer',
       builder: (context, state) => const DisclaimerView(),
@@ -33,16 +28,3 @@ final goRouter = GoRouter(
     ),
   ],
 );
-
-class _SplashView extends StatelessWidget {
-  const _SplashView();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('SplashView')),
-    );
-  }
-}
-
-

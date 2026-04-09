@@ -4,10 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auralink/main.dart';
 
 void main() {
-  testWidgets('App renders splash view', (WidgetTester tester) async {
+  testWidgets('App renders disclaimer view', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(child: AuraLinkApp()),
     );
-    expect(find.text('SplashView'), findsOneWidget);
+    expect(find.text('Before We Begin'), findsOneWidget);
   });
 }

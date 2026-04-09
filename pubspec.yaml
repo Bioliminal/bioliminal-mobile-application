@@ -20,16 +20,12 @@ dependencies:
   pdf: ^3.10.0
   share_plus: ^12.0.2
   path_provider: ^2.1.0
-  freezed_annotation: ^2.4.0
-  json_annotation: ^4.9.0
+  app_settings: ^0.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  freezed: ^2.5.0
-  json_serializable: ^6.8.0
-  build_runner: ^2.4.0
 
 flutter:
   uses-material-design: true
