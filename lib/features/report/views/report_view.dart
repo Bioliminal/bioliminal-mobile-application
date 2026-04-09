@@ -11,6 +11,7 @@ import '../../../core/theme.dart';
 import '../../../domain/models.dart';
 import '../services/pdf_generator.dart';
 import '../services/report_assembly_service.dart';
+import '../widgets/body_map.dart';
 import '../widgets/finding_card.dart';
 
 // ---------------------------------------------------------------------------
@@ -32,6 +33,10 @@ class _ReportViewState extends ConsumerState<ReportView> {
   Assessment? _assessment;
   bool _didLoad = false;
   bool _loading = false;
+  int? _selectedFindingIndex;
+
+  final _scrollController = ScrollController();
+  final _findingKeys = <int, GlobalKey>{};
 
   // -- PDF / Share --
 
@@ -122,6 +127,32 @@ class _ReportViewState extends ConsumerState<ReportView> {
     });
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  // -- Body map interaction --
+
+  void _onRegionTap(int findingIndex) {
+    setState(() {
+      _selectedFindingIndex = findingIndex;
+    });
+    _scrollToFinding(findingIndex);
+  }
+
+  void _scrollToFinding(int index) {
+    final key = _findingKeys[index];
+    if (key?.currentContext != null) {
+      Scrollable.ensureVisible(
+        key!.currentContext!,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
   // -- Build --
 
   @override
@@ -168,6 +199,11 @@ class _ReportViewState extends ConsumerState<ReportView> {
     final report = ReportAssemblyService.buildReport(assessment);
     final overall = ReportAssemblyService.overallConfidence(report.findings);
 
+    // Ensure we have GlobalKeys for each finding.
+    for (var i = 0; i < report.findings.length; i++) {
+      _findingKeys.putIfAbsent(i, () => GlobalKey());
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your Report'),
@@ -193,9 +229,38 @@ class _ReportViewState extends ConsumerState<ReportView> {
         ],
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // -- Body map --
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+              child: BodyMap(
+                findings: report.findings,
+                selectedFindingIndex: _selectedFindingIndex,
+                onRegionTap: _onRegionTap,
+              ),
+            ),
+
+            // -- Legend --
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+              child: Row(
+                children: [
+                  _LegendDot(
+                    color: const Color(0xFF00897B),
+                    label: 'Upstream driver',
+                  ),
+                  const SizedBox(width: 16),
+                  _LegendDot(
+                    color: const Color(0xFFFF9800),
+                    label: 'Symptom',
+                  ),
+                ],
+              ),
+            ),
+
             // -- Summary card --
             Padding(
               padding: const EdgeInsets.all(16),
@@ -266,16 +331,19 @@ class _ReportViewState extends ConsumerState<ReportView> {
             // -- Finding cards --
             ...List.generate(report.findings.length, (i) {
               final finding = report.findings[i];
-              // Match practitioner point by upstream driver presence.
               final point = finding.upstreamDriver != null
                   ? report.practitionerPoints
                         .where((p) => p.contains(finding.upstreamDriver!))
                         .firstOrNull
                   : null;
-              return FindingCard(
-                finding: finding,
-                practitionerPoint:
-                    point?.replaceFirst('Ask about ', ''),
+              return Container(
+                key: _findingKeys[i],
+                child: FindingCard(
+                  finding: finding,
+                  practitionerPoint: point?.replaceFirst('Ask about ', ''),
+                  selected: _selectedFindingIndex == i,
+                  onTap: () => _onRegionTap(i),
+                ),
               );
             }),
 
@@ -337,5 +405,38 @@ class _ReportViewState extends ConsumerState<ReportView> {
       case ConfidenceLevel.low:
         return 'Low';
     }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Legend dot
+// ---------------------------------------------------------------------------
+
+class _LegendDot extends StatelessWidget {
+  const _LegendDot({required this.color, required this.label});
+
+  final Color color;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
   }
 }
