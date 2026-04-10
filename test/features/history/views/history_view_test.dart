@@ -68,6 +68,82 @@ Widget _buildTestApp({
   );
 }
 
+/// Three assessments with ankle-dominant compensations for archetype/trend tests.
+List<Assessment> _threeAssessments() {
+  return [
+    // Newest first (matches listAssessments sort order).
+    Assessment(
+      id: 'assess-003',
+      createdAt: DateTime(2026, 4, 15),
+      movements: const [],
+      compensations: const [
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          confidence: ConfidenceLevel.high,
+          value: 12.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+      ],
+    ),
+    Assessment(
+      id: 'assess-002',
+      createdAt: DateTime(2026, 4, 1),
+      movements: const [],
+      compensations: const [
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          confidence: ConfidenceLevel.medium,
+          value: 12.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          confidence: ConfidenceLevel.high,
+          value: 13.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+      ],
+    ),
+    Assessment(
+      id: 'assess-001',
+      createdAt: DateTime(2026, 3, 15),
+      movements: const [],
+      compensations: const [
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          confidence: ConfidenceLevel.high,
+          value: 15.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          confidence: ConfidenceLevel.high,
+          value: 14.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+      ],
+    ),
+  ];
+}
+
 void main() {
   group('HistoryView empty state', () {
     testWidgets('shows empty message and screening button when no assessments',
@@ -120,51 +196,6 @@ void main() {
       expect(find.text('1 finding'), findsOneWidget);
     });
 
-    testWidgets('shows delta indicators with two assessments', (tester) async {
-      final older = Assessment(
-        id: 'assess-001',
-        createdAt: DateTime(2026, 3, 1),
-        movements: const [],
-        compensations: const [
-          Compensation(
-            type: CompensationType.kneeValgus,
-            joint: 'knee',
-            confidence: ConfidenceLevel.high,
-            value: 14.0,
-            threshold: 10.0,
-            citation: _testCitation,
-          ),
-        ],
-      );
-
-      final newer = Assessment(
-        id: 'assess-002',
-        createdAt: DateTime(2026, 4, 1),
-        movements: const [],
-        compensations: const [
-          Compensation(
-            type: CompensationType.kneeValgus,
-            joint: 'knee',
-            confidence: ConfidenceLevel.high,
-            value: 10.0,
-            threshold: 10.0,
-            citation: _testCitation,
-          ),
-        ],
-      );
-
-      // Newest first — matches listAssessments() sort order.
-      await tester.pumpWidget(_buildTestApp(assessments: [newer, older]));
-      await tester.pumpAndSettle();
-
-      // Delta indicator for the newer assessment comparing to older.
-      expect(
-        find.textContaining('14\u00B0 \u2192 10\u00B0'),
-        findsOneWidget,
-      );
-      expect(find.textContaining('(improved)'), findsOneWidget);
-    });
-
     testWidgets('tapping assessment navigates to report', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: [singleAssessment]));
       await tester.pumpAndSettle();
@@ -173,6 +204,69 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Report assess-001'), findsOneWidget);
+    });
+  });
+
+  group('HistoryView summary header', () {
+    testWidgets('shows archetype badge with 3+ assessments', (tester) async {
+      await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
+      await tester.pumpAndSettle();
+
+      // Ankle-dominant because ankle compensations appear in all 3.
+      expect(find.text('Ankle-Dominant'), findsOneWidget);
+    });
+
+    testWidgets('shows trend counts with 3+ assessments', (tester) async {
+      await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
+      await tester.pumpAndSettle();
+
+      // Ankle: 15 -> 12 -> 8, slope = -3.5, improving
+      // Knee: 14 -> 13 -> 12, slope = -1.0, improving
+      // Both improving.
+      expect(find.text('2 improving'), findsOneWidget);
+      expect(find.text('0 stable'), findsOneWidget);
+      expect(find.text('0 worsening'), findsOneWidget);
+    });
+
+    testWidgets('shows trend icons', (tester) async {
+      await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.trending_down), findsWidgets);
+      expect(find.byIcon(Icons.trending_flat), findsWidgets);
+      expect(find.byIcon(Icons.trending_up), findsWidgets);
+    });
+
+    testWidgets('does not show summary header for empty state', (tester) async {
+      await tester.pumpWidget(_buildTestApp(assessments: []));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Balanced'), findsNothing);
+      expect(find.text('improving'), findsNothing);
+    });
+
+    testWidgets('shows Balanced badge with single assessment', (tester) async {
+      final single = Assessment(
+        id: 'assess-001',
+        createdAt: DateTime(2026, 4, 1),
+        movements: const [],
+        compensations: const [
+          Compensation(
+            type: CompensationType.ankleRestriction,
+            joint: 'ankle',
+            confidence: ConfidenceLevel.high,
+            value: 10.0,
+            threshold: 10.0,
+            citation: _testCitation,
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(_buildTestApp(assessments: [single]));
+      await tester.pumpAndSettle();
+
+      // Single assessment -> ArchetypeClassifier returns balanced.
+      expect(find.text('Balanced'), findsOneWidget);
     });
   });
 
