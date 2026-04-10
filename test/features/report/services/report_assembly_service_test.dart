@@ -184,6 +184,414 @@ void main() {
     });
   });
 
+  // -------------------------------------------------------------------------
+  // Finding prioritization (story-1329)
+  // -------------------------------------------------------------------------
+
+  group('Finding prioritization with trendReport', () {
+    test('assigns trendStatus to findings based on dominant compensation', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.worsening,
+          values: [5.0, 7.0, 8.0],
+          slope: 1.5,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      expect(report.findings.first.trendStatus, TrendClassification.worsening);
+    });
+
+    test('sorts findings by priority: worsening before stable', () {
+      // Two separate chain groups → two findings.
+      final assessment = _makeAssessment(const [
+        // This one will be stable.
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          chain: ChainType.sbl,
+          confidence: ConfidenceLevel.medium,
+          value: 7.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+        // This one will be worsening.
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          trend: TrendClassification.stable,
+          values: [7.0],
+          slope: 0.0,
+        ),
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.worsening,
+          values: [5.0, 7.0, 8.0],
+          slope: 1.5,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      expect(report.findings.length, 2);
+      // Worsening (score 3) should come before stable (score 1).
+      expect(report.findings[0].trendStatus, TrendClassification.worsening);
+      expect(report.findings[1].trendStatus, TrendClassification.stable);
+    });
+
+    test('without trendReport preserves original finding order', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          chain: ChainType.sbl,
+          confidence: ConfidenceLevel.medium,
+          value: 7.0,
+          threshold: 10.0,
+          citation: _testCitation,
+        ),
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(assessment);
+
+      expect(report.findings.length, 2);
+      // Original order: SBL chain group first, then null-chain (hipDrop).
+      expect(report.findings[0].compensations.first.type,
+          CompensationType.ankleRestriction);
+      expect(report.findings[1].compensations.first.type,
+          CompensationType.hipDrop);
+      // No trendStatus assigned.
+      expect(report.findings[0].trendStatus, isNull);
+      expect(report.findings[1].trendStatus, isNull);
+    });
+
+    test('recurring detection: stable trend with 3+ data points scores higher than worsening', () {
+      final assessment = _makeAssessment(const [
+        // Worsening.
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+        // Stable with 3+ values → recurring (score 4).
+        Compensation(
+          type: CompensationType.trunkLean,
+          joint: 'trunk',
+          chain: ChainType.bfl,
+          confidence: ConfidenceLevel.medium,
+          value: 12.0,
+          threshold: 8.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.worsening,
+          values: [5.0, 7.0, 8.0],
+          slope: 1.5,
+        ),
+        CompensationTrend(
+          compensationType: CompensationType.trunkLean,
+          joint: 'trunk',
+          trend: TrendClassification.stable,
+          values: [12.0, 11.5, 12.0, 11.8],
+          slope: 0.0,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      expect(report.findings.length, 2);
+      // Recurring (score 4) should come before worsening (score 3).
+      expect(report.findings[0].compensations.first.type,
+          CompensationType.trunkLean);
+      expect(report.findings[1].compensations.first.type,
+          CompensationType.hipDrop);
+    });
+  });
+
+  group('Recommendation text evolution', () {
+    test('worsening finding recommendation starts with Priority: and mentions worsened', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.worsening,
+          values: [5.0, 7.0, 8.0],
+          slope: 1.5,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      final rec = report.findings.first.recommendation;
+      expect(rec, startsWith('Priority: '));
+      expect(rec, contains('worsened since your last assessment'));
+    });
+
+    test('improving finding recommendation mentions improving', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 3.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.improving,
+          values: [8.0, 5.0, 3.0],
+          slope: -2.5,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      final rec = report.findings.first.recommendation;
+      expect(rec, contains('improving, keep up your current work'));
+    });
+
+    test('newPattern finding recommendation mentions new pattern', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.trunkLean,
+          joint: 'trunk',
+          chain: null,
+          confidence: ConfidenceLevel.medium,
+          value: 12.0,
+          threshold: 8.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.trunkLean,
+          joint: 'trunk',
+          trend: TrendClassification.newPattern,
+          values: [12.0],
+          slope: 0.0,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      final rec = report.findings.first.recommendation;
+      expect(rec, contains("new pattern we haven't seen before"));
+    });
+
+    test('stable finding recommendation is unchanged', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      // No trend report → stable/null behavior.
+      final reportNoTrend = ReportAssemblyService.buildReport(assessment);
+      final baseRec = reportNoTrend.findings.first.recommendation;
+
+      final trendReport = TrendReport(trends: const [
+        CompensationTrend(
+          compensationType: CompensationType.hipDrop,
+          joint: 'hip',
+          trend: TrendClassification.stable,
+          values: [8.0],
+          slope: 0.0,
+        ),
+      ]);
+
+      final reportWithTrend = ReportAssemblyService.buildReport(
+        assessment,
+        trendReport: trendReport,
+      );
+
+      expect(reportWithTrend.findings.first.recommendation, baseRec);
+    });
+  });
+
+  group('Archetype-targeted drill selection', () {
+    test('archetype hipDominant boosts hip drills for non-hip compensation', () {
+      // Trunk lean compensation — normally gets core drills.
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.trunkLean,
+          joint: 'trunk',
+          chain: null,
+          confidence: ConfidenceLevel.medium,
+          value: 12.0,
+          threshold: 8.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        archetype: MobilityArchetype.hipDominant,
+      );
+
+      final drills = report.findings.first.drills;
+      expect(drills.length, 2);
+      // First drill should be hip-targeted.
+      expect(drills.first.compensationType, CompensationType.hipDrop);
+    });
+
+    test('archetype ankleDominant boosts ankle drills for non-ankle compensation', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        archetype: MobilityArchetype.ankleDominant,
+      );
+
+      final drills = report.findings.first.drills;
+      expect(drills.length, 2);
+      // First drill should be ankle-targeted.
+      expect(drills.first.compensationType, CompensationType.ankleRestriction);
+    });
+
+    test('archetype hypermobile returns stability drills regardless of compensation type', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(
+        assessment,
+        archetype: MobilityArchetype.hypermobile,
+      );
+
+      final drills = report.findings.first.drills;
+      expect(drills.length, 2);
+      expect(drills.first.name, stabilityDrills.first.name);
+      expect(drills.last.name, stabilityDrills.last.name);
+    });
+
+    test('archetype null uses default drill selection logic', () {
+      final assessment = _makeAssessment(const [
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: null,
+          confidence: ConfidenceLevel.high,
+          value: 8.0,
+          threshold: 5.0,
+          citation: _testCitation,
+        ),
+      ]);
+
+      final report = ReportAssemblyService.buildReport(assessment);
+
+      final drills = report.findings.first.drills;
+      expect(drills.length, inInclusiveRange(1, 2));
+      expect(drills.first.compensationType, CompensationType.hipDrop);
+    });
+  });
+
   group('Drill serialization', () {
     test('round-trip: finding with drills serializes and deserializes', () {
       const report = Report(
