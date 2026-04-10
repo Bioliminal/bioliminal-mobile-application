@@ -189,3 +189,11 @@ class Assessment {
   final List<Compensation> compensations;
   final Report? report;
 }
+
+enum MobilityArchetype {
+  ankleDominant,
+  hipDominant,
+  trunkDominant,
+  hypermobile,
+  balanced,
+}
