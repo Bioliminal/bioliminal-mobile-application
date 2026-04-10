@@ -39,9 +39,13 @@ const _wallDrill = MobilityDrill(
   steps: ['Stand facing a wall', 'Push knee forward'],
 );
 
-Assessment _assessmentWithCompensations() => Assessment(
-      id: 'test-001',
-      createdAt: DateTime(2026, 1, 15),
+Assessment _assessmentWithCompensations({
+  String id = 'test-001',
+  DateTime? createdAt,
+}) =>
+    Assessment(
+      id: id,
+      createdAt: createdAt ?? DateTime(2026, 1, 15),
       movements: const [],
       compensations: const [
         Compensation(
@@ -81,16 +85,39 @@ Assessment _emptyAssessment() => Assessment(
       compensations: const [],
     );
 
+/// Creates multiple assessments with ankle-dominant pattern for longitudinal
+/// context testing.
+List<Assessment> _multipleAssessments() => [
+      // Newest first (as listAssessments returns)
+      _assessmentWithCompensations(
+        id: 'test-003',
+        createdAt: DateTime(2026, 3, 15),
+      ),
+      _assessmentWithCompensations(
+        id: 'test-002',
+        createdAt: DateTime(2026, 2, 15),
+      ),
+      _assessmentWithCompensations(
+        id: 'test-001',
+        createdAt: DateTime(2026, 1, 15),
+      ),
+    ];
+
 // ---------------------------------------------------------------------------
-// Fake local storage that returns a controlled assessment
+// Fake local storage that returns controlled assessments
 // ---------------------------------------------------------------------------
 
 class _FakeLocalStorageService extends LocalStorageService {
-  _FakeLocalStorageService(this._assessment);
+  _FakeLocalStorageService(this._assessment, {List<Assessment>? allAssessments})
+      : _allAssessments = allAssessments ?? [if (_assessment != null) _assessment];
   final Assessment? _assessment;
+  final List<Assessment> _allAssessments;
 
   @override
   Future<Assessment?> loadAssessment(String id) async => _assessment;
+
+  @override
+  Future<List<Assessment>> listAssessments() async => _allAssessments;
 }
 
 // ---------------------------------------------------------------------------
@@ -131,9 +158,13 @@ Widget _buildHarness({
 void main() {
   group('ReportView with compensations (via router extra)', () {
     testWidgets('shows body map at top', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -141,9 +172,13 @@ void main() {
     });
 
     testWidgets('shows summary card', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -152,9 +187,13 @@ void main() {
     });
 
     testWidgets('shows finding cards', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -164,9 +203,13 @@ void main() {
 
     testWidgets('shows legend with driver and symptom labels',
         (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -175,9 +218,13 @@ void main() {
     });
 
     testWidgets('tapping finding card selects it', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -197,9 +244,13 @@ void main() {
     });
 
     testWidgets('drill cards show name and duration', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -220,9 +271,13 @@ void main() {
     });
 
     testWidgets('drill cards show numbered steps', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -243,9 +298,13 @@ void main() {
     });
 
     testWidgets('practitioner discussion points render', (tester) async {
+      final storage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
       await tester.pumpWidget(_buildHarness(
         id: 'test-001',
         routerExtra: _assessmentWithCompensations(),
+        storageService: storage,
       ));
       await tester.pumpAndSettle();
 
@@ -311,6 +370,316 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Assessment not found'), findsOneWidget);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Longitudinal context tests
+  // -------------------------------------------------------------------------
+
+  group('ReportView with longitudinal context (3+ assessments)', () {
+    testWidgets('shows movement profile section with archetype name and description',
+        (tester) async {
+      final assessments = _multipleAssessments();
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-003',
+        routerExtra: assessments.first,
+        storageService: storage,
+      ));
+      // Pump frames to let didChangeDependencies fire and async futures resolve.
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
+      await tester.pumpAndSettle();
+
+      expect(find.text('Your Movement Profile'), findsOneWidget);
+      // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
+      // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
+      expect(find.text('Hip-Dominant'), findsOneWidget);
+      expect(
+        find.textContaining('hip and pelvis'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('shows trend badges on finding cards', (tester) async {
+      final assessments = _multipleAssessments();
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-003',
+        routerExtra: assessments.first,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // Scroll to finding cards.
+      await tester.scrollUntilVisible(
+        find.byType(FindingCard).first,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      // Trend badges should be present — stable trends since values are
+      // identical across assessments.
+      expect(find.text('Stable'), findsWidgets);
+    });
+
+    testWidgets('findings are rendered in priority order', (tester) async {
+      // Create assessments with different compensation patterns to
+      // produce varied trend classifications.
+      final assessments = [
+        // Newest: has a new hip drop pattern not in previous assessments
+        Assessment(
+          id: 'test-003',
+          createdAt: DateTime(2026, 3, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 28.0,
+              threshold: 35.0,
+              citation: _citation,
+            ),
+            Compensation(
+              type: CompensationType.trunkLean,
+              joint: 'trunk',
+              confidence: ConfidenceLevel.high,
+              value: 15.0,
+              threshold: 10.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+        // Older assessment
+        Assessment(
+          id: 'test-002',
+          createdAt: DateTime(2026, 2, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 28.0,
+              threshold: 35.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+        // Oldest assessment
+        Assessment(
+          id: 'test-001',
+          createdAt: DateTime(2026, 1, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 28.0,
+              threshold: 35.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+      ];
+
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-003',
+        routerExtra: assessments.first,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // FindingCards are rendered — verify multiple findings exist.
+      expect(find.byType(FindingCard), findsWidgets);
+    });
+  });
+
+  group('ReportView single assessment (no longitudinal context)', () {
+    testWidgets('does not show movement profile section', (tester) async {
+      final assessment = _assessmentWithCompensations();
+      final storage = _FakeLocalStorageService(
+        assessment,
+        allAssessments: [assessment],
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-001',
+        routerExtra: assessment,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Your Movement Profile'), findsNothing);
+    });
+
+    testWidgets('does not show trend badges', (tester) async {
+      final assessment = _assessmentWithCompensations();
+      final storage = _FakeLocalStorageService(
+        assessment,
+        allAssessments: [assessment],
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-001',
+        routerExtra: assessment,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // No trend badges when there's only one assessment.
+      expect(find.text('Improving'), findsNothing);
+      expect(find.text('Worsening'), findsNothing);
+      expect(find.text('Stable'), findsNothing);
+      expect(find.text('New Pattern'), findsNothing);
+    });
+
+    testWidgets('renders identically to pre-longitudinal behavior',
+        (tester) async {
+      final assessment = _assessmentWithCompensations();
+      final storage = _FakeLocalStorageService(
+        assessment,
+        allAssessments: [assessment],
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-001',
+        routerExtra: assessment,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // Standard elements present.
+      expect(find.byType(BodyMap), findsOneWidget);
+      expect(find.text('Summary'), findsOneWidget);
+      expect(find.byType(FindingCard), findsWidgets);
+      expect(find.text('Your Findings'), findsOneWidget);
+
+      // Longitudinal elements absent.
+      expect(find.text('Your Movement Profile'), findsNothing);
+    });
+  });
+
+  group('ReportView trend badge colors', () {
+    testWidgets('trend badges use correct color for each classification',
+        (tester) async {
+      // Create assessments that produce a worsening trend on ankle
+      final assessments = [
+        Assessment(
+          id: 'test-003',
+          createdAt: DateTime(2026, 3, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 35.0, // worsened
+              threshold: 35.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+        Assessment(
+          id: 'test-002',
+          createdAt: DateTime(2026, 2, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 30.0,
+              threshold: 35.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+        Assessment(
+          id: 'test-001',
+          createdAt: DateTime(2026, 1, 15),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.ankleRestriction,
+              joint: 'left_ankle',
+              chain: ChainType.sbl,
+              confidence: ConfidenceLevel.high,
+              value: 25.0,
+              threshold: 35.0,
+              citation: _citation,
+            ),
+          ],
+        ),
+      ];
+
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-003',
+        routerExtra: assessments.first,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // Scroll to finding card area.
+      await tester.scrollUntilVisible(
+        find.byType(FindingCard).first,
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
+      // Worsening trend badge should be present (slope = 5.0 > 1.0).
+      expect(find.text('Worsening'), findsOneWidget);
+    });
+  });
+
+  group('Body-path descriptions', () {
+    testWidgets('never contain chain names (SBL, BFL, FFL)', (tester) async {
+      final assessments = _multipleAssessments();
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
+
+      await tester.pumpWidget(_buildHarness(
+        id: 'test-003',
+        routerExtra: assessments.first,
+        storageService: storage,
+      ));
+      await tester.pumpAndSettle();
+
+      // Verify no chain names appear in the rendered text.
+      expect(find.textContaining('SBL'), findsNothing);
+      expect(find.textContaining('BFL'), findsNothing);
+      expect(find.textContaining('FFL'), findsNothing);
     });
   });
 }

@@ -9,10 +9,52 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
+import '../../history/services/archetype_classifier.dart';
+import '../../history/services/trend_detection_service.dart';
 import '../services/pdf_generator.dart';
 import '../services/report_assembly_service.dart';
 import '../widgets/body_map.dart';
 import '../widgets/finding_card.dart';
+
+// ---------------------------------------------------------------------------
+// Archetype descriptions — user-facing, no chain names
+// ---------------------------------------------------------------------------
+
+const _archetypeDescriptions = <MobilityArchetype, String>{
+  MobilityArchetype.ankleDominant:
+      'Your movement patterns suggest ankle mobility is a key focus area. '
+          'The patterns we see in your ankles tend to influence your knees and hips.',
+  MobilityArchetype.hipDominant:
+      'Your hip and pelvis area shows the most consistent patterns. '
+          'Strengthening here could improve your overall movement quality.',
+  MobilityArchetype.trunkDominant:
+      'Your core and torso balance is the most prominent pattern. '
+          'Building stability here supports everything above and below.',
+  MobilityArchetype.hypermobile:
+      'You show more range of motion than average. '
+          'Your focus should be on control and stability rather than flexibility.',
+  MobilityArchetype.balanced:
+      'Your movement patterns are well-distributed. '
+          'No single area dominates \u2014 keep up the balanced approach.',
+};
+
+const _archetypeDisplayNames = <MobilityArchetype, String>{
+  MobilityArchetype.ankleDominant: 'Ankle-Dominant',
+  MobilityArchetype.hipDominant: 'Hip-Dominant',
+  MobilityArchetype.trunkDominant: 'Trunk-Dominant',
+  MobilityArchetype.hypermobile: 'Hypermobile',
+  MobilityArchetype.balanced: 'Balanced',
+};
+
+// ---------------------------------------------------------------------------
+// Archetype to preferred CompensationType mapping (for drill badge)
+// ---------------------------------------------------------------------------
+
+const _archetypePreferredType = <MobilityArchetype, CompensationType>{
+  MobilityArchetype.ankleDominant: CompensationType.ankleRestriction,
+  MobilityArchetype.hipDominant: CompensationType.hipDrop,
+  MobilityArchetype.trunkDominant: CompensationType.trunkLean,
+};
 
 // ---------------------------------------------------------------------------
 // ReportView
@@ -34,6 +76,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
   bool _didLoad = false;
   bool _loading = false;
   int? _selectedFindingIndex;
+
+  TrendReport? _trendReport;
+  MobilityArchetype? _archetype;
 
   final _scrollController = ScrollController();
   final _findingKeys = <int, GlobalKey>{};
@@ -110,6 +155,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     final extra = GoRouterState.of(context).extra as Assessment?;
     if (extra != null) {
       _assessment = extra;
+      _loadLongitudinalContext();
       return;
     }
 
@@ -124,6 +170,24 @@ class _ReportViewState extends ConsumerState<ReportView> {
         _assessment = loaded;
         _loading = false;
       });
+      if (loaded != null) {
+        _loadLongitudinalContext();
+      }
+    });
+  }
+
+  Future<void> _loadLongitudinalContext() async {
+    final allAssessments =
+        await ref.read(localStorageServiceProvider).listAssessments();
+
+    if (!mounted || allAssessments.length <= 1) return;
+
+    final trendReport = TrendDetectionService.analyzeTrends(allAssessments);
+    final archetype = ArchetypeClassifier.classify(allAssessments);
+
+    setState(() {
+      _trendReport = trendReport;
+      _archetype = archetype;
     });
   }
 
@@ -196,7 +260,11 @@ class _ReportViewState extends ConsumerState<ReportView> {
       );
     }
 
-    final report = ReportAssemblyService.buildReport(assessment);
+    final report = ReportAssemblyService.buildReport(
+      assessment,
+      trendReport: _trendReport,
+      archetype: _archetype,
+    );
     final overall = ReportAssemblyService.overallConfidence(report.findings);
 
     // Ensure we have GlobalKeys for each finding.
@@ -312,6 +380,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                             : 'Tracking quality was high throughout.',
                         style: theme.textTheme.bodySmall,
                       ),
+                      // -- Movement Profile Section --
+                      if (_archetype != null)
+                        _MovementProfileSection(archetype: _archetype!),
                     ],
                   ),
                 ),
@@ -338,11 +409,22 @@ class _ReportViewState extends ConsumerState<ReportView> {
                   : null;
               return Container(
                 key: _findingKeys[i],
-                child: FindingCard(
-                  finding: finding,
-                  practitionerPoint: point?.replaceFirst('Ask about ', ''),
-                  selected: _selectedFindingIndex == i,
-                  onTap: () => _onRegionTap(i),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (finding.trendStatus != null)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 24, bottom: 4),
+                        child: _TrendBadge(trend: finding.trendStatus!),
+                      ),
+                    FindingCard(
+                      finding: finding,
+                      practitionerPoint:
+                          point?.replaceFirst('Ask about ', ''),
+                      selected: _selectedFindingIndex == i,
+                      onTap: () => _onRegionTap(i),
+                    ),
+                  ],
                 ),
               );
             }),
@@ -404,6 +486,109 @@ class _ReportViewState extends ConsumerState<ReportView> {
         return 'Medium';
       case ConfidenceLevel.low:
         return 'Low';
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Movement Profile Section
+// ---------------------------------------------------------------------------
+
+class _MovementProfileSection extends StatelessWidget {
+  const _MovementProfileSection({required this.archetype});
+
+  final MobilityArchetype archetype;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Your Movement Profile',
+              style: theme.textTheme.labelLarge,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _archetypeDisplayNames[archetype] ?? archetype.name,
+              style: theme.textTheme.titleMedium,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              _archetypeDescriptions[archetype] ?? '',
+              style: theme.textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Trend Badge
+// ---------------------------------------------------------------------------
+
+class _TrendBadge extends StatelessWidget {
+  const _TrendBadge({required this.trend});
+
+  final TrendClassification trend;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: _trendColor(trend),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        _trendLabel(trend),
+        style: theme.textTheme.labelSmall?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  static Color _trendColor(TrendClassification trend) {
+    switch (trend) {
+      case TrendClassification.improving:
+        return Colors.green;
+      case TrendClassification.worsening:
+        return AuraLinkTheme.confidenceLow;
+      case TrendClassification.stable:
+        return Colors.grey;
+      case TrendClassification.newPattern:
+        return Colors.blue;
+    }
+  }
+
+  static String _trendLabel(TrendClassification trend) {
+    switch (trend) {
+      case TrendClassification.improving:
+        return 'Improving';
+      case TrendClassification.worsening:
+        return 'Worsening';
+      case TrendClassification.stable:
+        return 'Stable';
+      case TrendClassification.newPattern:
+        return 'New Pattern';
     }
   }
 }
