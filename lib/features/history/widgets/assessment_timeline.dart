@@ -4,15 +4,24 @@ import '../../../core/theme.dart';
 import '../../../domain/models.dart';
 import '../services/comparison_service.dart';
 
+const _bodyPathLabels = <CompensationType, String>{
+  CompensationType.ankleRestriction: 'Ankle flexibility',
+  CompensationType.kneeValgus: 'Knee alignment',
+  CompensationType.hipDrop: 'Pelvic level',
+  CompensationType.trunkLean: 'Torso balance',
+};
+
 class AssessmentTimeline extends StatelessWidget {
   const AssessmentTimeline({
     super.key,
     required this.assessments,
     required this.onTap,
+    this.trendReport,
   });
 
   final List<Assessment> assessments;
   final void Function(Assessment) onTap;
+  final TrendReport? trendReport;
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +41,7 @@ class AssessmentTimeline extends StatelessWidget {
           return _TimelineNode(
             assessment: assessment,
             metrics: metrics,
+            trendReport: trendReport,
             onTap: () => onTap(assessment),
           );
         }),
@@ -72,11 +82,13 @@ class _TimelineNode extends StatelessWidget {
     required this.assessment,
     required this.metrics,
     required this.onTap,
+    this.trendReport,
   });
 
   final Assessment assessment;
   final List<ComparisonMetric> metrics;
   final VoidCallback onTap;
+  final TrendReport? trendReport;
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +148,16 @@ class _TimelineNode extends StatelessWidget {
                       ),
                       if (metrics.isNotEmpty) ...[
                         const SizedBox(height: 8),
-                        ...metrics.map((m) => _DeltaIndicator(metric: m)),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: metrics
+                              .map((m) => _DeltaChip(
+                                    metric: m,
+                                    trendReport: trendReport,
+                                  ))
+                              .toList(),
+                        ),
                       ],
                     ],
                   ),
@@ -201,28 +222,82 @@ class _ConfidenceBadge extends StatelessWidget {
   }
 }
 
-class _DeltaIndicator extends StatelessWidget {
-  const _DeltaIndicator({required this.metric});
+class _DeltaChip extends StatelessWidget {
+  const _DeltaChip({
+    required this.metric,
+    this.trendReport,
+  });
 
   final ComparisonMetric metric;
+  final TrendReport? trendReport;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final label = ComparisonService.readableType(metric.compensationType);
-    final arrow = metric.improved ? '\u2193' : '\u2191';
-    final color = metric.improved
-        ? AuraLinkTheme.confidenceHigh
-        : AuraLinkTheme.confidenceLow;
-    final suffix = metric.improved ? '(improved)' : '(worsened)';
+    final label = _bodyPathLabels[metric.compensationType] ??
+        metric.compensationType.name;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 2),
-      child: Text(
-        '$label: ${metric.oldValue.toStringAsFixed(0)}\u00B0 \u2192 '
-        '${metric.newValue.toStringAsFixed(0)}\u00B0 $arrow $suffix',
-        style: theme.textTheme.bodySmall?.copyWith(color: color),
+    // Determine trend classification from TrendReport if available,
+    // otherwise fall back to the pairwise metric.
+    final trendClassification = _resolveTrend();
+
+    final color = switch (trendClassification) {
+      TrendClassification.improving => AuraLinkTheme.confidenceHigh,
+      TrendClassification.stable => AuraLinkTheme.confidenceMedium,
+      TrendClassification.worsening => AuraLinkTheme.confidenceLow,
+      TrendClassification.newPattern => AuraLinkTheme.confidenceMedium,
+    };
+
+    final icon = switch (trendClassification) {
+      TrendClassification.improving => Icons.trending_down,
+      TrendClassification.stable => Icons.trending_flat,
+      TrendClassification.worsening => Icons.trending_up,
+      TrendClassification.newPattern => Icons.trending_flat,
+    };
+
+    final delta = metric.delta.abs();
+    final deltaStr = '${delta.toStringAsFixed(0)}\u00B0';
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 2),
+          Text(
+            deltaStr,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  TrendClassification _resolveTrend() {
+    final fromReport =
+        trendReport?.trendFor(metric.compensationType, metric.joint);
+    if (fromReport != null) return fromReport.trend;
+
+    // Fallback to pairwise comparison.
+    if (metric.delta.abs() < 1.0) return TrendClassification.stable;
+    return metric.improved
+        ? TrendClassification.improving
+        : TrendClassification.worsening;
   }
 }
