@@ -218,12 +218,10 @@ void main() {
 
       // Ankle: |10 - 15| = 5
       expect(find.text('5\u00B0'), findsOneWidget);
-      // Knee: |18 - 14| = 4
-      expect(find.text('4\u00B0'), findsOneWidget);
+      // Knee: |18 - 14| = 4, Trunk: |12 - 8| = 4 — two chips with same value
+      expect(find.text('4\u00B0'), findsNWidgets(2));
       // Hip: |5 - 5| = 0
       expect(find.text('0\u00B0'), findsOneWidget);
-      // Trunk: |12 - 8| = 4 (second 4° — total 2)
-      expect(find.text('4\u00B0'), findsNWidgets(2));
     });
 
     testWidgets('tap on timeline node fires callback', (tester) async {
