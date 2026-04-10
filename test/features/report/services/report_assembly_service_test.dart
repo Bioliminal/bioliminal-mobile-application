@@ -202,7 +202,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',
@@ -245,7 +245,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.ankleRestriction,
           joint: 'ankle',
@@ -332,7 +332,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',
@@ -377,7 +377,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',
@@ -410,7 +410,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',
@@ -442,7 +442,7 @@ void main() {
         ),
       ]);
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.trunkLean,
           joint: 'trunk',
@@ -478,7 +478,7 @@ void main() {
       final reportNoTrend = ReportAssemblyService.buildReport(assessment);
       final baseRec = reportNoTrend.findings.first.recommendation;
 
-      final trendReport = TrendReport(trends: const [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',

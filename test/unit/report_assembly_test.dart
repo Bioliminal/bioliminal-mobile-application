@@ -4,7 +4,7 @@ import 'package:auralink/domain/models.dart';
 import 'package:auralink/features/report/services/report_assembly_service.dart';
 
 void main() {
-  Assessment _makeAssessment(List<Compensation> compensations) {
+  Assessment makeAssessment(List<Compensation> compensations) {
     return Assessment(
       id: 'test-001',
       createdAt: DateTime(2026, 4, 8),
@@ -15,7 +15,7 @@ void main() {
 
   group('buildReport', () {
     test('empty compensations produces empty findings', () {
-      final report = ReportAssemblyService.buildReport(_makeAssessment([]));
+      final report = ReportAssemblyService.buildReport(makeAssessment([]));
       expect(report.findings, isEmpty);
       expect(report.practitionerPoints, isEmpty);
     });
@@ -48,7 +48,7 @@ void main() {
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(_makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
 
       // Both compensations should be in one finding (same chain).
       expect(report.findings.length, 1);
@@ -83,7 +83,7 @@ void main() {
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(_makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
       // SBL upstream driver is ankle.
       expect(report.findings.first.upstreamDriver, isNotNull);
       expect(report.findings.first.upstreamDriver, contains('ankle'));
@@ -105,7 +105,7 @@ void main() {
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(_makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
       expect(report.findings.first.citations, isNotEmpty);
     });
 
@@ -137,7 +137,7 @@ void main() {
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(_makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
       expect(report.practitionerPoints, isNotEmpty);
     });
   });

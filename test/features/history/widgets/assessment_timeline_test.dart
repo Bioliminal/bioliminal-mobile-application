@@ -123,7 +123,7 @@ void main() {
     });
 
     testWidgets('delta chips show trend arrow icons', (tester) async {
-      final trendReport = TrendReport(trends: [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.ankleRestriction,
           joint: 'ankle',
@@ -171,7 +171,7 @@ void main() {
     });
 
     testWidgets('delta chips are color-coded by trend', (tester) async {
-      final trendReport = TrendReport(trends: [
+      const trendReport = TrendReport(trends: [
         CompensationTrend(
           compensationType: CompensationType.ankleRestriction,
           joint: 'ankle',

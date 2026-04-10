@@ -16,11 +16,11 @@ const _citation = Citation(
   appUsage: 'Used in test',
 );
 
-List<Finding> _sblFindings() => [
+List<Finding> _sblFindings() => const [
       Finding(
         bodyPathDescription:
             'Your ankle, knee, and hip compensate together along your back body',
-        compensations: const [
+        compensations: [
           Compensation(
             type: CompensationType.ankleRestriction,
             joint: 'left_ankle',
@@ -51,8 +51,8 @@ List<Finding> _sblFindings() => [
         ],
         upstreamDriver: 'left_ankle ankle restriction',
         recommendation: 'Prioritize ankle and hip mobility work',
-        citations: const [_citation],
-        drills: const [
+        citations: [_citation],
+        drills: [
           MobilityDrill(
             name: 'Ankle Circles',
             targetArea: 'ankle',
@@ -102,12 +102,6 @@ void main() {
           onRegionTap: (i) => tappedIndex = i,
         ),
       ));
-
-      // The body map uses LayoutBuilder. Get its actual render size.
-      final bodyMapFinder = find.byType(BodyMap);
-      final bodyMapBox =
-          tester.renderObject(bodyMapFinder) as RenderBox;
-      final size = bodyMapBox.size;
 
       // Tap at normalized position for left_ankle (0.38, 0.92).
       // The GestureDetector wraps a SizedBox with width=size.width
@@ -168,10 +162,10 @@ void main() {
         (tester) async {
       final findings = [
         ..._sblFindings(),
-        Finding(
+        const Finding(
           bodyPathDescription:
               'Your shoulder and opposite hip are connected through your back',
-          compensations: const [
+          compensations: [
             Compensation(
               type: CompensationType.trunkLean,
               joint: 'left_shoulder',
@@ -193,7 +187,7 @@ void main() {
           ],
           upstreamDriver: 'left_shoulder trunk lean',
           recommendation: 'Discuss this pattern with a movement professional',
-          citations: const [_citation],
+          citations: [_citation],
         ),
       ];
 

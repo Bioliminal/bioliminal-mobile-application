@@ -58,12 +58,30 @@ class Landmark {
     required this.y,
     required this.z,
     required this.visibility,
+    this.presence = 1.0,
   });
+
+  factory Landmark.fromJson(Map<String, dynamic> json) => Landmark(
+        x: (json['x'] as num).toDouble(),
+        y: (json['y'] as num).toDouble(),
+        z: (json['z'] as num).toDouble(),
+        visibility: (json['visibility'] as num).toDouble(),
+        presence: (json['presence'] as num?)?.toDouble() ?? 1.0,
+      );
 
   final double x;
   final double y;
   final double z;
   final double visibility;
+  final double presence;
+
+  Map<String, dynamic> toJson() => {
+        'x': x,
+        'y': y,
+        'z': z,
+        'visibility': visibility,
+        'presence': presence,
+      };
 }
 
 class JointAngle {
