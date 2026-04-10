@@ -423,6 +423,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                           point?.replaceFirst('Ask about ', ''),
                       selected: _selectedFindingIndex == i,
                       onTap: () => _onRegionTap(i),
+                      archetypePreferredType: _archetype != null
+                          ? _archetypePreferredType[_archetype!]
+                          : null,
                     ),
                   ],
                 ),

@@ -12,12 +12,14 @@ class FindingCard extends StatelessWidget {
     this.practitionerPoint,
     this.selected = false,
     this.onTap,
+    this.archetypePreferredType,
   });
 
   final Finding finding;
   final String? practitionerPoint;
   final bool selected;
   final VoidCallback? onTap;
+  final CompensationType? archetypePreferredType;
 
   static bool _isLowConfidence(List<Compensation> compensations) {
     return compensations.any((c) => c.confidence == ConfidenceLevel.low);
@@ -101,7 +103,11 @@ class FindingCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            ...finding.drills.map((d) => DrillCard(drill: d)),
+            ...finding.drills.map((d) => DrillCard(
+              drill: d,
+              isArchetypeMatch: archetypePreferredType != null &&
+                  d.compensationType == archetypePreferredType,
+            )),
           ],
           if (finding.citations.isNotEmpty) ...[
             const SizedBox(height: 12),
