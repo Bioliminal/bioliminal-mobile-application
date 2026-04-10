@@ -95,11 +95,11 @@ void main() {
         (tester) async {
       final landmarks1 = List.generate(
         33,
-        (i) => Landmark(x: 0.1, y: 0.1, z: 0, visibility: 0.9),
+        (i) => const Landmark(x: 0.1, y: 0.1, z: 0, visibility: 0.9),
       );
       final landmarks2 = List.generate(
         33,
-        (i) => Landmark(x: 0.5, y: 0.5, z: 0, visibility: 0.8),
+        (i) => const Landmark(x: 0.5, y: 0.5, z: 0, visibility: 0.8),
       );
 
       // Pump with first set.

@@ -9,23 +9,23 @@ void main() {
       final original = Assessment(
         id: 'test-rt-001',
         createdAt: DateTime(2026, 4, 8, 12, 30),
-        movements: [
+        movements: const [
           Movement(
             type: MovementType.overheadSquat,
             landmarks: [
               [
-                const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.95),
-                const Landmark(x: 0.6, y: 0.4, z: 0.1, visibility: 0.8),
+                Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.95),
+                Landmark(x: 0.6, y: 0.4, z: 0.1, visibility: 0.8),
               ],
             ],
             keyframeAngles: [
-              const JointAngle(
+              JointAngle(
                 joint: 'left_knee_valgus',
                 angleDegrees: 15.0,
                 confidence: ConfidenceLevel.high,
               ),
             ],
-            duration: const Duration(seconds: 45),
+            duration: Duration(seconds: 45),
           ),
         ],
         compensations: [

@@ -312,17 +312,17 @@ class _ReportViewState extends ConsumerState<ReportView> {
             ),
 
             // -- Legend --
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: Row(
                 children: [
                   _LegendDot(
-                    color: const Color(0xFF00897B),
+                    color: Color(0xFF00897B),
                     label: 'Upstream driver',
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   _LegendDot(
-                    color: const Color(0xFFFF9800),
+                    color: Color(0xFFFF9800),
                     label: 'Symptom',
                   ),
                 ],

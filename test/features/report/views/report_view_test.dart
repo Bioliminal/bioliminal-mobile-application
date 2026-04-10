@@ -23,21 +23,7 @@ const _citation = Citation(
   appUsage: 'Used in test',
 );
 
-const _ankleDrill = MobilityDrill(
-  name: 'Ankle Circles',
-  targetArea: 'ankle',
-  durationSeconds: 60,
-  compensationType: CompensationType.ankleRestriction,
-  steps: ['Sit with one leg crossed', 'Draw circles with toes'],
-);
 
-const _wallDrill = MobilityDrill(
-  name: 'Wall Ankle Mobilization',
-  targetArea: 'ankle',
-  durationSeconds: 90,
-  compensationType: CompensationType.ankleRestriction,
-  steps: ['Stand facing a wall', 'Push knee forward'],
-);
 
 Assessment _assessmentWithCompensations({
   String id = 'test-001',
@@ -109,7 +95,7 @@ List<Assessment> _multipleAssessments() => [
 
 class _FakeLocalStorageService extends LocalStorageService {
   _FakeLocalStorageService(this._assessment, {List<Assessment>? allAssessments})
-      : _allAssessments = allAssessments ?? [if (_assessment != null) _assessment];
+      : _allAssessments = allAssessments ?? [?_assessment];
   final Assessment? _assessment;
   final List<Assessment> _allAssessments;
 

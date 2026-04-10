@@ -225,15 +225,15 @@ void main() {
 
   group('TrendReport.trendFor', () {
     test('returns matching CompensationTrend', () {
-      final report = TrendReport(trends: [
-        const CompensationTrend(
+      const report = TrendReport(trends: [
+        CompensationTrend(
           compensationType: CompensationType.kneeValgus,
           joint: 'left knee',
           trend: TrendClassification.improving,
           values: [14.0, 10.0],
           slope: -4.0,
         ),
-        const CompensationTrend(
+        CompensationTrend(
           compensationType: CompensationType.hipDrop,
           joint: 'hip',
           trend: TrendClassification.stable,
@@ -249,8 +249,8 @@ void main() {
     });
 
     test('returns null for missing type+joint', () {
-      final report = TrendReport(trends: [
-        const CompensationTrend(
+      const report = TrendReport(trends: [
+        CompensationTrend(
           compensationType: CompensationType.kneeValgus,
           joint: 'left knee',
           trend: TrendClassification.improving,

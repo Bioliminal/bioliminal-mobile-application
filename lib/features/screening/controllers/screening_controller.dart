@@ -73,7 +73,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     // Listen to landmarks and forward to controller.
     ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider,
         (previous, next) {
-      if (next != null) onLandmarkFrame(next);
+      onLandmarkFrame(next);
     });
 
     ref.onDispose(() {

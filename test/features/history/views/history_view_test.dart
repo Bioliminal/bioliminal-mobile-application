@@ -28,7 +28,6 @@ class _FakeLocalStorageService extends LocalStorageService {
 
 Widget _buildTestApp({
   required List<Assessment> assessments,
-  String? lastNavigatedRoute,
 }) {
   final List<String> navigatedRoutes = [];
 

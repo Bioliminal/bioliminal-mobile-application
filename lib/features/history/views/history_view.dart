@@ -81,8 +81,6 @@ class _SummaryHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     final improving = trendReport.trends
         .where((t) => t.trend == TrendClassification.improving)
         .length;

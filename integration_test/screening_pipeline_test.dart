@@ -75,27 +75,21 @@ void main() {
 
       final ctrl = container.read(screeningControllerProvider.notifier);
 
-      // Walk through all movements and verify preview state.
+      // Walk through all movements.
       ctrl.startScreening();
 
       for (var i = 0; i < screeningMovements.length; i++) {
         final state = container.read(screeningControllerProvider);
-        expect(state, isA<PreviewingMovement>());
-        final preview = state as PreviewingMovement;
-        expect(preview.movementIndex, i);
-        expect(preview.config.type, screeningMovements[i].type);
+        expect(state, isA<ActiveMovement>());
+        final active = state as ActiveMovement;
+        expect(active.movementIndex, i);
+        expect(active.config.type, screeningMovements[i].type);
 
         // Verify keyframes exist for this movement.
-        final keyframes = keyframesFor(preview.config.type);
+        final keyframes = keyframesFor(active.config.type);
         expect(keyframes.length, greaterThanOrEqualTo(2));
 
-        // Transition through: preview → active → skip → findings → next preview
-        ctrl.beginMovement();
-        expect(
-          container.read(screeningControllerProvider),
-          isA<ActiveMovement>(),
-        );
-
+        // Skip to next: active → findings → next active (or complete).
         ctrl.skipMovement();
         final afterSkip = container.read(screeningControllerProvider);
 
