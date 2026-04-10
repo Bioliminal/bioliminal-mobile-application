@@ -96,7 +96,11 @@ const _chainOriginJoint = <ChainType, String>{
 class ReportAssemblyService {
   ReportAssemblyService._();
 
-  static Report buildReport(Assessment assessment) {
+  static Report buildReport(
+    Assessment assessment, {
+    TrendReport? trendReport,
+    MobilityArchetype? archetype,
+  }) {
     // 1. Cap ankle-dependent confidence to medium.
     final compensations = assessment.compensations.map((c) {
       if (c.type == CompensationType.ankleRestriction &&
@@ -145,6 +149,10 @@ class ReportAssemblyService {
         }
       }
 
+      // Trend lookup — inside the loop so trendStatus and evolved
+      // recommendation are set during Finding construction.
+      final trendClass = _lookupTrend(comps, trendReport);
+
       // Recommendation logic.
       final hasAnkleRestriction =
           comps.any((c) => c.type == CompensationType.ankleRestriction);
@@ -162,6 +170,9 @@ class ReportAssemblyService {
             'Discuss this pattern with a movement professional';
       }
 
+      // Evolve recommendation based on trend.
+      recommendation = _evolveRecommendation(recommendation, trendClass);
+
       // Citations: gather from compensation types + chain-level + universal.
       final citationSet = <String, Citation>{};
       for (final c in comps) {
@@ -177,7 +188,11 @@ class ReportAssemblyService {
       }
       citationSet[_bahrCitation.url] = _bahrCitation;
 
-      final drills = _selectDrills(comps, _hasHypermobilityIndicators(comps));
+      final drills = _selectDrills(
+        comps,
+        _hasHypermobilityIndicators(comps),
+        archetype: archetype,
+      );
 
       findings.add(Finding(
         bodyPathDescription: bodyPath,
@@ -186,7 +201,29 @@ class ReportAssemblyService {
         recommendation: recommendation,
         citations: citationSet.values.toList(),
         drills: drills,
+        trendStatus: trendClass,
       ));
+    }
+
+    // 4. Sort findings by priority (stable sort).
+    if (trendReport != null) {
+      final indexed = List.generate(findings.length, (i) => i);
+      indexed.sort((a, b) {
+        final sa = _priorityScore(
+          findings[a].trendStatus,
+          _lookupCompensationTrend(findings[a].compensations, trendReport),
+        );
+        final sb = _priorityScore(
+          findings[b].trendStatus,
+          _lookupCompensationTrend(findings[b].compensations, trendReport),
+        );
+        final cmp = sb.compareTo(sa); // descending
+        return cmp != 0 ? cmp : a.compareTo(b); // preserve original order
+      });
+      final sorted = [for (final i in indexed) findings[i]];
+      findings
+        ..clear()
+        ..addAll(sorted);
     }
 
     // 4. Practitioner discussion points — keyed per finding.
@@ -234,16 +271,105 @@ class ReportAssemblyService {
         .any((c) => c.value < 5.0 && c.chain == null);
   }
 
+  // -------------------------------------------------------------------------
+  // Trend helpers
+  // -------------------------------------------------------------------------
+
+  /// Look up the dominant compensation's trend classification.
+  /// Returns null when trendReport is null or no match found.
+  static TrendClassification? _lookupTrend(
+    List<Compensation> comps,
+    TrendReport? trendReport,
+  ) {
+    if (trendReport == null || comps.isEmpty) return null;
+    final dominant = comps.first;
+    final ct = trendReport.trendFor(dominant.type, dominant.joint);
+    return ct?.trend;
+  }
+
+  /// Look up the full CompensationTrend for a finding's dominant compensation.
+  static CompensationTrend? _lookupCompensationTrend(
+    List<Compensation> comps,
+    TrendReport? trendReport,
+  ) {
+    if (trendReport == null || comps.isEmpty) return null;
+    final dominant = comps.first;
+    return trendReport.trendFor(dominant.type, dominant.joint);
+  }
+
+  /// Map a TrendClassification + CompensationTrend to a numeric priority.
+  /// recurring (stable + 3+ data points) = 4, worsening = 3,
+  /// newPattern = 2, stable = 1, null = 0.
+  static int _priorityScore(TrendClassification? trend, CompensationTrend? ct) {
+    if (trend == null) return 0;
+    switch (trend) {
+      case TrendClassification.stable:
+        if (ct != null && ct.values.length >= 3) return 4; // recurring
+        return 1;
+      case TrendClassification.worsening:
+        return 3;
+      case TrendClassification.newPattern:
+        return 2;
+      case TrendClassification.improving:
+        return 1;
+    }
+  }
+
+  /// Mutate recommendation text based on trend status.
+  static String _evolveRecommendation(String base, TrendClassification? trend) {
+    if (trend == null) return base;
+    switch (trend) {
+      case TrendClassification.improving:
+        return '$base \u2014 this pattern is improving, keep up your current work';
+      case TrendClassification.worsening:
+        return 'Priority: $base \u2014 this pattern has worsened since your last assessment';
+      case TrendClassification.newPattern:
+        return '$base \u2014 this is a new pattern we haven\'t seen before';
+      case TrendClassification.stable:
+        return base;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Drill selection
+  // -------------------------------------------------------------------------
+
   static List<MobilityDrill> _selectDrills(
     List<Compensation> comps,
-    bool isHypermobile,
-  ) {
-    if (isHypermobile) {
+    bool isHypermobile, {
+    MobilityArchetype? archetype,
+  }) {
+    // Hypermobile archetype always gets stability drills.
+    if (archetype == MobilityArchetype.hypermobile || isHypermobile) {
       return stabilityDrills.take(2).toList();
     }
 
-    // Collect candidate drills from each compensation type present.
-    // Prioritize ankle-specific drills when ankle restriction is involved.
+    // Archetype-targeted drill boosting.
+    if (archetype != null && archetype != MobilityArchetype.balanced) {
+      final preferredType = _archetypePreferredType(archetype);
+      if (preferredType != null) {
+        final preferred = mobilityDrillsByType[preferredType];
+        if (preferred != null && preferred.isNotEmpty) {
+          final boosted = <MobilityDrill>[preferred.first];
+          // Fill remaining slot from compensation-matched drills.
+          final primaryType = comps.isNotEmpty ? comps.first.type : null;
+          final fallback = primaryType != null
+              ? mobilityDrillsByType[primaryType]
+              : null;
+          if (fallback != null && fallback.isNotEmpty) {
+            // Pick a drill that isn't the same as the boosted one.
+            final fill = fallback.firstWhere(
+              (d) => d.name != boosted.first.name,
+              orElse: () => fallback.first,
+            );
+            boosted.add(fill);
+          }
+          return boosted;
+        }
+      }
+    }
+
+    // Default logic (balanced / null archetype).
     final hasAnkle =
         comps.any((c) => c.type == CompensationType.ankleRestriction);
     final primaryType = comps.first.type;
@@ -262,6 +388,21 @@ class ReportAssemblyService {
     }
 
     return const [];
+  }
+
+  /// Map archetype to its preferred CompensationType for drill boosting.
+  static CompensationType? _archetypePreferredType(MobilityArchetype archetype) {
+    switch (archetype) {
+      case MobilityArchetype.ankleDominant:
+        return CompensationType.ankleRestriction;
+      case MobilityArchetype.hipDominant:
+        return CompensationType.hipDrop;
+      case MobilityArchetype.trunkDominant:
+        return CompensationType.trunkLean;
+      case MobilityArchetype.hypermobile:
+      case MobilityArchetype.balanced:
+        return null;
+    }
   }
 
   static String _readableCompType(CompensationType type) {
