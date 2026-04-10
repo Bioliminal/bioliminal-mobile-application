@@ -144,6 +144,8 @@ class MobilityDrill {
   final CompensationType compensationType;
 }
 
+enum TrendClassification { improving, worsening, stable, newPattern }
+
 class Finding {
   const Finding({
     required this.bodyPathDescription,
@@ -152,6 +154,7 @@ class Finding {
     required this.recommendation,
     required this.citations,
     this.drills = const [],
+    this.trendStatus,
   });
 
   final String bodyPathDescription;
@@ -160,6 +163,7 @@ class Finding {
   final String recommendation;
   final List<Citation> citations;
   final List<MobilityDrill> drills;
+  final TrendClassification? trendStatus;
 }
 
 class Report {
@@ -188,4 +192,41 @@ class Assessment {
   final List<Movement> movements;
   final List<Compensation> compensations;
   final Report? report;
+}
+
+enum MobilityArchetype {
+  ankleDominant,
+  hipDominant,
+  trunkDominant,
+  hypermobile,
+  balanced,
+}
+
+class CompensationTrend {
+  const CompensationTrend({
+    required this.compensationType,
+    required this.joint,
+    required this.trend,
+    required this.values,
+    required this.slope,
+  });
+
+  final CompensationType compensationType;
+  final String joint;
+  final TrendClassification trend;
+  final List<double> values;
+  final double slope;
+}
+
+class TrendReport {
+  const TrendReport({required this.trends});
+
+  final List<CompensationTrend> trends;
+
+  CompensationTrend? trendFor(CompensationType type, String joint) {
+    for (final t in trends) {
+      if (t.compensationType == type && t.joint == joint) return t;
+    }
+    return null;
+  }
 }
