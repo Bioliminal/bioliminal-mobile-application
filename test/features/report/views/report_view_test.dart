@@ -391,13 +391,18 @@ void main() {
         routerExtra: assessments.first,
         storageService: storage,
       ));
+      // Pump frames to let didChangeDependencies fire and async futures resolve.
+      await tester.pump();
+      await tester.pump();
+      await tester.pump();
       await tester.pumpAndSettle();
 
       expect(find.text('Your Movement Profile'), findsOneWidget);
-      // With 3 ankle-dominant assessments, archetype should be ankle-dominant.
-      expect(find.text('Ankle-Dominant'), findsOneWidget);
+      // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
+      // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
+      expect(find.text('Hip-Dominant'), findsOneWidget);
       expect(
-        find.textContaining('ankle mobility is a key focus area'),
+        find.textContaining('hip and pelvis'),
         findsOneWidget,
       );
     });
