@@ -63,11 +63,34 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     _cameraController = null;
   }
 
+  /// Toggle between front and back cameras.
+  Future<void> toggleCamera() async {
+    final current = state.value;
+    if (current is! CameraReady && current is! CameraStreaming) return;
+
+    final cameras = await availableCameras();
+    if (cameras.length < 2) return;
+
+    final currentDesc = ref.read(cameraDescriptionProvider);
+    final newDesc = cameras.firstWhere(
+      (c) => c.lensDirection != currentDesc?.lensDirection,
+      orElse: () => cameras.first,
+    );
+
+    // If we were streaming, we should restart streaming after switching.
+    final wasStreaming = current is CameraStreaming;
+    
+    await requestPermission(specificCamera: newDesc);
+    
+    if (wasStreaming) {
+      await startStreaming();
+    }
+  }
+
   /// Request camera permission by attempting to list + initialize.
-  /// The camera package triggers the native permission dialog on first access.
-  Future<void> requestPermission() async {
-    await _releaseCamera();
+  Future<void> requestPermission({CameraDescription? specificCamera}) async {
     state = const AsyncValue.loading();
+    await _releaseCamera();
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {
@@ -77,8 +100,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         return;
       }
 
-      // Prefer back camera (user faces phone propped up at distance).
-      final selected = cameras.firstWhere(
+      final selected = specificCamera ?? cameras.firstWhere(
         (c) => c.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
       );

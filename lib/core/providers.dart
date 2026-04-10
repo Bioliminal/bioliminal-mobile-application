@@ -18,7 +18,15 @@ import 'package:auralink/core/services/local_storage_service.dart'
 
 // Re-export camera providers so screening can import from one place.
 export 'package:auralink/features/camera/controllers/camera_controller.dart'
-    show currentLandmarksProvider, appCameraControllerProvider;
+    show
+        currentLandmarksProvider,
+        appCameraControllerProvider,
+        CameraState,
+        CameraReady,
+        CameraStreaming,
+        CameraPermissionDenied,
+        CameraError,
+        CameraUninitialized;
 
 // ---------------------------------------------------------------------------
 // Cloud sync opt-in toggle — false by default (offline-first).
@@ -33,6 +41,69 @@ class CloudSyncNotifier extends Notifier<bool> {
 
 final cloudSyncEnabledProvider =
     NotifierProvider<CloudSyncNotifier, bool>(CloudSyncNotifier.new);
+
+// ---------------------------------------------------------------------------
+// AI Engine Selection — persist in-memory for this session (can extend to local storage).
+// ---------------------------------------------------------------------------
+
+class AIModelNotifier extends Notifier<String> {
+  @override
+  String build() => 'Pose Detection v2';
+  void set(String model) => state = model;
+}
+
+final selectedAIModelProvider =
+    NotifierProvider<AIModelNotifier, String>(AIModelNotifier.new);
+
+// ---------------------------------------------------------------------------
+// User Profile — In-memory for now, could link to auth/firestore.
+// ---------------------------------------------------------------------------
+
+class UserProfile {
+  final String name;
+  final String email;
+  final DateTime memberSince;
+  final int totalScans;
+
+  UserProfile({
+    required this.name,
+    required this.email,
+    required this.memberSince,
+    required this.totalScans,
+  });
+
+  UserProfile copyWith({
+    String? name,
+    String? email,
+    int? totalScans,
+  }) {
+    return UserProfile(
+      name: name ?? this.name,
+      email: email ?? this.email,
+      memberSince: memberSince,
+      totalScans: totalScans ?? this.totalScans,
+    );
+  }
+}
+
+class UserProfileNotifier extends Notifier<UserProfile> {
+  @override
+  UserProfile build() {
+    return UserProfile(
+      name: 'Guest User',
+      email: 'guest.user@example.com',
+      memberSince: DateTime(2026, 4, 1),
+      totalScans: 12,
+    );
+  }
+
+  void updateName(String name) => state = state.copyWith(name: name);
+  void updateEmail(String email) => state = state.copyWith(email: email);
+  void incrementScans() => state = state.copyWith(totalScans: state.totalScans + 1);
+}
+
+final userProfileProvider =
+    NotifierProvider<UserProfileNotifier, UserProfile>(UserProfileNotifier.new);
 
 // ---------------------------------------------------------------------------
 // Core providers — always available, offline-first.

@@ -18,7 +18,6 @@ void main() {
       movementIndex: 0,
       config: screeningMovements.first,
       repsCompleted: 0,
-      remaining: const Duration(seconds: 55),
       capturedFrames: const [],
       movementCompensations: const [],
     );

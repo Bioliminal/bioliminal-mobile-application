@@ -95,13 +95,6 @@ void main() {
     expect(s.assessment.movements, isNotEmpty);
   });
 
-  test('movement duration is 60 seconds', () {
-    expect(screeningMovements.first.duration, const Duration(seconds: 60));
-    for (final config in screeningMovements) {
-      expect(config.duration, const Duration(seconds: 60));
-    }
-  });
-
   test('continueToNextMovement only works from ShowingFindings', () {
     getController().startScreening();
     // From ActiveMovement — should be no-op.

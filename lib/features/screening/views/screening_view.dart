@@ -1,3 +1,6 @@
+import 'dart:ui';
+
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +9,9 @@ import 'package:auralink/core/providers.dart' as core_providers;
 import 'package:auralink/core/theme.dart';
 import '../controllers/screening_controller.dart';
 import '../../camera/widgets/skeleton_overlay.dart';
-import '../widgets/movement_instructions.dart';
 import '../widgets/preliminary_findings.dart';
+import '../widgets/stick_figure_animation.dart';
+import '../../camera/widgets/setup_checklist.dart';
 import '../models/movement.dart';
 
 class ScreeningView extends ConsumerStatefulWidget {
@@ -17,18 +21,66 @@ class ScreeningView extends ConsumerStatefulWidget {
   ConsumerState<ScreeningView> createState() => _ScreeningViewState();
 }
 
-class _ScreeningViewState extends ConsumerState<ScreeningView> {
+class _ScreeningViewState extends ConsumerState<ScreeningView>
+    with WidgetsBindingObserver {
+  late dynamic _cameraControllerNotifier;
+  late dynamic _localStorageService;
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    _cameraControllerNotifier =
+        ref.read(core_providers.appCameraControllerProvider.notifier);
+    _localStorageService = ref.read(core_providers.localStorageServiceProvider);
+
+    // Request camera permission on entry.
+    Future.microtask(() {
+      _cameraControllerNotifier.requestPermission();
+    });
+
     // Save assessment to local storage when screening completes.
     ref.listenManual(screeningControllerProvider, (previous, next) {
       if (next is ScreeningComplete) {
-        ref
-            .read(core_providers.localStorageServiceProvider)
-            .saveAssessment(next.assessment);
+        _localStorageService.saveAssessment(next.assessment);
+
+        // Stop streaming when finished.
+        _cameraControllerNotifier.stopStreaming();
+      } else if ((next is ActiveMovement && previous is! ActiveMovement) ||
+          (next is EnvironmentSetup && previous is! EnvironmentSetup)) {
+        // Start streaming when we move into active state or setup.
+        _cameraControllerNotifier.startStreaming();
+      } else if (next is ShowingFindings ||
+          next is MovementPreparation ||
+          next is ScreeningSetup) {
+        // Pause streaming while showing findings, prep, or initial setup.
+        _cameraControllerNotifier.stopStreaming();
       }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    // Don't dispose camera here if we want it to stay warm,
+    // but definitely stop streaming.
+    _cameraControllerNotifier.stopStreaming();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    if (state == AppLifecycleState.inactive ||
+        state == AppLifecycleState.paused) {
+      _cameraControllerNotifier.stopStreaming();
+    } else if (state == AppLifecycleState.resumed) {
+      final screeningState = ref.read(screeningControllerProvider);
+      if (screeningState is ActiveMovement) {
+        _cameraControllerNotifier.startStreaming();
+      }
+    }
   }
 
   @override
@@ -39,6 +91,11 @@ class _ScreeningViewState extends ConsumerState<ScreeningView> {
       ScreeningSetup() => _SetupScreen(
           onBegin: () =>
               ref.read(screeningControllerProvider.notifier).startScreening(),
+        ),
+      EnvironmentSetup() => const _EnvironmentSetupScreen(),
+      MovementPreparation() => _SetupScreen(
+          onBegin: () =>
+              ref.read(screeningControllerProvider.notifier).startMovement(),
         ),
       ActiveMovement() => _ActiveMovementScreen(state: screeningState),
       ShowingFindings() => PreliminaryFindings(
@@ -53,195 +110,452 @@ class _ScreeningViewState extends ConsumerState<ScreeningView> {
   }
 }
 
-class _SetupScreen extends StatelessWidget {
+class _SetupScreen extends ConsumerWidget {
   const _SetupScreen({required this.onBegin});
 
   final VoidCallback onBegin;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final cameraState =
+        ref.watch(core_providers.appCameraControllerProvider).value;
+
+    // Determine which movement is next to show an animation.
+    final screeningState = ref.watch(screeningControllerProvider);
+    
+    final MovementConfig? nextMovement;
+    if (screeningState is MovementPreparation) {
+      nextMovement = screeningState.config;
+    } else {
+      // Very first entry (ScreeningSetup)
+      nextMovement = screeningMovements.first;
+    }
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Spacer(),
-              Icon(
-                Icons.accessibility_new,
-                size: 80,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 32),
-              Text(
-                'Movement Screening',
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'We\'ll guide you through 4 simple movements. '
-                'Each takes about a minute. Just follow the '
-                'instructions and move at your own pace.',
-                style: theme.textTheme.bodyLarge?.copyWith(
-                  color: Colors.white70,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Overhead Squat \u2022 Single-Leg Balance \u2022 '
-                'Overhead Reach \u2022 Forward Fold',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white54,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: onBegin,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: const Text('Begin Screening'),
-                ),
-              ),
-              const SizedBox(height: 32),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              AuraLinkTheme.screenBackground,
+              AuraLinkTheme.surface,
             ],
           ),
+        ),
+        child: Stack(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Spacer(),
+                    if (screeningState is MovementPreparation) ...[
+                      Text(
+                        'NEXT MOVEMENT',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.secondary,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        nextMovement!.name.toUpperCase(),
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 24),
+                      Container(
+                        height: 200,
+                        width: 200,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(100),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: ClipOval(
+                          child: StickFigureAnimation(
+                            movementType: nextMovement.type,
+                            color: theme.colorScheme.secondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        nextMovement.instruction,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white70,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ] else ...[
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.auto_awesome,
+                          size: 64,
+                          color: theme.colorScheme.secondary,
+                        ),
+                      ),
+                      const SizedBox(height: 48),
+                      Text(
+                        'Motion Analysis',
+                        style: theme.textTheme.headlineLarge,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'We use clinical-grade pose estimation to analyze your movement patterns and identify fascial drivers.',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white70,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 32),
+                      const _MovementStep(
+                        icon: Icons.repeat,
+                        title: 'Rep-Based Detection',
+                        subtitle:
+                            'Move naturally; we\'ll track your repetitions automatically.',
+                      ),
+                      const _MovementStep(
+                        icon: Icons.videocam,
+                        title: 'Full Body View',
+                        subtitle: 'Ensure your entire body is visible in the frame.',
+                      ),
+                    ],
+
+                    // Camera status indicator
+                    if (cameraState is core_providers.CameraPermissionDenied)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          'Camera permission required to proceed.',
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      )
+                    else if (cameraState is core_providers.CameraError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                          'Camera error: ${cameraState.message}',
+                          style: TextStyle(color: theme.colorScheme.error),
+                        ),
+                      ),
+
+                    const Spacer(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: (cameraState is core_providers.CameraReady ||
+                                cameraState is core_providers.CameraStreaming)
+                            ? onBegin
+                            : null,
+                        child: const Text('START SCREENING'),
+                      ),
+                    ),
+                    const SizedBox(height: 48),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: SafeArea(
+                child: IconButton(
+                  onPressed: () => context.go('/history'),
+                  icon: const Icon(Icons.close, color: Colors.white70),
+                  tooltip: 'Exit Screening',
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
 
-class _ActiveMovementScreen extends StatelessWidget {
+class _MovementStep extends StatelessWidget {
+  const _MovementStep({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Row(
+        children: [
+          Icon(icon, color: theme.colorScheme.secondary, size: 28),
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.titleMedium),
+                Text(
+                  subtitle,
+                  style:
+                      theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveMovementScreen extends ConsumerWidget {
   const _ActiveMovementScreen({required this.state});
 
   final ActiveMovement state;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final cameraState =
+        ref.watch(core_providers.appCameraControllerProvider).value;
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Camera preview placeholder.
-          // TODO: Replace with CameraView from story-1294
-          const Positioned.fill(
-            child: ColoredBox(
-              color: Color(0xFF111111),
-              child: Center(
-                child: Text(
-                  'Camera Preview',
-                  style: TextStyle(color: Colors.white38, fontSize: 16),
+          // Camera preview
+          if (cameraState is core_providers.CameraStreaming ||
+              cameraState is core_providers.CameraReady)
+            Positioned.fill(
+              child: _CameraPreviewWrapper(
+                controller: cameraState is core_providers.CameraStreaming
+                    ? cameraState.controller
+                    : (cameraState as core_providers.CameraReady).controller,
+              ),
+            )
+          else
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0xFF0F172A),
+                child: Center(
+                  child: CircularProgressIndicator(),
                 ),
               ),
             ),
-          ),
 
-          // Skeleton overlay — renders landmarks from pose estimation.
+          // Skeleton overlay
           const Positioned.fill(
             child: SkeletonOverlay(),
           ),
 
-          // Movement instructions overlay at top.
+          // Consolidated Header
           Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: MovementInstructions(
-              config: state.config,
-              remaining: state.remaining,
-            ),
-          ),
-
-          // Progress indicator — top left.
-          Positioned(
-            top: 48,
+            top: 16,
             left: 16,
-            child: SafeArea(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  'Movement ${state.movementIndex + 1} of '
-                  '${screeningMovements.length}: ${state.config.name}',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Rep counter — top right.
-          Positioned(
-            top: 48,
             right: 16,
             child: SafeArea(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black54,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  'Rep ${state.repsCompleted} of ${state.config.targetReps}',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
+              bottom: false,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    decoration: AuraLinkTheme.glassEffect,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  IconButton(
+                                    onPressed: () => context.go('/history'),
+                                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                                    tooltip: 'Exit Screening',
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'STEP ${state.movementIndex + 1} OF ${screeningMovements.length}',
+                                    style: theme.textTheme.labelSmall?.copyWith(
+                                      color: Colors.white54,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.redAccent
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: Colors.redAccent
+                                            .withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'LIVE AI',
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  IconButton(
+                                    onPressed: () => ref
+                                        .read(core_providers
+                                            .appCameraControllerProvider
+                                            .notifier)
+                                        .toggleCamera(),
+                                    icon: const Icon(
+                                      Icons.flip_camera_ios_outlined,
+                                      color: Colors.white70,
+                                      size: 20,
+                                    ),
+                                    tooltip: 'Flip Camera',
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                state.config.name.toUpperCase(),
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: theme.colorScheme.secondary,
+                                  letterSpacing: 2.0,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                state.config.instruction,
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w300,
+                                  height: 1.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        LinearProgressIndicator(
+                          value: (state.movementIndex + 1) /
+                              screeningMovements.length,
+                          backgroundColor: Colors.white.withValues(alpha: 0.05),
+                          valueColor: AlwaysStoppedAnimation(
+                              theme.colorScheme.secondary),
+                          minHeight: 2,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          // Countdown timer — center bottom.
+          // Consolidated Footer
           Positioned(
-            bottom: 80,
+            bottom: 0,
             left: 0,
             right: 0,
-            child: Center(
-              child: Text(
-                _formatTimer(state.remaining),
-                style: theme.textTheme.headlineLarge?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 48,
-                  fontWeight: FontWeight.w300,
-                ),
-              ),
-            ),
-          ),
-
-          // Skip button — bottom right.
-          Positioned(
-            bottom: 32,
-            right: 24,
-            child: Consumer(
-              builder: (context, ref, _) => TextButton(
-                onPressed: () => ref
-                    .read(screeningControllerProvider.notifier)
-                    .skipMovement(),
-                child: Text(
-                  'Skip',
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white54,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      decoration: AuraLinkTheme.glassEffect,
+                      child: Row(
+                        children: [
+                          // Mini Guide
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.05)),
+                            ),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: StickFigureAnimation(
+                                movementType: state.config.type,
+                                color: theme.colorScheme.secondary
+                                    .withValues(alpha: 0.8),
+                                strokeWidth: 1.5,
+                                jointRadius: 2.0,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Rep Counter
+                          Expanded(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${state.repsCompleted}',
+                                  style: theme.textTheme.headlineLarge?.copyWith(
+                                    fontSize: 32,
+                                    color: theme.colorScheme.secondary,
+                                    height: 1.0,
+                                  ),
+                                ),
+                                Text(
+                                  'REPS / ${state.config.targetReps}',
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: Colors.white54,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Skip
+                          TextButton(
+                            onPressed: () => ref
+                                .read(screeningControllerProvider.notifier)
+                                .skipMovement(),
+                            child: const Text(
+                              'SKIP',
+                              style: TextStyle(
+                                color: Colors.white30,
+                                letterSpacing: 1.2,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -251,11 +565,93 @@ class _ActiveMovementScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  String _formatTimer(Duration d) {
-    final minutes = d.inMinutes;
-    final seconds = d.inSeconds.remainder(60);
-    return '$minutes:${seconds.toString().padLeft(2, '0')}';
+class _EnvironmentSetupScreen extends ConsumerWidget {
+  const _EnvironmentSetupScreen();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cameraState =
+        ref.watch(core_providers.appCameraControllerProvider).value;
+
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          // Camera preview
+          if (cameraState is core_providers.CameraStreaming ||
+              cameraState is core_providers.CameraReady)
+            Positioned.fill(
+              child: _CameraPreviewWrapper(
+                controller: cameraState is core_providers.CameraStreaming
+                    ? (cameraState as core_providers.CameraStreaming).controller
+                    : (cameraState as core_providers.CameraReady).controller,
+              ),
+            )
+          else
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0xFF0F172A),
+                child: Center(
+                  child: CircularProgressIndicator(),
+                ),
+              ),
+            ),
+
+          // Setup checklist overlay
+          Positioned.fill(
+            child: SetupChecklist(
+              onAllPassed: () => ref
+                  .read(screeningControllerProvider.notifier)
+                  .completeEnvironmentSetup(),
+            ),
+          ),
+          Positioned(
+            top: 16,
+            left: 16,
+            child: SafeArea(
+              child: IconButton(
+                onPressed: () => context.go('/history'),
+                icon: const Icon(Icons.close, color: Colors.white70),
+                tooltip: 'Exit Screening',
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CameraPreviewWrapper extends StatelessWidget {
+  const _CameraPreviewWrapper({required this.controller});
+  final CameraController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!controller.value.isInitialized) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final size = MediaQuery.of(context).size;
+
+    // Calculate the scaling required to fill the entire screen while maintaining aspect ratio.
+    // The camera's aspectRatio is typically width/height in landscape, so on mobile (portrait)
+    // it's effectively height/width.
+    var scale = size.aspectRatio * controller.value.aspectRatio;
+
+    // Ensure the scale is always >= 1 to fill the screen.
+    if (scale < 1) scale = 1 / scale;
+
+    return ClipRect(
+      child: Transform.scale(
+        scale: scale,
+        child: Center(
+          child: CameraPreview(controller),
+        ),
+      ),
+    );
   }
 }
 

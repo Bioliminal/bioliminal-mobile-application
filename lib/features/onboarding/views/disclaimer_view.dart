@@ -1,8 +1,5 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:auralink/core/theme.dart';
 
 /// Non-skippable educational disclaimer required by FDA wellness/CDS guidance.
 /// User must scroll to bottom and tap "I Understand" before proceeding.
@@ -14,6 +11,8 @@ class DisclaimerView extends StatefulWidget {
 }
 
 class _DisclaimerViewState extends State<DisclaimerView> {
+  final _pageController = PageController();
+  int _currentPage = 0;
   bool _hasScrolledToBottom = false;
 
   @override
@@ -21,130 +20,148 @@ class _DisclaimerViewState extends State<DisclaimerView> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Before We Begin',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Stack(
+        children: [
+          PageView(
+            controller: _pageController,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            children: [
+              const _OnboardingSlide(
+                icon: Icons.auto_awesome,
+                title: 'Clinical-Grade\nMotion Analysis',
+                body: 'AuraLink uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
               ),
+              const _OnboardingSlide(
+                icon: Icons.shield_outlined,
+                title: 'Privacy-First\nArchitecture',
+                body: 'Your movement data never leaves your device. All analysis is performed locally using on-device AI.',
+              ),
+              _DisclaimerSlide(
+                onScrollToBottom: () => setState(() => _hasScrolledToBottom = true),
+                hasScrolled: _hasScrolledToBottom,
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 40,
+            left: 24,
+            right: 24,
+            child: Column(
+              children: [
+                if (_currentPage < 2)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (i) => _dot(i == _currentPage, theme)),
+                  ),
+                const SizedBox(height: 32),
+                if (_currentPage < 2)
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () => _pageController.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      ),
+                      child: const Text('CONTINUE'),
+                    ),
+                  )
+                else
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: _hasScrolledToBottom ? () => context.go('/screening') : null,
+                      child: Text(_hasScrolledToBottom ? 'BEGIN ANALYSIS' : 'PLEASE READ DISCLAIMER'),
+                    ),
+                  ),
+              ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dot(bool active, ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      width: active ? 24 : 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: active ? theme.colorScheme.secondary : Colors.white24,
+        borderRadius: BorderRadius.circular(4),
+      ),
+    );
+  }
+}
+
+class _OnboardingSlide extends StatelessWidget {
+  const _OnboardingSlide({required this.icon, required this.title, required this.body});
+  final IconData icon;
+  final String title;
+  final String body;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.all(40.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 80, color: theme.colorScheme.secondary),
+          const SizedBox(height: 48),
+          Text(title, style: theme.textTheme.headlineLarge, textAlign: TextAlign.center),
+          const SizedBox(height: 24),
+          Text(body, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70), textAlign: TextAlign.center),
+        ],
+      ),
+    );
+  }
+}
+
+class _DisclaimerSlide extends StatelessWidget {
+  const _DisclaimerSlide({required this.onScrollToBottom, required this.hasScrolled});
+  final VoidCallback onScrollToBottom;
+  final bool hasScrolled;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 40, 24, 140),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('IMPORTANT NOTICE', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.secondary)),
+            const SizedBox(height: 16),
             Expanded(
               child: NotificationListener<ScrollNotification>(
-                onNotification: (notification) {
-                  if (notification is ScrollEndNotification &&
-                      notification.metrics.pixels >=
-                          notification.metrics.maxScrollExtent - 20) {
-                    setState(() => _hasScrolledToBottom = true);
+                onNotification: (n) {
+                  // If the content is too short to scroll (maxScrollExtent == 0),
+                  // or if we've reached the bottom, trigger the callback.
+                  if (n.metrics.maxScrollExtent == 0 || 
+                      n.metrics.pixels >= n.metrics.maxScrollExtent - 20) {
+                    onScrollToBottom();
                   }
                   return false;
                 },
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _section(
-                        'What This Tool Does',
-                        'AuraLink is an educational movement screening tool. '
-                            'It uses your phone camera to observe how you move '
-                            'during four simple exercises, then generates a '
-                            'personalized report highlighting areas that may '
-                            'benefit from attention.',
-                        theme,
+                      _section('Educational Purpose', 'AuraLink is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.', theme),
+                      _section('Professional Consultation', 'Always consult a qualified health professional before starting a new exercise program, especially if you have pre-existing conditions, chronic pain, or are recovering from an injury.', theme),
+                      _section('Usage Agreement', 'By using this app, you acknowledge that you are moving at your own risk. You understand that findings are observations based on movement patterns and not clinical diagnoses.', theme),
+                      _section('Data Privacy', 'All movement analysis is performed locally on your device. We do not transmit or store your raw video data on any external servers.', theme),
+                      _section('Liability', 'AuraLink and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.', theme),
+                      const SizedBox(height: 24),
+                      Text(
+                        'By tapping "BEGIN ANALYSIS", you confirm you have read and accepted these terms.',
+                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.white38),
                       ),
-                      _section(
-                        'What This Tool Is NOT',
-                        'This is not a medical device, diagnostic tool, or '
-                            'substitute for professional evaluation. It does '
-                            'not diagnose injuries, predict injury risk, or '
-                            'prescribe treatment. Findings are educational '
-                            'observations, not clinical assessments.',
-                        theme,
-                      ),
-                      _section(
-                        'How To Use Your Results',
-                        'Your report includes discussion points designed to '
-                            'start a conversation with a qualified practitioner '
-                            '(physical therapist, athletic trainer, etc.). '
-                            'Every finding cites its evidence source so you '
-                            'and your practitioner can evaluate it together.',
-                        theme,
-                      ),
-                      _section(
-                        'Your Privacy',
-                        'All movement analysis happens on your device. No '
-                            'video is stored or transmitted. By default, your '
-                            'data stays on your device. You can optionally '
-                            'enable cloud backup in settings. You control '
-                            'whether to save or share your report.',
-                        theme,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 24),
-                        child: RichText(
-                          text: TextSpan(
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white54,
-                              height: 1.5,
-                            ),
-                            children: [
-                              const TextSpan(
-                                text: 'By continuing you agree to our ',
-                              ),
-                              TextSpan(
-                                text: 'Privacy Policy',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () => _openLink(
-                                        'https://auralink.app/privacy',
-                                      ),
-                              ),
-                              const TextSpan(text: ' and '),
-                              TextSpan(
-                                text: 'Terms of Service',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = () => _openLink(
-                                        'https://auralink.app/terms',
-                                      ),
-                              ),
-                              const TextSpan(text: '.'),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 40), // Ensure extra space at bottom
                     ],
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: FilledButton(
-                  onPressed: _hasScrolledToBottom
-                      ? () => context.go('/screening')
-                      : null,
-                  child: Text(
-                    _hasScrolledToBottom
-                        ? 'I Understand — Begin Screening'
-                        : 'Please read the full disclaimer',
                   ),
                 ),
               ),
@@ -155,32 +172,15 @@ class _DisclaimerViewState extends State<DisclaimerView> {
     );
   }
 
-  void _openLink(String url) {
-    // TODO: launch URL via url_launcher once added to pubspec
-    debugPrint('Open: $url');
-  }
-
   Widget _section(String title, String body, ThemeData theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Text(title, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(
-            body,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: Colors.white70,
-              height: 1.5,
-            ),
-          ),
+          Text(body, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70)),
         ],
       ),
     );

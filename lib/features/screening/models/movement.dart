@@ -5,7 +5,6 @@ class MovementConfig {
     required this.type,
     required this.name,
     required this.instruction,
-    this.duration = const Duration(seconds: 60),
     required this.targetReps,
     required this.primaryJoint,
     required this.peakIsMinimum,
@@ -14,7 +13,6 @@ class MovementConfig {
   final MovementType type;
   final String name;
   final String instruction;
-  final Duration duration;
   final int targetReps;
   final String primaryJoint;
   final bool peakIsMinimum;
@@ -34,7 +32,7 @@ const screeningMovements = <MovementConfig>[
     type: MovementType.singleLegBalance,
     name: 'Single-Leg Balance',
     instruction:
-        'Stand on your right leg. Hold for as long as comfortable. We\'ll check both sides.',
+        'Stand on your right leg. Lift your left knee and hold steady.',
     targetReps: 3,
     primaryJoint: 'leftHip',
     peakIsMinimum: false,

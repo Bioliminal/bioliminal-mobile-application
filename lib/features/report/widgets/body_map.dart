@@ -107,10 +107,11 @@ class _BodyMapPainter extends CustomPainter {
   final List<Finding> findings;
   final int? selectedFindingIndex;
 
-  static const _driverColor = Color(0xFF00897B); // teal
-  static const _symptomColor = Color(0xFFFF9800); // orange
-  static const _silhouetteColor = Color(0xFFE0E0E0);
-  static const _chainLineColor = Color(0x88607D8B);
+  static const _driverColor = Color(0xFF10B981); // Emerald
+  static const _symptomColor = Color(0xFFF59E0B); // Amber
+  static const _silhouetteColor = Color(0xFF1E293B); // Slate 800
+  static const _silhouetteBorderColor = Color(0xFF334155); // Slate 700
+  static const _chainLineColor = Color(0x4438BDF8); // Translucent Sky
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -124,67 +125,45 @@ class _BodyMapPainter extends CustomPainter {
       ..color = _silhouetteColor
       ..style = PaintingStyle.fill;
 
+    final borderPaint = Paint()
+      ..color = _silhouetteBorderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
     final w = size.width;
     final h = size.height;
 
+    final path = Path();
     // Head
-    canvas.drawOval(
-      Rect.fromCenter(
-        center: Offset(w * 0.50, h * 0.10),
-        width: w * 0.12,
-        height: h * 0.08,
-      ),
-      paint,
-    );
+    path.addOval(Rect.fromCenter(
+      center: Offset(w * 0.50, h * 0.10),
+      width: w * 0.12,
+      height: h * 0.08,
+    ));
 
-    // Torso
-    final torso = Path()
-      ..moveTo(w * 0.38, h * 0.16)
-      ..lineTo(w * 0.62, h * 0.16)
-      ..lineTo(w * 0.60, h * 0.52)
-      ..lineTo(w * 0.40, h * 0.52)
-      ..close();
-    canvas.drawPath(torso, paint);
+    // Torso & Limbs (Simplified stylized silhouette)
+    path.moveTo(w * 0.38, h * 0.16);
+    path.lineTo(w * 0.62, h * 0.16);
+    path.lineTo(w * 0.75, h * 0.40);
+    path.lineTo(w * 0.70, h * 0.42);
+    path.lineTo(w * 0.60, h * 0.22);
+    path.lineTo(w * 0.60, h * 0.52);
+    path.lineTo(w * 0.64, h * 0.95);
+    path.lineTo(w * 0.52, h * 0.95);
+    path.lineTo(w * 0.50, h * 0.60);
+    path.lineTo(w * 0.48, h * 0.95);
+    path.lineTo(w * 0.36, h * 0.95);
+    path.lineTo(w * 0.40, h * 0.52);
+    path.lineTo(w * 0.40, h * 0.22);
+    path.lineTo(w * 0.30, h * 0.42);
+    path.lineTo(w * 0.25, h * 0.40);
+    path.close();
 
-    // Left arm
-    final leftArm = Path()
-      ..moveTo(w * 0.38, h * 0.18)
-      ..lineTo(w * 0.24, h * 0.42)
-      ..lineTo(w * 0.28, h * 0.44)
-      ..lineTo(w * 0.40, h * 0.22)
-      ..close();
-    canvas.drawPath(leftArm, paint);
-
-    // Right arm
-    final rightArm = Path()
-      ..moveTo(w * 0.62, h * 0.18)
-      ..lineTo(w * 0.76, h * 0.42)
-      ..lineTo(w * 0.72, h * 0.44)
-      ..lineTo(w * 0.60, h * 0.22)
-      ..close();
-    canvas.drawPath(rightArm, paint);
-
-    // Left leg
-    final leftLeg = Path()
-      ..moveTo(w * 0.40, h * 0.52)
-      ..lineTo(w * 0.36, h * 0.95)
-      ..lineTo(w * 0.42, h * 0.95)
-      ..lineTo(w * 0.48, h * 0.52)
-      ..close();
-    canvas.drawPath(leftLeg, paint);
-
-    // Right leg
-    final rightLeg = Path()
-      ..moveTo(w * 0.52, h * 0.52)
-      ..lineTo(w * 0.58, h * 0.95)
-      ..lineTo(w * 0.64, h * 0.95)
-      ..lineTo(w * 0.60, h * 0.52)
-      ..close();
-    canvas.drawPath(rightLeg, paint);
+    canvas.drawPath(path, paint);
+    canvas.drawPath(path, borderPaint);
   }
 
   void _drawChainLines(Canvas canvas, Size size) {
-    // Collect active chains from all findings.
     final activeChains = <ChainType>{};
     for (final f in findings) {
       for (final c in f.compensations) {
@@ -194,8 +173,10 @@ class _BodyMapPainter extends CustomPainter {
 
     final paint = Paint()
       ..color = _chainLineColor
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
+      ..strokeWidth = 3.0
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
 
     for (final chain in activeChains) {
       final joints = _chainPaths[chain];
@@ -218,65 +199,43 @@ class _BodyMapPainter extends CustomPainter {
   }
 
   void _drawRegions(Canvas canvas, Size size) {
-    // Build a set of driver joints and symptom joints across all findings.
-    final driverJoints = <String>{};
-    final symptomJoints = <String>{};
+    final radius = size.width * _hitRadiusFraction;
 
-    for (final finding in findings) {
+    for (var i = 0; i < findings.length; i++) {
+      final finding = findings[i];
+      final isSelected = selectedFindingIndex == i;
       final driverJointName = _extractDriverJoint(finding);
 
       for (final comp in finding.compensations) {
-        if (driverJointName != null && comp.joint == driverJointName) {
-          driverJoints.add(comp.joint);
-        } else {
-          symptomJoints.add(comp.joint);
+        final center = _regionCenters[comp.joint];
+        if (center == null) continue;
+
+        final offset = Offset(center.dx * size.width, center.dy * size.height);
+        final isDriver = driverJointName != null && comp.joint == driverJointName;
+        final color = isDriver ? _driverColor : _symptomColor;
+
+        // Glow
+        final glowPaint = Paint()
+          ..color = color.withValues(alpha: 0.3)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, isSelected ? 12 : 6);
+        canvas.drawCircle(offset, radius * (isSelected ? 1.5 : 1.2), glowPaint);
+
+        // Node
+        final nodePaint = Paint()
+          ..color = color
+          ..style = PaintingStyle.fill;
+        canvas.drawCircle(offset, radius * 0.8, nodePaint);
+
+        // Selection Ring
+        if (isSelected) {
+          final ringPaint = Paint()
+            ..color = Colors.white
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0;
+          canvas.drawCircle(offset, radius * 1.5, ringPaint);
         }
-      }
-    }
 
-    final driverPaint = Paint()
-      ..color = _driverColor
-      ..style = PaintingStyle.fill;
-
-    final symptomPaint = Paint()
-      ..color = _symptomColor
-      ..style = PaintingStyle.fill;
-
-    final selectedPaint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0;
-
-    // Collect joints for selected finding so we can draw a selection ring.
-    final selectedJoints = <String>{};
-    if (selectedFindingIndex != null &&
-        selectedFindingIndex! < findings.length) {
-      for (final c in findings[selectedFindingIndex!].compensations) {
-        selectedJoints.add(c.joint);
-      }
-    }
-
-    final radius = size.width * _hitRadiusFraction;
-
-    // Draw all regions.
-    for (final entry in _regionCenters.entries) {
-      final joint = entry.key;
-      final center = Offset(
-        entry.value.dx * size.width,
-        entry.value.dy * size.height,
-      );
-
-      if (driverJoints.contains(joint)) {
-        canvas.drawCircle(center, radius, driverPaint);
-        _drawJointLabel(canvas, center, radius, joint, size);
-      } else if (symptomJoints.contains(joint)) {
-        canvas.drawCircle(center, radius, symptomPaint);
-        _drawJointLabel(canvas, center, radius, joint, size);
-      }
-
-      // Selection ring.
-      if (selectedJoints.contains(joint)) {
-        canvas.drawCircle(center, radius + 3, selectedPaint);
+        _drawJointLabel(canvas, offset, radius, comp.joint, size, isSelected);
       }
     }
   }
@@ -287,33 +246,33 @@ class _BodyMapPainter extends CustomPainter {
     double radius,
     String joint,
     Size size,
+    bool isSelected,
   ) {
-    final label = _readableJointName(joint);
+    final label = _readableJointName(joint).toUpperCase();
     final builder = ui.ParagraphBuilder(
       ui.ParagraphStyle(
         textAlign: TextAlign.center,
-        fontSize: size.width * 0.028,
+        fontSize: size.width * (isSelected ? 0.035 : 0.028),
+        fontWeight: isSelected ? ui.FontWeight.bold : ui.FontWeight.normal,
       ),
     )
-      ..pushStyle(ui.TextStyle(color: const Color(0xFF424242)))
+      ..pushStyle(ui.TextStyle(color: isSelected ? Colors.white : Colors.white70))
       ..addText(label);
 
     final paragraph = builder.build()
-      ..layout(ui.ParagraphConstraints(width: size.width * 0.2));
+      ..layout(ui.ParagraphConstraints(width: size.width * 0.3));
 
     canvas.drawParagraph(
       paragraph,
       Offset(
         center.dx - paragraph.maxIntrinsicWidth / 2,
-        center.dy + radius + 2,
+        center.dy + radius * 1.8,
       ),
     );
   }
 
   static String? _extractDriverJoint(Finding finding) {
     if (finding.upstreamDriver == null) return null;
-    // upstreamDriver format: "left_ankle ankle restriction"
-    // Find the compensation whose joint appears at the start.
     for (final c in finding.compensations) {
       if (finding.upstreamDriver!.startsWith(c.joint)) {
         return c.joint;

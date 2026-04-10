@@ -21,12 +21,25 @@ class ScreeningSetup extends ScreeningState {
   const ScreeningSetup();
 }
 
+class EnvironmentSetup extends ScreeningState {
+  const EnvironmentSetup();
+}
+
+class MovementPreparation extends ScreeningState {
+  const MovementPreparation({
+    required this.movementIndex,
+    required this.config,
+  });
+
+  final int movementIndex;
+  final MovementConfig config;
+}
+
 class ActiveMovement extends ScreeningState {
   const ActiveMovement({
     required this.movementIndex,
     required this.config,
     required this.repsCompleted,
-    required this.remaining,
     required this.capturedFrames,
     required this.movementCompensations,
   });
@@ -34,7 +47,6 @@ class ActiveMovement extends ScreeningState {
   final int movementIndex;
   final MovementConfig config;
   final int repsCompleted;
-  final Duration remaining;
   final List<List<Landmark>> capturedFrames;
   final List<Compensation> movementCompensations;
 }
@@ -76,12 +88,6 @@ class ScreeningController extends Notifier<ScreeningState> {
       onLandmarkFrame(next);
     });
 
-    ref.onDispose(() {
-      _countdownTimer?.cancel();
-      _mockLandmarkSub?.cancel();
-      _mockPoseService?.dispose();
-    });
-
     return const ScreeningSetup();
   }
 
@@ -92,9 +98,7 @@ class ScreeningController extends Notifier<ScreeningState> {
   final List<Compensation> _allCompensations = [];
   List<Compensation> _currentMovementCompensations = [];
   List<List<Landmark>> _currentCapturedFrames = [];
-  Timer? _countdownTimer;
-  StreamSubscription<List<Landmark>>? _mockLandmarkSub;
-  MockPoseEstimationService? _mockPoseService;
+  DateTime? _movementStartTime;
   int _currentReps = 0;
 
   static const int _frameBufferSize = 5;
@@ -104,24 +108,24 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   void startScreening() {
     if (state is! ScreeningSetup) return;
-    _startMovement(0);
+    state = const EnvironmentSetup();
   }
 
-  void _startMockLandmarkFeed(int movementIndex) {
-    _mockLandmarkSub?.cancel();
-    _mockPoseService?.dispose();
-    _mockPoseService = MockPoseEstimationService(
-      movementType: screeningMovements[movementIndex].type,
-    );
-    _mockLandmarkSub = _mockPoseService!.processFrame(null).listen((landmarks) {
-      onLandmarkFrame(landmarks);
-    });
+  void completeEnvironmentSetup() {
+    if (state is! EnvironmentSetup) return;
+    _prepareMovement(0);
+  }
+
+  void startMovement() {
+    final current = state;
+    if (current is! MovementPreparation) return;
+    _startMovement(current.movementIndex);
   }
 
   void continueToNextMovement() {
     final current = state;
     if (current is! ShowingFindings) return;
-    _startMovement(current.completedMovementIndex + 1);
+    _prepareMovement(current.completedMovementIndex + 1);
   }
 
   void skipMovement() {
@@ -155,56 +159,34 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   // -- Private machinery --
 
-  void _startMovement(int index) {
+  void _prepareMovement(int index) {
     if (index >= screeningMovements.length) {
       _finishScreening();
       return;
     }
 
+    final config = screeningMovements[index];
+    state = MovementPreparation(
+      movementIndex: index,
+      config: config,
+    );
+  }
+
+  void _startMovement(int index) {
     _angleHistory.clear();
     _frameBuffer.clear();
     _currentMovementCompensations = [];
     _currentCapturedFrames = [];
     _currentReps = 0;
+    _movementStartTime = DateTime.now();
 
     final config = screeningMovements[index];
     state = ActiveMovement(
       movementIndex: index,
       config: config,
       repsCompleted: 0,
-      remaining: config.duration,
       capturedFrames: const [],
       movementCompensations: const [],
-    );
-
-    _startMockLandmarkFeed(index);
-
-    _countdownTimer?.cancel();
-    _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _onTimerTick();
-    });
-  }
-
-  void _onTimerTick() {
-    final current = state;
-    if (current is! ActiveMovement) {
-      _countdownTimer?.cancel();
-      return;
-    }
-
-    final newRemaining = current.remaining - const Duration(seconds: 1);
-    if (newRemaining <= Duration.zero) {
-      _completeMovement();
-      return;
-    }
-
-    state = ActiveMovement(
-      movementIndex: current.movementIndex,
-      config: current.config,
-      repsCompleted: _currentReps,
-      remaining: newRemaining,
-      capturedFrames: List.unmodifiable(_currentCapturedFrames),
-      movementCompensations: List.unmodifiable(_currentMovementCompensations),
     );
   }
 
@@ -267,7 +249,6 @@ class ScreeningController extends Notifier<ScreeningState> {
       movementIndex: current.movementIndex,
       config: current.config,
       repsCompleted: _currentReps,
-      remaining: current.remaining,
       capturedFrames: List.unmodifiable(_currentCapturedFrames),
       movementCompensations: List.unmodifiable(_currentMovementCompensations),
     );
@@ -314,8 +295,6 @@ class ScreeningController extends Notifier<ScreeningState> {
   }
 
   void _completeMovement() {
-    _countdownTimer?.cancel();
-
     final current = state;
     if (current is! ActiveMovement) return;
 
@@ -325,11 +304,15 @@ class ScreeningController extends Notifier<ScreeningState> {
       allAngles.addAll(_angleCalculator.calculateAngles(frame));
     }
 
+    final duration = _movementStartTime != null
+        ? DateTime.now().difference(_movementStartTime!)
+        : Duration.zero;
+
     _completedMovements.add(Movement(
       type: current.config.type,
       landmarks: List.unmodifiable(_currentCapturedFrames),
       keyframeAngles: List.unmodifiable(allAngles),
-      duration: current.config.duration - current.remaining,
+      duration: duration,
     ));
     _allCompensations.addAll(_currentMovementCompensations);
 

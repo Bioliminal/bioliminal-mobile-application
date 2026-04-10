@@ -21,109 +21,109 @@ class FindingCard extends StatelessWidget {
   final VoidCallback? onTap;
   final CompensationType? archetypePreferredType;
 
-  static bool _isLowConfidence(List<Compensation> compensations) {
-    return compensations.any((c) => c.confidence == ConfidenceLevel.low);
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final isLow = _isLowConfidence(finding.compensations);
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: selected
-            ? BorderSide(color: colorScheme.primary, width: 2)
-            : BorderSide.none,
-      ),
-      child: ExpansionTile(
-        key: ValueKey('finding_${finding.bodyPathDescription}_$selected'),
-        initiallyExpanded: selected,
-        tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-        onExpansionChanged: (_) => onTap?.call(),
-        title: Text(
-          finding.bodyPathDescription,
-          style: theme.textTheme.titleMedium,
-        ),
-        subtitle: isLow
-            ? Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Tracking was unclear for this finding -- verify with a practitioner',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    fontStyle: FontStyle.italic,
-                    color: AuraLinkTheme.confidenceLow,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        padding: const EdgeInsets.all(20),
+        decoration: selected
+            ? AuraLinkTheme.glassEffect.copyWith(
+                color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                border: Border.all(color: theme.colorScheme.secondary, width: 2),
+              )
+            : AuraLinkTheme.glassEffect,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      finding.bodyPathDescription.toUpperCase(),
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                        color: selected ? theme.colorScheme.secondary : Colors.white,
+                      ),
+                    ),
+                  ),
+                  if (finding.trendStatus != null)
+                    _TrendIcon(trend: finding.trendStatus!),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (finding.upstreamDriver != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: AuraLinkTheme.confidenceHigh.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'PRIMARY DRIVER',
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: AuraLinkTheme.confidenceHigh,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              )
-            : null,
-        children: [
-          if (finding.upstreamDriver != null) ...[
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Likely upstream driver: ${finding.upstreamDriver}',
+              Text(
+                finding.recommendation,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
+                  height: 1.4,
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              finding.recommendation,
-              style: theme.textTheme.bodyMedium,
-            ),
+              const SizedBox(height: 16),
+              if (finding.drills.isNotEmpty) ...[
+                Text(
+                  'RECOMMENDED DRILLS',
+                  style: theme.textTheme.labelSmall?.copyWith(color: Colors.white38),
+                ),
+                const SizedBox(height: 8),
+                ...finding.drills.take(1).map((d) => DrillCard(
+                  drill: d,
+                  isArchetypeMatch: archetypePreferredType != null &&
+                      d.compensationType == archetypePreferredType,
+                )),
+              ],
+            ],
           ),
-          if (practitionerPoint != null) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Ask your practitioner about: $practitionerPoint',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-            ),
-          ],
-          if (finding.drills.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Mobility Drills',
-                style: theme.textTheme.labelLarge,
-              ),
-            ),
-            const SizedBox(height: 4),
-            ...finding.drills.map((d) => DrillCard(
-              drill: d,
-              isArchetypeMatch: archetypePreferredType != null &&
-                  d.compensationType == archetypePreferredType,
-            )),
-          ],
-          if (finding.citations.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Evidence',
-                style: theme.textTheme.labelLarge,
-              ),
-            ),
-            ...finding.citations.map(
-              (c) => CitationExpandable(citation: c),
-            ),
-          ],
-        ],
+        ),
       ),
     );
+  }
+}
+
+class _TrendIcon extends StatelessWidget {
+  const _TrendIcon({required this.trend});
+  final TrendClassification trend;
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon;
+    Color color;
+    switch (trend) {
+      case TrendClassification.improving:
+        icon = Icons.trending_up;
+        color = AuraLinkTheme.confidenceHigh;
+      case TrendClassification.worsening:
+        icon = Icons.trending_down;
+        color = AuraLinkTheme.confidenceLow;
+      case TrendClassification.stable:
+        icon = Icons.trending_flat;
+        color = Colors.white38;
+      case TrendClassification.newPattern:
+        icon = Icons.fiber_new;
+        color = Colors.blueAccent;
+    }
+    return Icon(icon, color: color, size: 20);
   }
 }

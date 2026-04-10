@@ -127,11 +127,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
     setState(() => _generating = true);
     try {
       final path = await _generatePdf(report, assessment);
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(path)],
-          subject: 'AuraLink Movement Screen',
-        ),
+      await Share.shareXFiles(
+        [XFile(path)],
+        subject: 'AuraLink Movement Screen',
       );
     } catch (e) {
       if (mounted) {
@@ -265,7 +263,6 @@ class _ReportViewState extends ConsumerState<ReportView> {
       trendReport: _trendReport,
       archetype: _archetype,
     );
-    final overall = ReportAssemblyService.overallConfidence(report.findings);
 
     // Ensure we have GlobalKeys for each finding.
     for (var i = 0; i < report.findings.length; i++) {
@@ -273,8 +270,10 @@ class _ReportViewState extends ConsumerState<ReportView> {
     }
 
     return Scaffold(
+      backgroundColor: AuraLinkTheme.screenBackground,
       appBar: AppBar(
-        title: const Text('Your Report'),
+        title: const Text('ANALYSIS'),
+        backgroundColor: Colors.transparent,
         actions: [
           IconButton(
             icon: _generating
@@ -283,16 +282,8 @@ class _ReportViewState extends ConsumerState<ReportView> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(Icons.picture_as_pdf),
-            tooltip: 'Export PDF',
-            onPressed:
-                _generating ? null : () => _onExportPdf(report, assessment),
-          ),
-          IconButton(
-            icon: const Icon(Icons.share),
-            tooltip: 'Share',
-            onPressed:
-                _generating ? null : () => _onShare(report, assessment),
+                : const Icon(Icons.share_outlined),
+            onPressed: _generating ? null : () => _onShare(report, assessment),
           ),
         ],
       ),
@@ -301,169 +292,161 @@ class _ReportViewState extends ConsumerState<ReportView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // -- Body map --
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-              child: BodyMap(
-                findings: report.findings,
-                selectedFindingIndex: _selectedFindingIndex,
-                onRegionTap: _onRegionTap,
+            // -- Header / Archetype --
+            if (_archetype != null)
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(Icons.person_search, color: theme.colorScheme.secondary),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _archetypeDisplayNames[_archetype]!.toUpperCase(),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.secondary,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          Text(
+                            'Movement Archetype',
+                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // -- Body Map (Primary Visual) --
+            Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(16),
+                decoration: AuraLinkTheme.glassEffect,
+                child: BodyMap(
+                  findings: report.findings,
+                  selectedFindingIndex: _selectedFindingIndex,
+                  onRegionTap: _onRegionTap,
+                ),
               ),
             ),
 
-            // -- Legend --
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+            const SizedBox(height: 32),
+
+            // -- Findings Label --
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _LegendDot(
-                    color: Color(0xFF00897B),
-                    label: 'Upstream driver',
+                  Text(
+                    'KEY FINDINGS',
+                    style: theme.textTheme.labelLarge?.copyWith(
+                      letterSpacing: 2.0,
+                      color: Colors.white70,
+                    ),
                   ),
-                  SizedBox(width: 16),
-                  _LegendDot(
-                    color: Color(0xFFFF9800),
-                    label: 'Symptom',
+                  Text(
+                    '${report.findings.length} DETECTED',
+                    style: theme.textTheme.labelSmall?.copyWith(color: Colors.white38),
                   ),
                 ],
               ),
             ),
 
-            // -- Summary card --
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Summary',
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'We found ${report.findings.length} movement '
-                        'pattern${report.findings.length == 1 ? '' : 's'} '
-                        'worth discussing with a practitioner.',
-                        style: theme.textTheme.bodyLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text(
-                            'Overall confidence: ',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _confidenceFlutterColor(overall),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              _confidenceText(overall),
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        overall == ConfidenceLevel.low
-                            ? 'Some findings had lower tracking confidence -- marked below.'
-                            : 'Tracking quality was high throughout.',
-                        style: theme.textTheme.bodySmall,
-                      ),
-                      // -- Movement Profile Section --
-                      if (_archetype != null)
-                        _MovementProfileSection(archetype: _archetype!),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            const SizedBox(height: 16),
 
-            // -- Findings header --
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Your Findings',
-                style: theme.textTheme.headlineMedium,
-              ),
-            ),
-            const SizedBox(height: 4),
-
-            // -- Finding cards --
-            ...List.generate(report.findings.length, (i) {
-              final finding = report.findings[i];
-              final point = finding.upstreamDriver != null
-                  ? report.practitionerPoints
-                        .where((p) => p.contains(finding.upstreamDriver!))
-                        .firstOrNull
-                  : null;
-              return Container(
-                key: _findingKeys[i],
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (finding.trendStatus != null)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 24, bottom: 4),
-                        child: _TrendBadge(trend: finding.trendStatus!),
-                      ),
-                    FindingCard(
+            // -- Horizontal Findings Carousel --
+            SizedBox(
+              height: 280,
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: report.findings.length,
+                itemBuilder: (context, i) {
+                  final finding = report.findings[i];
+                  final isSelected = _selectedFindingIndex == i;
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.85,
+                    child: FindingCard(
                       finding: finding,
-                      practitionerPoint:
-                          point?.replaceFirst('Ask about ', ''),
-                      selected: _selectedFindingIndex == i,
-                      onTap: () => _onRegionTap(i),
+                      selected: isSelected,
+                      onTap: () => setState(() => _selectedFindingIndex = i),
                       archetypePreferredType: _archetype != null
                           ? _archetypePreferredType[_archetype!]
                           : null,
                     ),
-                  ],
-                ),
-              );
-            }),
-
-            // -- Practitioner Discussion Points --
-            if (report.practitionerPoints.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Practitioner Discussion Points',
-                  style: theme.textTheme.headlineMedium,
-                ),
+                  );
+                },
               ),
-              const SizedBox(height: 8),
-              ...report.practitionerPoints.map(
-                (point) => Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
-                  child: Row(
+            ),
+
+            const SizedBox(height: 32),
+
+            // -- Practitioner Points --
+            if (report.practitionerPoints.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('\u2022  '),
-                      Expanded(
-                        child: Text(
-                          point,
-                          style: theme.textTheme.bodyMedium,
+                      Text(
+                        'MOVEMENT INSIGHTS',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.secondary,
+                          letterSpacing: 1.0,
                         ),
                       ),
+                      const SizedBox(height: 12),
+                      ...report.practitionerPoints.map((p) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Icons.check_circle_outline, size: 16, color: Colors.white38),
+                            const SizedBox(width: 8),
+                            Expanded(child: Text(p, style: theme.textTheme.bodyMedium)),
+                          ],
+                        ),
+                      )),
                     ],
                   ),
                 ),
               ),
-            ],
 
             const SizedBox(height: 32),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => _onShare(report, assessment),
+                  icon: const Icon(Icons.picture_as_pdf_outlined),
+                  label: const Text('EXPORT CLINICAL PDF'),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 48),
           ],
         ),
       ),

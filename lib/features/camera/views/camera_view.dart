@@ -38,13 +38,13 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    final controller = ref.read(appCameraControllerProvider.notifier);
+    if (!mounted) return;
     if (state == AppLifecycleState.inactive ||
         state == AppLifecycleState.paused) {
-      controller.stopStreaming();
+      _cameraNotifier.stopStreaming();
     } else if (state == AppLifecycleState.resumed) {
       // Re-request to reinitialize after background.
-      controller.requestPermission();
+      _cameraNotifier.requestPermission();
     }
   }
 

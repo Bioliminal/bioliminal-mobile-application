@@ -25,7 +25,7 @@ class AuraLinkApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       title: 'AuraLink',
-      theme: AuraLinkTheme.lightTheme,
+      theme: AuraLinkTheme.darkTheme,
       routerConfig: goRouter,
     );
   }
