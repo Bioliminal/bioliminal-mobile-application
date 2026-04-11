@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -135,19 +136,24 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     final current = state.value;
     if (current is! CameraReady && current is! CameraStreaming) return;
 
-    final controller =
-        current is CameraReady ? current.controller : (current as CameraStreaming).controller;
+    final controller = current is CameraReady
+        ? current.controller
+        : (current as CameraStreaming).controller;
 
     try {
       final poseService = ref.read(poseEstimationServiceProvider);
 
-      // Cancel any previous subscription.
+      // Cancel any previous subscription to ensure a clean state.
       await _landmarkSubscription?.cancel();
+      _isProcessing = false;
 
+      // Start the camera stream.
       await controller.startImageStream((CameraImage image) {
         _handleFrame(image, poseService);
       });
 
+      // We maintain one long-running subscription to the landmarks stream.
+      // The stream itself is handled by the poseService.
       state = AsyncData(CameraStreaming(controller: controller));
     } catch (e) {
       state = AsyncData(CameraError(message: 'Failed to start streaming: $e'));
@@ -158,16 +164,15 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     if (_isProcessing) return;
     _isProcessing = true;
 
-    _landmarkSubscription?.cancel();
-    _landmarkSubscription = poseService.processFrame(image).listen(
+    // Process the frame. The service handles the heavy lifting.
+    // We listen to the first result and then reset the busy flag.
+    poseService.processFrame(image).first.then(
       (landmarks) {
         updateLandmarks(landmarks);
         _isProcessing = false;
       },
-      onError: (_) {
-        _isProcessing = false;
-      },
-      onDone: () {
+      onError: (e) {
+        developer.log('Pose estimation error', error: e, name: 'CameraController');
         _isProcessing = false;
       },
     );

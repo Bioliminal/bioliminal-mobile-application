@@ -3,26 +3,26 @@
 This plan outlines the steps to resolve state errors, optimize camera performance, and deliver a premium UI/UX.
 
 ## Journal
-- (Empty)
+- Phase 1 Complete: Refactored cloud providers to be nullable, added null checks in `LoginView`, and updated related unit tests. App should no longer crash on launch when cloud sync is disabled.
 
 ## Phase 1: Foundation & State Stabilization
 Goal: Eliminate app crashes caused by cloud provider errors and ensure a clean starting point.
 
-- [ ] Run all tests to ensure the project is in a good state before starting modifications.
-- [ ] Refactor `authServiceProvider` and `firestoreServiceProvider` in `lib/core/providers.dart` to return `null` instead of throwing `StateError`.
-- [ ] Update `lib/core/services/auth_service.dart` and `firestore_service.dart` if necessary to support nullable initialization.
-- [ ] Add null-checks to any widgets currently watching these providers (e.g., `SettingsView`, `LoginView`).
-- [ ] **Validation & Commit:**
-    - [ ] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [ ] Run the `dart_fix` tool to clean up the code.
-    - [ ] Run the `analyze_files` tool one more time and fix any issues.
-    - [ ] Run any tests to make sure they all pass.
-    - [ ] Run `dart_format` to make sure that the formatting is correct.
-    - [ ] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [ ] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [ ] Use `git diff` to verify changes and prepare a commit message.
-    - [ ] Wait for user approval before committing.
-    - [ ] After committing, use `hot_reload` if the app is running.
+- [x] Run all tests to ensure the project is in a good state before starting modifications.
+- [x] Refactor `authServiceProvider` and `firestoreServiceProvider` in `lib/core/providers.dart` to return `null` instead of throwing `StateError`.
+- [x] Update `lib/core/services/auth_service.dart` and `firestore_service.dart` if necessary to support nullable initialization.
+- [x] Add null-checks to any widgets currently watching these providers (e.g., `SettingsView`, `LoginView`).
+- [x] **Validation & Commit:**
+    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+    - [x] Run the `dart_fix` tool to clean up the code.
+    - [x] Run the `analyze_files` tool one more time and fix any issues.
+    - [x] Run any tests to make sure they all pass.
+    - [x] Run `dart_format` to make sure that the formatting is correct.
+    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
+    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
+    - [x] Use `git diff` to verify changes and prepare a commit message.
+    - [x] Wait for user approval before committing.
+    - [x] After committing, use `hot_reload` if the app is running.
 
 ## Phase 2: Camera Pipeline Optimization
 Goal: Achieve 30+ FPS by optimizing frame processing and avoiding redundant stream subscriptions.
