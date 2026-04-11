@@ -72,7 +72,9 @@ class _StickFigureAnimationState extends State<StickFigureAnimation>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        final pose = interpolateKeyframes(keyframes, _controller.value);
+        // Use a sine curve for smoother looping movement
+        final curvedValue = Curves.easeInOutSine.transform(_controller.value);
+        final pose = interpolateKeyframes(keyframes, curvedValue);
         return CustomPaint(
           painter: _StickFigurePainter(
             pose: pose,
@@ -90,6 +92,7 @@ class _StickFigureAnimationState extends State<StickFigureAnimation>
 /// Given a list of keyframes and a normalized [t] in [0,1], returns the
 /// interpolated pose. Distributes time evenly across keyframe segments.
 PoseFrame interpolateKeyframes(List<PoseFrame> keyframes, double t) {
+  if (keyframes.isEmpty) return const PoseFrame(all: []);
   if (keyframes.length == 1) return keyframes.first;
 
   final segments = keyframes.length - 1;
@@ -124,8 +127,10 @@ class _StickFigurePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final joints = pose.all;
+    if (joints.isEmpty) return;
+
     final segmentPaint = Paint()
-      ..color = color.withValues(alpha: 0.7)
+      ..color = color.withValues(alpha: 0.5)
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
@@ -134,16 +139,23 @@ class _StickFigurePainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.fill;
 
+    final glowPaint = Paint()
+      ..color = color.withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0)
+      ..style = PaintingStyle.fill;
+
     // Draw connections.
     for (final (start, end) in stickFigureConnections) {
+      if (start >= joints.length || end >= joints.length) continue;
       final a = Offset(joints[start].dx * size.width, joints[start].dy * size.height);
       final b = Offset(joints[end].dx * size.width, joints[end].dy * size.height);
       canvas.drawLine(a, b, segmentPaint);
     }
 
-    // Draw joints.
+    // Draw joints with glow.
     for (final joint in joints) {
       final pt = Offset(joint.dx * size.width, joint.dy * size.height);
+      canvas.drawCircle(pt, jointRadius + 2, glowPaint);
       canvas.drawCircle(pt, jointRadius, jointPaint);
     }
   }

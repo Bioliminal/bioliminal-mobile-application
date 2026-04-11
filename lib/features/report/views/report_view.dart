@@ -101,34 +101,13 @@ class _ReportViewState extends ConsumerState<ReportView> {
     return file.path;
   }
 
-  Future<void> _onExportPdf(Report report, Assessment assessment) async {
-    if (_generating) return;
-    setState(() => _generating = true);
-    try {
-      await _generatePdf(report, assessment);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('PDF saved to temp directory')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate PDF: $e')),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _generating = false);
-    }
-  }
-
   Future<void> _onShare(Report report, Assessment assessment) async {
     if (_generating) return;
     setState(() => _generating = true);
     try {
       final path = await _generatePdf(report, assessment);
-      await Share.shareXFiles(
-        [XFile(path)],
+      await Share.share(
+        path,
         subject: 'AuraLink Movement Screen',
       );
     } catch (e) {
@@ -450,164 +429,6 @@ class _ReportViewState extends ConsumerState<ReportView> {
           ],
         ),
       ),
-    );
-  }
-
-  Color _confidenceFlutterColor(ConfidenceLevel level) {
-    switch (level) {
-      case ConfidenceLevel.high:
-        return AuraLinkTheme.confidenceHigh;
-      case ConfidenceLevel.medium:
-        return AuraLinkTheme.confidenceMedium;
-      case ConfidenceLevel.low:
-        return AuraLinkTheme.confidenceLow;
-    }
-  }
-
-  String _confidenceText(ConfidenceLevel level) {
-    switch (level) {
-      case ConfidenceLevel.high:
-        return 'High';
-      case ConfidenceLevel.medium:
-        return 'Medium';
-      case ConfidenceLevel.low:
-        return 'Low';
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Movement Profile Section
-// ---------------------------------------------------------------------------
-
-class _MovementProfileSection extends StatelessWidget {
-  const _MovementProfileSection({required this.archetype});
-
-  final MobilityArchetype archetype;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerHighest,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Your Movement Profile',
-              style: theme.textTheme.labelLarge,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _archetypeDisplayNames[archetype] ?? archetype.name,
-              style: theme.textTheme.titleMedium,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _archetypeDescriptions[archetype] ?? '',
-              style: theme.textTheme.bodyMedium,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Trend Badge
-// ---------------------------------------------------------------------------
-
-class _TrendBadge extends StatelessWidget {
-  const _TrendBadge({required this.trend});
-
-  final TrendClassification trend;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: _trendColor(trend),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        _trendLabel(trend),
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  static Color _trendColor(TrendClassification trend) {
-    switch (trend) {
-      case TrendClassification.improving:
-        return Colors.green;
-      case TrendClassification.worsening:
-        return AuraLinkTheme.confidenceLow;
-      case TrendClassification.stable:
-        return Colors.grey;
-      case TrendClassification.newPattern:
-        return Colors.blue;
-    }
-  }
-
-  static String _trendLabel(TrendClassification trend) {
-    switch (trend) {
-      case TrendClassification.improving:
-        return 'Improving';
-      case TrendClassification.worsening:
-        return 'Worsening';
-      case TrendClassification.stable:
-        return 'Stable';
-      case TrendClassification.newPattern:
-        return 'New Pattern';
-    }
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Legend dot
-// ---------------------------------------------------------------------------
-
-class _LegendDot extends StatelessWidget {
-  const _LegendDot({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ],
     );
   }
 }
