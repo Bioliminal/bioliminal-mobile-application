@@ -14,10 +14,10 @@ void main() {
       final paths = routes.whereType<GoRoute>().map((r) => r.path).toList();
 
       expect(paths, contains('/disclaimer'));
-      expect(paths, contains('/camera'));
       expect(paths, contains('/screening'));
       expect(paths, contains('/report/:id'));
-      expect(paths, contains('/history'));
+      expect(paths, contains('/login'));
+      expect(paths, contains('/profile'));
     });
 
     test('dead / route has been removed', () {
@@ -27,8 +27,9 @@ void main() {
       expect(paths, isNot(contains('/')));
     });
 
-    test('exactly 5 routes exist', () {
-      expect(goRouter.configuration.routes.length, 5);
+    test('expected number of top-level routes exist', () {
+      // 7 GoRoutes + 1 StatefulShellRoute = 8
+      expect(goRouter.configuration.routes.length, 8);
     });
   });
 }

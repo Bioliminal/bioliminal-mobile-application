@@ -25,8 +25,17 @@ void main() {
     expect(getState(), isA<ScreeningSetup>());
   });
 
-  test('startScreening transitions to ActiveMovement', () {
+  test('startScreening transitions to EnvironmentSetup', () {
     getController().startScreening();
+    expect(getState(), isA<EnvironmentSetup>());
+  });
+
+  test('full setup flow reaches ActiveMovement', () {
+    getController().startScreening();
+    getController().completeEnvironmentSetup();
+    expect(getState(), isA<MovementPreparation>());
+    
+    getController().startMovement();
     expect(getState(), isA<ActiveMovement>());
     final s = getState() as ActiveMovement;
     expect(s.movementIndex, 0);
@@ -44,6 +53,8 @@ void main() {
 
   test('skipMovement advances from ActiveMovement', () {
     getController().startScreening();
+    getController().completeEnvironmentSetup();
+    getController().startMovement();
     expect(getState(), isA<ActiveMovement>());
 
     getController().skipMovement();
@@ -60,9 +71,13 @@ void main() {
 
   test('full screening flow reaches ScreeningComplete', () {
     getController().startScreening();
+    getController().completeEnvironmentSetup();
 
     // Skip through all 4 movements.
     for (var i = 0; i < screeningMovements.length; i++) {
+      if (getState() is MovementPreparation) {
+        getController().startMovement();
+      }
       if (getState() is ActiveMovement) {
         getController().skipMovement();
       }
@@ -76,8 +91,12 @@ void main() {
 
   test('ScreeningComplete contains Assessment with correct structure', () {
     getController().startScreening();
+    getController().completeEnvironmentSetup();
 
     for (var i = 0; i < screeningMovements.length; i++) {
+      if (getState() is MovementPreparation) {
+        getController().startMovement();
+      }
       if (getState() is ActiveMovement) {
         getController().skipMovement();
       }
@@ -94,6 +113,8 @@ void main() {
 
   test('continueToNextMovement only works from ShowingFindings', () {
     getController().startScreening();
+    getController().completeEnvironmentSetup();
+    getController().startMovement();
     // From ActiveMovement — should be no-op.
     final s = getState();
     getController().continueToNextMovement();

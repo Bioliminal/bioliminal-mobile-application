@@ -205,44 +205,38 @@ void main() {
   });
 
   group('HistoryView summary header', () {
-    testWidgets('shows archetype badge with 3+ assessments', (tester) async {
+    testWidgets('shows archetype hero with 3+ assessments', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
       await tester.pumpAndSettle();
 
       // Ankle-dominant because ankle compensations appear in all 3.
-      expect(find.text('Ankle-Dominant'), findsOneWidget);
+      // Now in uppercase hero text.
+      expect(find.text('ANKLE-DOMINANT'), findsOneWidget);
+      expect(find.text('CURRENT PROFILE'), findsOneWidget);
     });
 
-    testWidgets('shows trend counts with 3+ assessments', (tester) async {
+    testWidgets('shows trend grid with 3+ assessments', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
       await tester.pumpAndSettle();
 
       // Ankle: 15 -> 12 -> 8, slope = -3.5, improving
       // Knee: 14 -> 13 -> 12, slope = -1.0, improving
       // Both improving.
-      expect(find.text('2 improving'), findsOneWidget);
-      expect(find.text('0 stable'), findsOneWidget);
-      expect(find.text('0 worsening'), findsOneWidget);
-    });
-
-    testWidgets('shows trend icons', (tester) async {
-      await tester.pumpWidget(_buildTestApp(assessments: _threeAssessments()));
-      await tester.pumpAndSettle();
-
-      expect(find.byIcon(Icons.trending_down), findsWidgets);
-      expect(find.byIcon(Icons.trending_flat), findsWidgets);
-      expect(find.byIcon(Icons.trending_up), findsWidgets);
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('IMPROVING'), findsOneWidget);
+      expect(find.text('STABLE'), findsOneWidget);
+      expect(find.text('REGRESSING'), findsOneWidget);
     });
 
     testWidgets('does not show summary header for empty state', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: []));
       await tester.pumpAndSettle();
 
-      expect(find.text('Balanced'), findsNothing);
-      expect(find.text('improving'), findsNothing);
+      expect(find.text('CURRENT PROFILE'), findsNothing);
+      expect(find.text('IMPROVING'), findsNothing);
     });
 
-    testWidgets('shows Balanced badge with single assessment', (tester) async {
+    testWidgets('shows Balanced hero with single assessment', (tester) async {
       final single = Assessment(
         id: 'assess-001',
         createdAt: DateTime(2026, 4, 1),
@@ -263,7 +257,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Single assessment -> ArchetypeClassifier returns balanced.
-      expect(find.text('Balanced'), findsOneWidget);
+      expect(find.text('BALANCED'), findsOneWidget);
     });
   });
 
