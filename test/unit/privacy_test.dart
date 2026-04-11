@@ -16,24 +16,18 @@ void main() {
       expect(container.read(cloudSyncEnabledProvider), isFalse);
     });
 
-    test('authServiceProvider throws StateError when cloud sync disabled', () {
+    test('authServiceProvider returns null when cloud sync disabled', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(
-        () => container.read(authServiceProvider),
-        throwsA(anything),
-      );
+      expect(container.read(authServiceProvider), isNull);
     });
 
-    test('firestoreServiceProvider throws StateError when cloud sync disabled', () {
+    test('firestoreServiceProvider returns null when cloud sync disabled', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(
-        () => container.read(firestoreServiceProvider),
-        throwsA(anything),
-      );
+      expect(container.read(firestoreServiceProvider), isNull);
     });
   });
 

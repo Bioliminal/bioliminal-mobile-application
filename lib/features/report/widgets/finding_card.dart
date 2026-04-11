@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
-import 'citation_expandable.dart';
 import 'drill_card.dart';
 
 class FindingCard extends StatelessWidget {

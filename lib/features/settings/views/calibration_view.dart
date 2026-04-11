@@ -3,8 +3,6 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auralink/core/providers.dart' as core_providers;
-import 'package:auralink/core/theme.dart';
-import '../../camera/widgets/skeleton_overlay.dart';
 
 class CalibrationView extends ConsumerStatefulWidget {
   const CalibrationView({super.key});
@@ -67,7 +65,7 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
             Positioned.fill(
               child: _CameraPreviewWrapper(
                 controller: cameraState is core_providers.CameraStreaming
-                    ? (cameraState as core_providers.CameraStreaming).controller
+                    ? (cameraState).controller
                     : (cameraState as core_providers.CameraReady).controller,
               ),
             )

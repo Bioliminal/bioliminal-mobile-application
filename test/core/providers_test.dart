@@ -32,26 +32,19 @@ void main() {
     });
   });
 
-  group('Cloud-only providers throw when sync disabled', () {
-    test('authServiceProvider throws when cloud sync disabled', () {
+  group('Cloud-only providers return null when sync disabled', () {
+    test('authServiceProvider returns null when cloud sync disabled', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      // Riverpod wraps provider errors in ProviderException.
-      expect(
-        () => container.read(authServiceProvider),
-        throwsA(anything),
-      );
+      expect(container.read(authServiceProvider), isNull);
     });
 
-    test('firestoreServiceProvider throws when cloud sync disabled', () {
+    test('firestoreServiceProvider returns null when cloud sync disabled', () {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
-      expect(
-        () => container.read(firestoreServiceProvider),
-        throwsA(anything),
-      );
+      expect(container.read(firestoreServiceProvider), isNull);
     });
   });
 

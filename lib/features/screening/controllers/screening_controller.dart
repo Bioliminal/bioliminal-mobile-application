@@ -1,9 +1,7 @@
-import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/models.dart';
-import '../../../domain/mocks/mock_pose_estimation.dart';
 import '../../../domain/services/angle_calculator.dart';
 import '../../../domain/services/chain_mapper.dart';
 import '../../../core/providers.dart' as core_providers;

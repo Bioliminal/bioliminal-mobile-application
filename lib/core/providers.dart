@@ -153,28 +153,22 @@ final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
 // Only instantiated when the user explicitly opts into cloud backup.
 // ---------------------------------------------------------------------------
 
-final authServiceProvider = Provider<AuthService>(
+final authServiceProvider = Provider<AuthService?>(
   (ref) {
     if (!ref.watch(cloudSyncEnabledProvider)) {
-      throw StateError(
-        'AuthService is unavailable — cloud sync is disabled. '
-        'Enable cloud sync in settings before accessing auth.',
-      );
+      return null;
     }
     return AuthService.withFirebase();
   },
 );
 
-final firestoreServiceProvider = Provider<firestore_impl.FirestoreService>(
+final firestoreServiceProvider = Provider<firestore_impl.FirestoreService?>(
   (ref) {
     if (!ref.watch(cloudSyncEnabledProvider)) {
-      throw StateError(
-        'FirestoreService is unavailable — cloud sync is disabled. '
-        'Enable cloud sync in settings before accessing Firestore.',
-      );
+      return null;
     }
-    return firestore_impl.FirestoreService.withFirebase(
-      ref.read(authServiceProvider),
-    );
+    final auth = ref.watch(authServiceProvider);
+    if (auth == null) return null;
+    return firestore_impl.FirestoreService.withFirebase(auth);
   },
 );

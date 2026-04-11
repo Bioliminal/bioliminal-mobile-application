@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:auralink/core/providers.dart';
-import 'package:auralink/core/theme.dart';
 
 class LoginView extends ConsumerStatefulWidget {
   const LoginView({super.key});
@@ -36,6 +35,9 @@ class _LoginViewState extends ConsumerState<LoginView> {
       ref.read(cloudSyncEnabledProvider.notifier).enable();
       
       final auth = ref.read(authServiceProvider);
+      if (auth == null) {
+        throw StateError('AuthService failed to initialize.');
+      }
       await auth.signIn(); // Using existing anonymous or future email/pass
       
       if (mounted) context.go('/history');

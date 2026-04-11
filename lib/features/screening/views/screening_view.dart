@@ -163,7 +163,7 @@ class _SetupScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        nextMovement!.name.toUpperCase(),
+                        nextMovement.name.toUpperCase(),
                         style: theme.textTheme.headlineMedium,
                       ),
                       const SizedBox(height: 24),
@@ -585,7 +585,7 @@ class _EnvironmentSetupScreen extends ConsumerWidget {
             Positioned.fill(
               child: _CameraPreviewWrapper(
                 controller: cameraState is core_providers.CameraStreaming
-                    ? (cameraState as core_providers.CameraStreaming).controller
+                    ? (cameraState).controller
                     : (cameraState as core_providers.CameraReady).controller,
               ),
             )
