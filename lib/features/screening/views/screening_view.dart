@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -329,7 +328,6 @@ class _ActiveMovementScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final cameraState =
         ref.watch(core_providers.appCameraControllerProvider).value;
 
@@ -341,10 +339,12 @@ class _ActiveMovementScreen extends ConsumerWidget {
           if (cameraState is core_providers.CameraStreaming ||
               cameraState is core_providers.CameraReady)
             Positioned.fill(
-              child: _CameraPreviewWrapper(
-                controller: cameraState is core_providers.CameraStreaming
-                    ? cameraState.controller
-                    : (cameraState as core_providers.CameraReady).controller,
+              child: RepaintBoundary(
+                child: _CameraPreviewWrapper(
+                  controller: cameraState is core_providers.CameraStreaming
+                      ? cameraState.controller
+                      : (cameraState as core_providers.CameraReady).controller,
+                ),
               ),
             )
           else
@@ -359,209 +359,260 @@ class _ActiveMovementScreen extends ConsumerWidget {
 
           // Skeleton overlay
           const Positioned.fill(
-            child: SkeletonOverlay(),
+            child: RepaintBoundary(
+              child: SkeletonOverlay(),
+            ),
           ),
 
-          // Consolidated Header
-          Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: SafeArea(
-              bottom: false,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                  child: Container(
-                    decoration: AuraLinkTheme.glassEffect,
+          // Consolidated Header - Isolated rebuilds
+          const _ActiveScreeningHeader(),
+
+          // Consolidated Footer - Isolated rebuilds
+          const _ActiveScreeningFooter(),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActiveScreeningHeader extends ConsumerWidget {
+  const _ActiveScreeningHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    
+    // Select only the fields needed for the header to avoid rebuilds on landmarks.
+    final movementIndex = ref.watch(screeningControllerProvider.select((s) {
+      if (s is ActiveMovement) return s.movementIndex;
+      return 0;
+    }));
+    
+    final movementName = ref.watch(screeningControllerProvider.select((s) {
+      if (s is ActiveMovement) return s.config.name;
+      return '';
+    }));
+    
+    final movementInstruction = ref.watch(screeningControllerProvider.select((s) {
+      if (s is ActiveMovement) return s.config.instruction;
+      return '';
+    }));
+
+    return Positioned(
+      top: 16,
+      left: 16,
+      right: 16,
+      child: SafeArea(
+        bottom: false,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            // Use semi-transparent background to reduce BackdropFilter cost
+            decoration: AuraLinkTheme.glassEffect.copyWith(
+              color: Colors.black.withValues(alpha: 0.6),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: () => context.go('/history'),
+                            icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                            tooltip: 'Exit Screening',
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'STEP ${movementIndex + 1} OF ${screeningMovements.length}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.white54,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.redAccent
+                                  .withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.redAccent
+                                    .withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Text(
+                              'LIVE AI',
+                              style: TextStyle(
+                                color: Colors.redAccent,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: () => ref
+                                .read(core_providers
+                                    .appCameraControllerProvider
+                                    .notifier)
+                                .toggleCamera(),
+                            icon: const Icon(
+                              Icons.flip_camera_ios_outlined,
+                              color: Colors.white70,
+                              size: 20,
+                            ),
+                            tooltip: 'Flip Camera',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        movementName.toUpperCase(),
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.secondary,
+                          letterSpacing: 2.0,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        movementInstruction,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w300,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                LinearProgressIndicator(
+                  value: (movementIndex + 1) /
+                      screeningMovements.length,
+                  backgroundColor: Colors.white.withValues(alpha: 0.05),
+                  valueColor: AlwaysStoppedAnimation(
+                      theme.colorScheme.secondary),
+                  minHeight: 2,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ActiveScreeningFooter extends ConsumerWidget {
+  const _ActiveScreeningFooter();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    
+    // Select only reps and current movement type for the footer.
+    final repsCompleted = ref.watch(screeningControllerProvider.select((s) {
+      if (s is ActiveMovement) return s.repsCompleted;
+      return 0;
+    }));
+    
+    final movementConfig = ref.watch(screeningControllerProvider.select((s) {
+      if (s is ActiveMovement) return s.config;
+      return screeningMovements.first;
+    }));
+
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 12),
+              // Use semi-transparent background to reduce BackdropFilter cost
+              decoration: AuraLinkTheme.glassEffect.copyWith(
+                color: Colors.black.withValues(alpha: 0.6),
+              ),
+              child: Row(
+                children: [
+                  // Mini Guide
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.05)),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: StickFigureAnimation(
+                        movementType: movementConfig.type,
+                        color: theme.colorScheme.secondary
+                            .withValues(alpha: 0.8),
+                        strokeWidth: 1.5,
+                        jointRadius: 2.0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Rep Counter
+                  Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  IconButton(
-                                    onPressed: () => context.go('/history'),
-                                    icon: const Icon(Icons.close, color: Colors.white70, size: 20),
-                                    tooltip: 'Exit Screening',
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'STEP ${state.movementIndex + 1} OF ${screeningMovements.length}',
-                                    style: theme.textTheme.labelSmall?.copyWith(
-                                      color: Colors.white54,
-                                      letterSpacing: 1.5,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.redAccent
-                                          .withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: Colors.redAccent
-                                            .withValues(alpha: 0.3),
-                                      ),
-                                    ),
-                                    child: const Text(
-                                      'LIVE AI',
-                                      style: TextStyle(
-                                        color: Colors.redAccent,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  IconButton(
-                                    onPressed: () => ref
-                                        .read(core_providers
-                                            .appCameraControllerProvider
-                                            .notifier)
-                                        .toggleCamera(),
-                                    icon: const Icon(
-                                      Icons.flip_camera_ios_outlined,
-                                      color: Colors.white70,
-                                      size: 20,
-                                    ),
-                                    tooltip: 'Flip Camera',
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                state.config.name.toUpperCase(),
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: theme.colorScheme.secondary,
-                                  letterSpacing: 2.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                state.config.instruction,
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w300,
-                                  height: 1.2,
-                                ),
-                              ),
-                            ],
+                        Text(
+                          '$repsCompleted',
+                          style: theme.textTheme.headlineLarge?.copyWith(
+                            fontSize: 32,
+                            color: theme.colorScheme.secondary,
+                            height: 1.0,
                           ),
                         ),
-                        LinearProgressIndicator(
-                          value: (state.movementIndex + 1) /
-                              screeningMovements.length,
-                          backgroundColor: Colors.white.withValues(alpha: 0.05),
-                          valueColor: AlwaysStoppedAnimation(
-                              theme.colorScheme.secondary),
-                          minHeight: 2,
+                        Text(
+                          'REPS / ${movementConfig.targetReps}',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: Colors.white54,
+                            letterSpacing: 1.0,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ),
-          ),
-
-          // Consolidated Footer
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 12),
-                      decoration: AuraLinkTheme.glassEffect,
-                      child: Row(
-                        children: [
-                          // Mini Guide
-                          Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: Colors.black26,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.05)),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: StickFigureAnimation(
-                                movementType: state.config.type,
-                                color: theme.colorScheme.secondary
-                                    .withValues(alpha: 0.8),
-                                strokeWidth: 1.5,
-                                jointRadius: 2.0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Rep Counter
-                          Expanded(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  '${state.repsCompleted}',
-                                  style: theme.textTheme.headlineLarge?.copyWith(
-                                    fontSize: 32,
-                                    color: theme.colorScheme.secondary,
-                                    height: 1.0,
-                                  ),
-                                ),
-                                Text(
-                                  'REPS / ${state.config.targetReps}',
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: Colors.white54,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Skip
-                          TextButton(
-                            onPressed: () => ref
-                                .read(screeningControllerProvider.notifier)
-                                .skipMovement(),
-                            child: const Text(
-                              'SKIP',
-                              style: TextStyle(
-                                color: Colors.white30,
-                                letterSpacing: 1.2,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
+                  const SizedBox(width: 16),
+                  // Skip
+                  TextButton(
+                    onPressed: () => ref
+                        .read(screeningControllerProvider.notifier)
+                        .skipMovement(),
+                    child: const Text(
+                      'SKIP',
+                      style: TextStyle(
+                        color: Colors.white30,
+                        letterSpacing: 1.2,
+                        fontSize: 12,
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
