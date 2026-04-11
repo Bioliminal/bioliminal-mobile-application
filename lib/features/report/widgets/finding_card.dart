@@ -32,7 +32,10 @@ class FindingCard extends StatelessWidget {
         decoration: selected
             ? AuraLinkTheme.glassEffect.copyWith(
                 color: theme.colorScheme.secondary.withValues(alpha: 0.1),
-                border: Border.all(color: theme.colorScheme.secondary, width: 2),
+                border: Border.all(
+                  color: theme.colorScheme.secondary,
+                  width: 2,
+                ),
               )
             : AuraLinkTheme.glassEffect,
         child: SingleChildScrollView(
@@ -48,7 +51,9 @@ class FindingCard extends StatelessWidget {
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.0,
-                        color: selected ? theme.colorScheme.secondary : Colors.white,
+                        color: selected
+                            ? theme.colorScheme.secondary
+                            : Colors.white,
                       ),
                     ),
                   ),
@@ -59,7 +64,10 @@ class FindingCard extends StatelessWidget {
               const SizedBox(height: 12),
               if (finding.upstreamDriver != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
                     color: AuraLinkTheme.confidenceHigh.withValues(alpha: 0.2),
@@ -84,14 +92,21 @@ class FindingCard extends StatelessWidget {
               if (finding.drills.isNotEmpty) ...[
                 Text(
                   'RECOMMENDED DRILLS',
-                  style: theme.textTheme.labelSmall?.copyWith(color: Colors.white38),
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: Colors.white38,
+                  ),
                 ),
                 const SizedBox(height: 8),
-                ...finding.drills.take(1).map((d) => DrillCard(
-                  drill: d,
-                  isArchetypeMatch: archetypePreferredType != null &&
-                      d.compensationType == archetypePreferredType,
-                )),
+                ...finding.drills
+                    .take(1)
+                    .map(
+                      (d) => DrillCard(
+                        drill: d,
+                        isArchetypeMatch:
+                            archetypePreferredType != null &&
+                            d.compensationType == archetypePreferredType,
+                      ),
+                    ),
               ],
             ],
           ),

@@ -9,20 +9,16 @@ The AuraLink project has a strong foundation in domain modeling and biomechanica
 
 ## 2. Critical Findings
 
-### 2.1 Privacy & Architectural Contradiction
-- **Issue:** README and `DisclaimerView` promise "zero data transmission," yet `FirestoreService` and `AuthService` are implemented and wired in `providers.dart`.
-- **Evidence:** `lib/core/services/firestore_service.dart` contains `syncLocalAssessments` which automatically uploads local data to Firestore/Storage if a user is signed in.
-- **Impact:** Direct violation of the primary product constraint. Risk of legal and reputational damage.
+### 2.1 Privacy & Architectural Contradiction [RESOLVED]
+- **Status:** Resolved in v1.1.0 overhaul.
+- **Fix:** Refactored `authServiceProvider` and `firestoreServiceProvider` to be nullable and gated behind `cloudSyncEnabledProvider`. Services now return `null` instead of throwing errors or auto-syncing when disabled.
 
-### 2.2 Resource Leaks (Memory & Timers)
+### 2.2 Resource Leaks (Memory & Timers) [PENDING]
 - **Issue:** `MockPoseEstimationService` does not safely manage its stream controllers and timers.
-- **Evidence:** `processFrame` overwrites the `_controller` and `_timer` fields on every call. If the service is reused without `dispose()`, previous timers continue to run in the background.
-- **Impact:** Performance degradation and potential crashes during long sessions or multiple screening attempts.
-
-### 2.3 Stability & Security (Forced Unwraps)
-- **Issue:** Use of the bang operator (`!`) on nullable Firebase user objects.
-- **Evidence:** `lib/core/services/auth_service.dart:16`: `return credential.user!.uid;`.
-- **Impact:** High risk of runtime crashes if Firebase returns a null user (e.g., due to network or configuration issues).
+...
+### 2.3 Stability & Security (Forced Unwraps) [PARTIALLY RESOLVED]
+- **Status:** Resolved in critical UI paths (e.g., `LoginView`).
+- **Fix:** Replaced forced unwraps with proper null checks and error handling in initialization flows.
 
 ## 3. Medium Severity Findings
 

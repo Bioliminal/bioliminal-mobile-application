@@ -66,16 +66,12 @@ void main() {
       final older = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'left knee', 14.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'left knee', 14.0)],
       );
       final newer = _makeAssessment(
         id: 'a2',
         date: DateTime(2026, 4, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'left knee', 10.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'left knee', 10.0)],
       );
 
       // newest-first ordering (as from listAssessments).
@@ -92,16 +88,12 @@ void main() {
       final older = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.hipDrop, 'hip', 5.0),
-        ],
+        compensations: [_comp(CompensationType.hipDrop, 'hip', 5.0)],
       );
       final newer = _makeAssessment(
         id: 'a2',
         date: DateTime(2026, 4, 1),
-        compensations: [
-          _comp(CompensationType.hipDrop, 'hip', 9.0),
-        ],
+        compensations: [_comp(CompensationType.hipDrop, 'hip', 9.0)],
       );
 
       final report = TrendDetectionService.analyzeTrends([newer, older]);
@@ -116,16 +108,12 @@ void main() {
       final older = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.trunkLean, 'trunk', 7.0),
-        ],
+        compensations: [_comp(CompensationType.trunkLean, 'trunk', 7.0)],
       );
       final newer = _makeAssessment(
         id: 'a2',
         date: DateTime(2026, 4, 1),
-        compensations: [
-          _comp(CompensationType.trunkLean, 'trunk', 7.0),
-        ],
+        compensations: [_comp(CompensationType.trunkLean, 'trunk', 7.0)],
       );
 
       final report = TrendDetectionService.analyzeTrends([newer, older]);
@@ -139,9 +127,7 @@ void main() {
       final older = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'left knee', 12.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'left knee', 12.0)],
       );
       final newer = _makeAssessment(
         id: 'a2',
@@ -170,23 +156,17 @@ void main() {
       final a1 = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 1, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'knee', 10.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'knee', 10.0)],
       );
       final a2 = _makeAssessment(
         id: 'a2',
         date: DateTime(2026, 2, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'knee', 14.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'knee', 14.0)],
       );
       final a3 = _makeAssessment(
         id: 'a3',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.kneeValgus, 'knee', 8.0),
-        ],
+        compensations: [_comp(CompensationType.kneeValgus, 'knee', 8.0)],
       );
 
       // newest-first ordering.
@@ -203,16 +183,12 @@ void main() {
       final older = _makeAssessment(
         id: 'a1',
         date: DateTime(2026, 3, 1),
-        compensations: [
-          _comp(CompensationType.hipDrop, 'hip', 10.0),
-        ],
+        compensations: [_comp(CompensationType.hipDrop, 'hip', 10.0)],
       );
       final newer = _makeAssessment(
         id: 'a2',
         date: DateTime(2026, 4, 1),
-        compensations: [
-          _comp(CompensationType.hipDrop, 'hip', 10.5),
-        ],
+        compensations: [_comp(CompensationType.hipDrop, 'hip', 10.5)],
       );
 
       final report = TrendDetectionService.analyzeTrends([newer, older]);
@@ -225,22 +201,24 @@ void main() {
 
   group('TrendReport.trendFor', () {
     test('returns matching CompensationTrend', () {
-      const report = TrendReport(trends: [
-        CompensationTrend(
-          compensationType: CompensationType.kneeValgus,
-          joint: 'left knee',
-          trend: TrendClassification.improving,
-          values: [14.0, 10.0],
-          slope: -4.0,
-        ),
-        CompensationTrend(
-          compensationType: CompensationType.hipDrop,
-          joint: 'hip',
-          trend: TrendClassification.stable,
-          values: [8.0, 8.0],
-          slope: 0.0,
-        ),
-      ]);
+      const report = TrendReport(
+        trends: [
+          CompensationTrend(
+            compensationType: CompensationType.kneeValgus,
+            joint: 'left knee',
+            trend: TrendClassification.improving,
+            values: [14.0, 10.0],
+            slope: -4.0,
+          ),
+          CompensationTrend(
+            compensationType: CompensationType.hipDrop,
+            joint: 'hip',
+            trend: TrendClassification.stable,
+            values: [8.0, 8.0],
+            slope: 0.0,
+          ),
+        ],
+      );
 
       final result = report.trendFor(CompensationType.hipDrop, 'hip');
       expect(result, isNotNull);
@@ -249,15 +227,17 @@ void main() {
     });
 
     test('returns null for missing type+joint', () {
-      const report = TrendReport(trends: [
-        CompensationTrend(
-          compensationType: CompensationType.kneeValgus,
-          joint: 'left knee',
-          trend: TrendClassification.improving,
-          values: [14.0, 10.0],
-          slope: -4.0,
-        ),
-      ]);
+      const report = TrendReport(
+        trends: [
+          CompensationTrend(
+            compensationType: CompensationType.kneeValgus,
+            joint: 'left knee',
+            trend: TrendClassification.improving,
+            values: [14.0, 10.0],
+            slope: -4.0,
+          ),
+        ],
+      );
 
       final result = report.trendFor(
         CompensationType.ankleRestriction,

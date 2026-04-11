@@ -11,15 +11,17 @@ class ArchetypeClassifier {
   static MobilityArchetype classify(List<Assessment> assessments) {
     if (assessments.length <= 1) return MobilityArchetype.balanced;
 
-    final allCompensations =
-        assessments.expand((a) => a.compensations).toList();
+    final allCompensations = assessments
+        .expand((a) => a.compensations)
+        .toList();
     if (allCompensations.isEmpty) return MobilityArchetype.balanced;
 
     // Hypermobility check (priority): count assessments containing any
     // compensation with value < 5.0 and no chain.
     final hypermobileCount = assessments
-        .where((a) =>
-            a.compensations.any((c) => c.value < 5.0 && c.chain == null))
+        .where(
+          (a) => a.compensations.any((c) => c.value < 5.0 && c.chain == null),
+        )
         .length;
     if (hypermobileCount >= assessments.length / 2) {
       return MobilityArchetype.hypermobile;
@@ -52,9 +54,11 @@ class ArchetypeClassifier {
     final trunkPct = trunkCount / total;
 
     // Find dominant bucket.
-    final maxPct = [anklePct, hipPct, trunkPct].reduce(
-      (a, b) => a >= b ? a : b,
-    );
+    final maxPct = [
+      anklePct,
+      hipPct,
+      trunkPct,
+    ].reduce((a, b) => a >= b ? a : b);
 
     if (maxPct >= 0.4) {
       if (maxPct == anklePct) return MobilityArchetype.ankleDominant;

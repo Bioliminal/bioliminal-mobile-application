@@ -29,15 +29,18 @@ class _DisclaimerViewState extends State<DisclaimerView> {
               const _OnboardingSlide(
                 icon: Icons.auto_awesome,
                 title: 'Clinical-Grade\nMotion Analysis',
-                body: 'AuraLink uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
+                body:
+                    'AuraLink uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
               ),
               const _OnboardingSlide(
                 icon: Icons.shield_outlined,
                 title: 'Privacy-First\nArchitecture',
-                body: 'Your movement data never leaves your device. All analysis is performed locally using on-device AI.',
+                body:
+                    'Your movement data never leaves your device. All analysis is performed locally using on-device AI.',
               ),
               _DisclaimerSlide(
-                onScrollToBottom: () => setState(() => _hasScrolledToBottom = true),
+                onScrollToBottom: () =>
+                    setState(() => _hasScrolledToBottom = true),
                 hasScrolled: _hasScrolledToBottom,
               ),
             ],
@@ -51,7 +54,10 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                 if (_currentPage < 2)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(3, (i) => _dot(i == _currentPage, theme)),
+                    children: List.generate(
+                      3,
+                      (i) => _dot(i == _currentPage, theme),
+                    ),
                   ),
                 const SizedBox(height: 32),
                 if (_currentPage < 2)
@@ -69,8 +75,14 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: _hasScrolledToBottom ? () => context.go('/screening') : null,
-                      child: Text(_hasScrolledToBottom ? 'BEGIN ANALYSIS' : 'PLEASE READ DISCLAIMER'),
+                      onPressed: _hasScrolledToBottom
+                          ? () => context.go('/screening')
+                          : null,
+                      child: Text(
+                        _hasScrolledToBottom
+                            ? 'BEGIN ANALYSIS'
+                            : 'PLEASE READ DISCLAIMER',
+                      ),
                     ),
                   ),
               ],
@@ -95,7 +107,11 @@ class _DisclaimerViewState extends State<DisclaimerView> {
 }
 
 class _OnboardingSlide extends StatelessWidget {
-  const _OnboardingSlide({required this.icon, required this.title, required this.body});
+  const _OnboardingSlide({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
   final IconData icon;
   final String title;
   final String body;
@@ -110,9 +126,17 @@ class _OnboardingSlide extends StatelessWidget {
         children: [
           Icon(icon, size: 80, color: theme.colorScheme.secondary),
           const SizedBox(height: 48),
-          Text(title, style: theme.textTheme.headlineLarge, textAlign: TextAlign.center),
+          Text(
+            title,
+            style: theme.textTheme.headlineLarge,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 24),
-          Text(body, style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70), textAlign: TextAlign.center),
+          Text(
+            body,
+            style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -120,7 +144,10 @@ class _OnboardingSlide extends StatelessWidget {
 }
 
 class _DisclaimerSlide extends StatelessWidget {
-  const _DisclaimerSlide({required this.onScrollToBottom, required this.hasScrolled});
+  const _DisclaimerSlide({
+    required this.onScrollToBottom,
+    required this.hasScrolled,
+  });
   final VoidCallback onScrollToBottom;
   final bool hasScrolled;
 
@@ -133,14 +160,19 @@ class _DisclaimerSlide extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('IMPORTANT NOTICE', style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.secondary)),
+            Text(
+              'IMPORTANT NOTICE',
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: theme.colorScheme.secondary,
+              ),
+            ),
             const SizedBox(height: 16),
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
                   // If the content is too short to scroll (maxScrollExtent == 0),
                   // or if we've reached the bottom, trigger the callback.
-                  if (n.metrics.maxScrollExtent == 0 || 
+                  if (n.metrics.maxScrollExtent == 0 ||
                       n.metrics.pixels >= n.metrics.maxScrollExtent - 20) {
                     onScrollToBottom();
                   }
@@ -150,17 +182,41 @@ class _DisclaimerSlide extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _section('Educational Purpose', 'AuraLink is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.', theme),
-                      _section('Professional Consultation', 'Always consult a qualified health professional before starting a new exercise program, especially if you have pre-existing conditions, chronic pain, or are recovering from an injury.', theme),
-                      _section('Usage Agreement', 'By using this app, you acknowledge that you are moving at your own risk. You understand that findings are observations based on movement patterns and not clinical diagnoses.', theme),
-                      _section('Data Privacy', 'All movement analysis is performed locally on your device. We do not transmit or store your raw video data on any external servers.', theme),
-                      _section('Liability', 'AuraLink and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.', theme),
+                      _section(
+                        'Educational Purpose',
+                        'AuraLink is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.',
+                        theme,
+                      ),
+                      _section(
+                        'Professional Consultation',
+                        'Always consult a qualified health professional before starting a new exercise program, especially if you have pre-existing conditions, chronic pain, or are recovering from an injury.',
+                        theme,
+                      ),
+                      _section(
+                        'Usage Agreement',
+                        'By using this app, you acknowledge that you are moving at your own risk. You understand that findings are observations based on movement patterns and not clinical diagnoses.',
+                        theme,
+                      ),
+                      _section(
+                        'Data Privacy',
+                        'All movement analysis is performed locally on your device. We do not transmit or store your raw video data on any external servers.',
+                        theme,
+                      ),
+                      _section(
+                        'Liability',
+                        'AuraLink and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.',
+                        theme,
+                      ),
                       const SizedBox(height: 24),
                       Text(
                         'By tapping "BEGIN ANALYSIS", you confirm you have read and accepted these terms.',
-                        style: theme.textTheme.bodySmall?.copyWith(color: Colors.white38),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white38,
+                        ),
                       ),
-                      const SizedBox(height: 40), // Ensure extra space at bottom
+                      const SizedBox(
+                        height: 40,
+                      ), // Ensure extra space at bottom
                     ],
                   ),
                 ),
@@ -180,7 +236,10 @@ class _DisclaimerSlide extends StatelessWidget {
         children: [
           Text(title, style: theme.textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text(body, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70)),
+          Text(
+            body,
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+          ),
         ],
       ),
     );

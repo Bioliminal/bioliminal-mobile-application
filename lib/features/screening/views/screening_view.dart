@@ -1,4 +1,3 @@
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,8 +29,9 @@ class _ScreeningViewState extends ConsumerState<ScreeningView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    _cameraControllerNotifier =
-        ref.read(core_providers.appCameraControllerProvider.notifier);
+    _cameraControllerNotifier = ref.read(
+      core_providers.appCameraControllerProvider.notifier,
+    );
     _localStorageService = ref.read(core_providers.localStorageServiceProvider);
 
     // Request camera permission on entry.
@@ -88,22 +88,22 @@ class _ScreeningViewState extends ConsumerState<ScreeningView>
 
     return switch (screeningState) {
       ScreeningSetup() => _SetupScreen(
-          onBegin: () =>
-              ref.read(screeningControllerProvider.notifier).startScreening(),
-        ),
+        onBegin: () =>
+            ref.read(screeningControllerProvider.notifier).startScreening(),
+      ),
       EnvironmentSetup() => const _EnvironmentSetupScreen(),
       MovementPreparation() => _SetupScreen(
-          onBegin: () =>
-              ref.read(screeningControllerProvider.notifier).startMovement(),
-        ),
+        onBegin: () =>
+            ref.read(screeningControllerProvider.notifier).startMovement(),
+      ),
       ActiveMovement() => _ActiveMovementScreen(state: screeningState),
       ShowingFindings() => PreliminaryFindings(
-          feedbackMessage: screeningState.feedbackMessage,
-          completedMovementIndex: screeningState.completedMovementIndex,
-          onContinue: () => ref
-              .read(screeningControllerProvider.notifier)
-              .continueToNextMovement(),
-        ),
+        feedbackMessage: screeningState.feedbackMessage,
+        completedMovementIndex: screeningState.completedMovementIndex,
+        onContinue: () => ref
+            .read(screeningControllerProvider.notifier)
+            .continueToNextMovement(),
+      ),
       ScreeningComplete() => _CompleteScreen(state: screeningState),
     };
   }
@@ -117,12 +117,13 @@ class _SetupScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final cameraState =
-        ref.watch(core_providers.appCameraControllerProvider).value;
+    final cameraState = ref
+        .watch(core_providers.appCameraControllerProvider)
+        .value;
 
     // Determine which movement is next to show an animation.
     final screeningState = ref.watch(screeningControllerProvider);
-    
+
     final MovementConfig? nextMovement;
     if (screeningState is MovementPreparation) {
       nextMovement = screeningState.config;
@@ -137,10 +138,7 @@ class _SetupScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AuraLinkTheme.screenBackground,
-              AuraLinkTheme.surface,
-            ],
+            colors: [AuraLinkTheme.screenBackground, AuraLinkTheme.surface],
           ),
         ),
         child: Stack(
@@ -193,7 +191,9 @@ class _SetupScreen extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                          color: theme.colorScheme.primary.withValues(
+                            alpha: 0.1,
+                          ),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -226,7 +226,8 @@ class _SetupScreen extends ConsumerWidget {
                       const _MovementStep(
                         icon: Icons.videocam,
                         title: 'Full Body View',
-                        subtitle: 'Ensure your entire body is visible in the frame.',
+                        subtitle:
+                            'Ensure your entire body is visible in the frame.',
                       ),
                     ],
 
@@ -252,7 +253,8 @@ class _SetupScreen extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: (cameraState is core_providers.CameraReady ||
+                        onPressed:
+                            (cameraState is core_providers.CameraReady ||
                                 cameraState is core_providers.CameraStreaming)
                             ? onBegin
                             : null,
@@ -309,8 +311,9 @@ class _MovementStep extends StatelessWidget {
                 Text(title, style: theme.textTheme.titleMedium),
                 Text(
                   subtitle,
-                  style:
-                      theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white54,
+                  ),
                 ),
               ],
             ),
@@ -328,8 +331,9 @@ class _ActiveMovementScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cameraState =
-        ref.watch(core_providers.appCameraControllerProvider).value;
+    final cameraState = ref
+        .watch(core_providers.appCameraControllerProvider)
+        .value;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -351,17 +355,13 @@ class _ActiveMovementScreen extends ConsumerWidget {
             const Positioned.fill(
               child: ColoredBox(
                 color: Color(0xFF0F172A),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
 
           // Skeleton overlay
           const Positioned.fill(
-            child: RepaintBoundary(
-              child: SkeletonOverlay(),
-            ),
+            child: RepaintBoundary(child: SkeletonOverlay()),
           ),
 
           // Consolidated Header - Isolated rebuilds
@@ -381,22 +381,28 @@ class _ActiveScreeningHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     // Select only the fields needed for the header to avoid rebuilds on landmarks.
-    final movementIndex = ref.watch(screeningControllerProvider.select((s) {
-      if (s is ActiveMovement) return s.movementIndex;
-      return 0;
-    }));
-    
-    final movementName = ref.watch(screeningControllerProvider.select((s) {
-      if (s is ActiveMovement) return s.config.name;
-      return '';
-    }));
-    
-    final movementInstruction = ref.watch(screeningControllerProvider.select((s) {
-      if (s is ActiveMovement) return s.config.instruction;
-      return '';
-    }));
+    final movementIndex = ref.watch(
+      screeningControllerProvider.select((s) {
+        if (s is ActiveMovement) return s.movementIndex;
+        return 0;
+      }),
+    );
+
+    final movementName = ref.watch(
+      screeningControllerProvider.select((s) {
+        if (s is ActiveMovement) return s.config.name;
+        return '';
+      }),
+    );
+
+    final movementInstruction = ref.watch(
+      screeningControllerProvider.select((s) {
+        if (s is ActiveMovement) return s.config.instruction;
+        return '';
+      }),
+    );
 
     return Positioned(
       top: 16,
@@ -423,7 +429,11 @@ class _ActiveScreeningHeader extends ConsumerWidget {
                         children: [
                           IconButton(
                             onPressed: () => context.go('/history'),
-                            icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                            icon: const Icon(
+                              Icons.close,
+                              color: Colors.white70,
+                              size: 20,
+                            ),
                             tooltip: 'Exit Screening',
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
@@ -439,14 +449,14 @@ class _ActiveScreeningHeader extends ConsumerWidget {
                           const SizedBox(width: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.redAccent
-                                  .withValues(alpha: 0.15),
+                              color: Colors.redAccent.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                               border: Border.all(
-                                color: Colors.redAccent
-                                    .withValues(alpha: 0.3),
+                                color: Colors.redAccent.withValues(alpha: 0.3),
                               ),
                             ),
                             child: const Text(
@@ -461,9 +471,11 @@ class _ActiveScreeningHeader extends ConsumerWidget {
                           const Spacer(),
                           IconButton(
                             onPressed: () => ref
-                                .read(core_providers
-                                    .appCameraControllerProvider
-                                    .notifier)
+                                .read(
+                                  core_providers
+                                      .appCameraControllerProvider
+                                      .notifier,
+                                )
                                 .toggleCamera(),
                             icon: const Icon(
                               Icons.flip_camera_ios_outlined,
@@ -495,11 +507,11 @@ class _ActiveScreeningHeader extends ConsumerWidget {
                   ),
                 ),
                 LinearProgressIndicator(
-                  value: (movementIndex + 1) /
-                      screeningMovements.length,
+                  value: (movementIndex + 1) / screeningMovements.length,
                   backgroundColor: Colors.white.withValues(alpha: 0.05),
                   valueColor: AlwaysStoppedAnimation(
-                      theme.colorScheme.secondary),
+                    theme.colorScheme.secondary,
+                  ),
                   minHeight: 2,
                 ),
               ],
@@ -517,17 +529,21 @@ class _ActiveScreeningFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     // Select only reps and current movement type for the footer.
-    final repsCompleted = ref.watch(screeningControllerProvider.select((s) {
-      if (s is ActiveMovement) return s.repsCompleted;
-      return 0;
-    }));
-    
-    final movementConfig = ref.watch(screeningControllerProvider.select((s) {
-      if (s is ActiveMovement) return s.config;
-      return screeningMovements.first;
-    }));
+    final repsCompleted = ref.watch(
+      screeningControllerProvider.select((s) {
+        if (s is ActiveMovement) return s.repsCompleted;
+        return 0;
+      }),
+    );
+
+    final movementConfig = ref.watch(
+      screeningControllerProvider.select((s) {
+        if (s is ActiveMovement) return s.config;
+        return screeningMovements.first;
+      }),
+    );
 
     return Positioned(
       bottom: 0,
@@ -540,8 +556,7 @@ class _ActiveScreeningFooter extends ConsumerWidget {
           child: ClipRRect(
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               // Use semi-transparent background to reduce BackdropFilter cost
               decoration: AuraLinkTheme.glassEffect.copyWith(
                 color: Colors.black.withValues(alpha: 0.6),
@@ -556,14 +571,16 @@ class _ActiveScreeningFooter extends ConsumerWidget {
                       color: Colors.black26,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.05)),
+                        color: Colors.white.withValues(alpha: 0.05),
+                      ),
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: StickFigureAnimation(
                         movementType: movementConfig.type,
-                        color: theme.colorScheme.secondary
-                            .withValues(alpha: 0.8),
+                        color: theme.colorScheme.secondary.withValues(
+                          alpha: 0.8,
+                        ),
                         strokeWidth: 1.5,
                         jointRadius: 2.0,
                       ),
@@ -623,8 +640,9 @@ class _EnvironmentSetupScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cameraState =
-        ref.watch(core_providers.appCameraControllerProvider).value;
+    final cameraState = ref
+        .watch(core_providers.appCameraControllerProvider)
+        .value;
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -644,9 +662,7 @@ class _EnvironmentSetupScreen extends ConsumerWidget {
             const Positioned.fill(
               child: ColoredBox(
                 color: Color(0xFF0F172A),
-                child: Center(
-                  child: CircularProgressIndicator(),
-                ),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
 
@@ -698,9 +714,7 @@ class _CameraPreviewWrapper extends StatelessWidget {
     return ClipRect(
       child: Transform.scale(
         scale: scale,
-        child: Center(
-          child: CameraPreview(controller),
-        ),
+        child: Center(child: CameraPreview(controller)),
       ),
     );
   }
@@ -742,11 +756,7 @@ class _CompleteScreenState extends State<_CompleteScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.check_circle,
-              size: 80,
-              color: Colors.green.shade300,
-            ),
+            Icon(Icons.check_circle, size: 80, color: Colors.green.shade300),
             const SizedBox(height: 24),
             Text(
               'Assessment Complete',
@@ -757,9 +767,7 @@ class _CompleteScreenState extends State<_CompleteScreen> {
             const SizedBox(height: 12),
             Text(
               'Preparing your report...',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: Colors.white70,
-              ),
+              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
             ),
           ],
         ),

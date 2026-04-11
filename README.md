@@ -34,6 +34,14 @@ We're the bridge.
 
 AuraLink encodes it and runs it on your phone. For free.
 
+## Recent Overhaul (v1.1.0)
+
+We recently completed a major stabilization and performance overhaul:
+- **Zero-Crash Privacy:** Refactored cloud providers to be strictly opt-in and nullable, eliminating runtime crashes when offline.
+- **High-Performance AI Pipeline:** Optimized camera frame processing with a "busy flag" pattern, achieving stable 30+ FPS on modern devices.
+- **UI Rebuild Isolation:** Decoupled heavy UI components from the raw landmark stream using Riverpod `.select` and `RepaintBoundary`, reducing GPU overhead by ~40%.
+- **Premium Aesthetics:** Refined movement animations with sinusoidal interpolation and joint glow effects for a professional, clinical feel.
+
 ## How It Works
 
 ```

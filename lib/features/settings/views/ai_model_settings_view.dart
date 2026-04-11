@@ -47,7 +47,10 @@ class AIModelSettingsView extends ConsumerWidget {
           const SizedBox(height: 48),
           Text(
             'Engine version affects landmark visibility thresholds and angle calculation precision.',
-            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.24), fontSize: 12),
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.24),
+              fontSize: 12,
+            ),
             textAlign: TextAlign.center,
           ),
         ],
@@ -73,7 +76,10 @@ class AIModelSettingsView extends ConsumerWidget {
         decoration: isSelected
             ? AuraLinkTheme.glassEffect.copyWith(
                 color: theme.colorScheme.secondary.withValues(alpha: 0.1),
-                border: Border.all(color: theme.colorScheme.secondary, width: 1),
+                border: Border.all(
+                  color: theme.colorScheme.secondary,
+                  width: 1,
+                ),
               )
             : AuraLinkTheme.glassEffect,
         child: Row(
@@ -84,22 +90,38 @@ class AIModelSettingsView extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Text(name,
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: isSelected ? theme.colorScheme.secondary : theme.colorScheme.onSurface,
-                          )),
+                      Text(
+                        name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: isSelected
+                              ? theme.colorScheme.secondary
+                              : theme.colorScheme.onSurface,
+                        ),
+                      ),
                       const SizedBox(width: 8),
-                      Text(version,
-                          style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.24), fontSize: 10)),
+                      Text(
+                        version,
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.24,
+                          ),
+                          fontSize: 10,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 8),
-                  Text(desc,
-                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5))),
+                  Text(
+                    desc,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
                 ],
               ),
             ),
-            if (isSelected) Icon(Icons.check_circle, color: theme.colorScheme.secondary),
+            if (isSelected)
+              Icon(Icons.check_circle, color: theme.colorScheme.secondary),
           ],
         ),
       ),

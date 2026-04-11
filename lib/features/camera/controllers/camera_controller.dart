@@ -31,10 +31,7 @@ class CameraReady extends CameraState {
 }
 
 class CameraStreaming extends CameraState {
-  const CameraStreaming({
-    required this.controller,
-    this.landmarks = const [],
-  });
+  const CameraStreaming({required this.controller, this.landmarks = const []});
   final CameraController controller;
   final List<Landmark> landmarks;
 }
@@ -80,9 +77,9 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
     // If we were streaming, we should restart streaming after switching.
     final wasStreaming = current is CameraStreaming;
-    
+
     await requestPermission(specificCamera: newDesc);
-    
+
     if (wasStreaming) {
       await startStreaming();
     }
@@ -101,10 +98,12 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         return;
       }
 
-      final selected = specificCamera ?? cameras.firstWhere(
-        (c) => c.lensDirection == CameraLensDirection.back,
-        orElse: () => cameras.first,
-      );
+      final selected =
+          specificCamera ??
+          cameras.firstWhere(
+            (c) => c.lensDirection == CameraLensDirection.back,
+            orElse: () => cameras.first,
+          );
 
       ref.read(cameraDescriptionProvider.notifier).set(selected);
 
@@ -166,16 +165,23 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
     // Process the frame. The service handles the heavy lifting.
     // We listen to the first result and then reset the busy flag.
-    poseService.processFrame(image).first.then(
-      (landmarks) {
-        updateLandmarks(landmarks);
-        _isProcessing = false;
-      },
-      onError: (e) {
-        developer.log('Pose estimation error', error: e, name: 'CameraController');
-        _isProcessing = false;
-      },
-    );
+    poseService
+        .processFrame(image)
+        .first
+        .then(
+          (landmarks) {
+            updateLandmarks(landmarks);
+            _isProcessing = false;
+          },
+          onError: (e) {
+            developer.log(
+              'Pose estimation error',
+              error: e,
+              name: 'CameraController',
+            );
+            _isProcessing = false;
+          },
+        );
   }
 
   /// Stop streaming but keep camera initialized.
@@ -216,8 +222,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
 final appCameraControllerProvider =
     AsyncNotifierProvider<AppCameraController, CameraState>(
-  AppCameraController.new,
-);
+      AppCameraController.new,
+    );
 
 /// Derived provider exposing only the current landmarks.
 /// Widgets that only need landmark data watch this instead of the full

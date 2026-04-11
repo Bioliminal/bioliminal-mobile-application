@@ -12,8 +12,9 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   group('Screening pipeline on device', () {
-    testWidgets('full flow: disclaimer → screening → preview → complete',
-        (tester) async {
+    testWidgets('full flow: disclaimer → screening → preview → complete', (
+      tester,
+    ) async {
       await app.main();
       await tester.pumpAndSettle();
 
@@ -54,8 +55,9 @@ void main() {
       expect(find.textContaining("I'm Ready"), findsOneWidget);
     });
 
-    testWidgets('preview shows stick figure animation for each movement',
-        (tester) async {
+    testWidgets('preview shows stick figure animation for each movement', (
+      tester,
+    ) async {
       // Build a minimal app with just the screening flow.
       late ProviderContainer container;
 
@@ -105,8 +107,9 @@ void main() {
       );
     });
 
-    testWidgets('camera feed delivers real landmarks when available',
-        (tester) async {
+    testWidgets('camera feed delivers real landmarks when available', (
+      tester,
+    ) async {
       await app.main();
       await tester.pumpAndSettle();
 

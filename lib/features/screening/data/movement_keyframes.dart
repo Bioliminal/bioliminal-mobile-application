@@ -20,6 +20,23 @@ class PoseFrame {
     required this.rightAnkle,
   });
 
+  /// An empty pose with all points at zero.
+  static const empty = PoseFrame(
+    head: Offset.zero,
+    leftShoulder: Offset.zero,
+    rightShoulder: Offset.zero,
+    leftElbow: Offset.zero,
+    rightElbow: Offset.zero,
+    leftWrist: Offset.zero,
+    rightWrist: Offset.zero,
+    leftHip: Offset.zero,
+    rightHip: Offset.zero,
+    leftKnee: Offset.zero,
+    rightKnee: Offset.zero,
+    leftAnkle: Offset.zero,
+    rightAnkle: Offset.zero,
+  );
+
   final Offset head;
   final Offset leftShoulder;
   final Offset rightShoulder;
@@ -35,14 +52,20 @@ class PoseFrame {
   final Offset rightAnkle;
 
   List<Offset> get all => [
-        head,
-        leftShoulder, rightShoulder,
-        leftElbow, rightElbow,
-        leftWrist, rightWrist,
-        leftHip, rightHip,
-        leftKnee, rightKnee,
-        leftAnkle, rightAnkle,
-      ];
+    head,
+    leftShoulder,
+    rightShoulder,
+    leftElbow,
+    rightElbow,
+    leftWrist,
+    rightWrist,
+    leftHip,
+    rightHip,
+    leftKnee,
+    rightKnee,
+    leftAnkle,
+    rightAnkle,
+  ];
 
   /// Linearly interpolate between two poses.
   static PoseFrame lerp(PoseFrame a, PoseFrame b, double t) {
@@ -83,10 +106,10 @@ const stickFigureConnections = <(int, int)>[
   (2, 8), // right shoulder -> right hip
   (7, 8), // left hip -> right hip
   // Left leg
-  (7, 9),  // left hip -> left knee
+  (7, 9), // left hip -> left knee
   (9, 11), // left knee -> left ankle
   // Right leg
-  (8, 10),  // right hip -> right knee
+  (8, 10), // right hip -> right knee
   (10, 12), // right knee -> right ankle
 ];
 

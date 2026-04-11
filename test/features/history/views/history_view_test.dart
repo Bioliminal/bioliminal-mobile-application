@@ -26,9 +26,7 @@ class _FakeLocalStorageService extends LocalStorageService {
   Future<List<Assessment>> listAssessments() async => _assessments;
 }
 
-Widget _buildTestApp({
-  required List<Assessment> assessments,
-}) {
+Widget _buildTestApp({required List<Assessment> assessments}) {
   final List<String> navigatedRoutes = [];
 
   final router = GoRouter(
@@ -61,9 +59,7 @@ Widget _buildTestApp({
         _FakeLocalStorageService(assessments),
       ),
     ],
-    child: MaterialApp.router(
-      routerConfig: router,
-    ),
+    child: MaterialApp.router(routerConfig: router),
   );
 }
 
@@ -145,18 +141,20 @@ List<Assessment> _threeAssessments() {
 
 void main() {
   group('HistoryView empty state', () {
-    testWidgets('shows empty message and screening button when no assessments',
-        (tester) async {
-      await tester.pumpWidget(_buildTestApp(assessments: []));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'shows empty message and screening button when no assessments',
+      (tester) async {
+        await tester.pumpWidget(_buildTestApp(assessments: []));
+        await tester.pumpAndSettle();
 
-      expect(
-        find.text('Complete your first screening to start tracking progress'),
-        findsOneWidget,
-      );
-      expect(find.text('Start Screening'), findsOneWidget);
-      expect(find.byIcon(Icons.timeline), findsOneWidget);
-    });
+        expect(
+          find.text('Complete your first screening to start tracking progress'),
+          findsOneWidget,
+        );
+        expect(find.text('Start Screening'), findsOneWidget);
+        expect(find.byIcon(Icons.timeline), findsOneWidget);
+      },
+    );
 
     testWidgets('empty state button navigates to /screening', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: []));

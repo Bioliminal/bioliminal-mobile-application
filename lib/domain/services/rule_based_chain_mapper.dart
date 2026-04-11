@@ -47,7 +47,8 @@ class RuleBasedChainMapper implements ChainMapper {
     source: 'Wilke et al. (2016)',
     url: 'https://pubmed.ncbi.nlm.nih.gov/26281953/',
     type: CitationType.research,
-    appUsage: 'Foundation for chain selection; only three chains with strong evidence',
+    appUsage:
+        'Foundation for chain selection; only three chains with strong evidence',
   );
 
   static const _hypermobilityCitation = Citation(
@@ -66,8 +67,7 @@ class RuleBasedChainMapper implements ChainMapper {
     source: 'Clinical consensus; MediaPipe ankle r=0.45 with occlusion',
     url: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC10886083/',
     type: CitationType.clinical,
-    appUsage:
-        'Use with caution; surface in findings as lower-confidence',
+    appUsage: 'Use with caution; surface in findings as lower-confidence',
   );
 
   @override
@@ -84,10 +84,10 @@ class RuleBasedChainMapper implements ChainMapper {
     final hasHipDrop = _detectHipDrop(angleMap);
     final hasShoulderDepression = _detectShoulderDepression(angleMap);
     final hasThoracicLimitation = _detectThoracicLimitation(angleMap);
-    final hasContralateralHipWeakness =
-        _detectContralateralHipWeakness(angleMap);
-    final hasPlantarflexionDominance =
-        _detectPlantarflexionDominance(angleMap);
+    final hasContralateralHipWeakness = _detectContralateralHipWeakness(
+      angleMap,
+    );
+    final hasPlantarflexionDominance = _detectPlantarflexionDominance(angleMap);
     final hasKneeExtensionBias = _detectKneeExtensionBias(angleMap);
     final hasHipFlexionDominance = _detectHipFlexionDominance(angleMap);
     final hasTrunkLean = _detectTrunkLean(angleMap);
@@ -98,67 +98,75 @@ class RuleBasedChainMapper implements ChainMapper {
 
     // SBL: ankle restriction + knee valgus + hip drop
     if (hasAnkleRestriction && hasKneeValgus && hasHipDrop) {
-      final ankleConf =
-          _ankleConfidence(confidenceMap);
+      final ankleConf = _ankleConfidence(confidenceMap);
       final kneeConf = confidenceMap['knee'] ?? ConfidenceLevel.medium;
       final hipConf = confidenceMap['hip'] ?? ConfidenceLevel.medium;
       final chainConf = _worstConfidence([ankleConf, kneeConf, hipConf]);
 
-      compensations.add(Compensation(
-        type: CompensationType.ankleRestriction,
-        joint: 'ankle',
-        chain: ChainType.sbl,
-        confidence: _neverHighForAnkle(ankleConf),
-        value: _getAnkleDorsiflexionValue(angleMap),
-        threshold: _ankleDorsiflexionMin,
-        citation: _ankleRestrictionCitation,
-      ));
-      compensations.add(Compensation(
-        type: CompensationType.kneeValgus,
-        joint: 'knee',
-        chain: ChainType.sbl,
-        confidence: chainConf,
-        value: _getKneeValgusValue(angleMap),
-        threshold: _kneeValgusThreshold,
-        citation: _hewettCitation,
-      ));
-      compensations.add(Compensation(
-        type: CompensationType.hipDrop,
-        joint: 'hip',
-        chain: ChainType.sbl,
-        confidence: chainConf,
-        value: _getHipAsymmetryValue(angleMap),
-        threshold: _hipDropAsymmetryThreshold,
-        citation: _ferberCitation,
-      ));
+      compensations.add(
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          chain: ChainType.sbl,
+          confidence: _neverHighForAnkle(ankleConf),
+          value: _getAnkleDorsiflexionValue(angleMap),
+          threshold: _ankleDorsiflexionMin,
+          citation: _ankleRestrictionCitation,
+        ),
+      );
+      compensations.add(
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          chain: ChainType.sbl,
+          confidence: chainConf,
+          value: _getKneeValgusValue(angleMap),
+          threshold: _kneeValgusThreshold,
+          citation: _hewettCitation,
+        ),
+      );
+      compensations.add(
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip',
+          chain: ChainType.sbl,
+          confidence: chainConf,
+          value: _getHipAsymmetryValue(angleMap),
+          threshold: _hipDropAsymmetryThreshold,
+          citation: _ferberCitation,
+        ),
+      );
     }
     // BFL: shoulder depression + thoracic limitation + contralateral hip weakness
     else if (hasShoulderDepression &&
         hasThoracicLimitation &&
         hasContralateralHipWeakness) {
-      final shoulderConf =
-          confidenceMap['shoulder'] ?? ConfidenceLevel.medium;
+      final shoulderConf = confidenceMap['shoulder'] ?? ConfidenceLevel.medium;
       final hipConf = confidenceMap['hip'] ?? ConfidenceLevel.medium;
       final chainConf = _worstConfidence([shoulderConf, hipConf]);
 
-      compensations.add(Compensation(
-        type: CompensationType.trunkLean,
-        joint: 'shoulder',
-        chain: ChainType.bfl,
-        confidence: chainConf,
-        value: _getShoulderAsymmetryValue(angleMap),
-        threshold: _shoulderAsymmetryThreshold,
-        citation: _wilkeCitation,
-      ));
-      compensations.add(Compensation(
-        type: CompensationType.hipDrop,
-        joint: 'contralateral_hip',
-        chain: ChainType.bfl,
-        confidence: chainConf,
-        value: _getHipAsymmetryValue(angleMap),
-        threshold: _hipDropAsymmetryThreshold,
-        citation: _wilkeCitation,
-      ));
+      compensations.add(
+        Compensation(
+          type: CompensationType.trunkLean,
+          joint: 'shoulder',
+          chain: ChainType.bfl,
+          confidence: chainConf,
+          value: _getShoulderAsymmetryValue(angleMap),
+          threshold: _shoulderAsymmetryThreshold,
+          citation: _wilkeCitation,
+        ),
+      );
+      compensations.add(
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'contralateral_hip',
+          chain: ChainType.bfl,
+          confidence: chainConf,
+          value: _getHipAsymmetryValue(angleMap),
+          threshold: _hipDropAsymmetryThreshold,
+          citation: _wilkeCitation,
+        ),
+      );
     }
     // FFL: plantarflexion dominance + knee extension + hip flexion dominance
     else if (hasPlantarflexionDominance &&
@@ -169,93 +177,109 @@ class RuleBasedChainMapper implements ChainMapper {
       final hipConf = confidenceMap['hip'] ?? ConfidenceLevel.medium;
       final chainConf = _worstConfidence([ankleConf, kneeConf, hipConf]);
 
-      compensations.add(Compensation(
-        type: CompensationType.ankleRestriction,
-        joint: 'ankle',
-        chain: ChainType.ffl,
-        confidence: _neverHighForAnkle(ankleConf),
-        value: _getPlantarflexionValue(angleMap),
-        threshold: _plantarflexionDominanceThreshold,
-        citation: _wilkeCitation,
-      ));
-      compensations.add(Compensation(
-        type: CompensationType.kneeValgus,
-        joint: 'knee',
-        chain: ChainType.ffl,
-        confidence: chainConf,
-        value: _getKneeExtensionValue(angleMap),
-        threshold: 0.0,
-        citation: _wilkeCitation,
-      ));
-      compensations.add(Compensation(
-        type: CompensationType.hipDrop,
-        joint: 'hip_flexors',
-        chain: ChainType.ffl,
-        confidence: chainConf,
-        value: _getHipFlexionValue(angleMap),
-        threshold: _hipFlexionStandingThreshold,
-        citation: _wilkeCitation,
-      ));
+      compensations.add(
+        Compensation(
+          type: CompensationType.ankleRestriction,
+          joint: 'ankle',
+          chain: ChainType.ffl,
+          confidence: _neverHighForAnkle(ankleConf),
+          value: _getPlantarflexionValue(angleMap),
+          threshold: _plantarflexionDominanceThreshold,
+          citation: _wilkeCitation,
+        ),
+      );
+      compensations.add(
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          chain: ChainType.ffl,
+          confidence: chainConf,
+          value: _getKneeExtensionValue(angleMap),
+          threshold: 0.0,
+          citation: _wilkeCitation,
+        ),
+      );
+      compensations.add(
+        Compensation(
+          type: CompensationType.hipDrop,
+          joint: 'hip_flexors',
+          chain: ChainType.ffl,
+          confidence: chainConf,
+          value: _getHipFlexionValue(angleMap),
+          threshold: _hipFlexionStandingThreshold,
+          citation: _wilkeCitation,
+        ),
+      );
     }
     // Hypermobility: reversed interpretation (not SBL mapping)
     else if (isHypermobile) {
       final kneeConf = confidenceMap['knee'] ?? ConfidenceLevel.medium;
-      compensations.add(Compensation(
-        type: CompensationType.kneeValgus,
-        joint: 'knee',
-        chain: null,
-        confidence: kneeConf,
-        value: _getKneeERValue(angleMap),
-        threshold: _kneeERHypermobilityThreshold,
-        citation: _hypermobilityCitation,
-      ));
+      compensations.add(
+        Compensation(
+          type: CompensationType.kneeValgus,
+          joint: 'knee',
+          chain: null,
+          confidence: kneeConf,
+          value: _getKneeERValue(angleMap),
+          threshold: _kneeERHypermobilityThreshold,
+          citation: _hypermobilityCitation,
+        ),
+      );
     }
     // Individual flags that don't cluster into a chain
     else {
       if (hasKneeValgus) {
-        compensations.add(Compensation(
-          type: CompensationType.kneeValgus,
-          joint: 'knee',
-          chain: null,
-          confidence: confidenceMap['knee'] ?? ConfidenceLevel.medium,
-          value: _getKneeValgusValue(angleMap),
-          threshold: _kneeValgusThreshold,
-          citation: _hewettCitation,
-        ));
+        compensations.add(
+          Compensation(
+            type: CompensationType.kneeValgus,
+            joint: 'knee',
+            chain: null,
+            confidence: confidenceMap['knee'] ?? ConfidenceLevel.medium,
+            value: _getKneeValgusValue(angleMap),
+            threshold: _kneeValgusThreshold,
+            citation: _hewettCitation,
+          ),
+        );
       }
       if (hasAnkleRestriction) {
         final ankleConf = _ankleConfidence(confidenceMap);
-        compensations.add(Compensation(
-          type: CompensationType.ankleRestriction,
-          joint: 'ankle',
-          chain: null,
-          confidence: _neverHighForAnkle(ankleConf),
-          value: _getAnkleDorsiflexionValue(angleMap),
-          threshold: _ankleDorsiflexionMin,
-          citation: _ankleRestrictionCitation,
-        ));
+        compensations.add(
+          Compensation(
+            type: CompensationType.ankleRestriction,
+            joint: 'ankle',
+            chain: null,
+            confidence: _neverHighForAnkle(ankleConf),
+            value: _getAnkleDorsiflexionValue(angleMap),
+            threshold: _ankleDorsiflexionMin,
+            citation: _ankleRestrictionCitation,
+          ),
+        );
       }
       if (hasHipDrop) {
-        compensations.add(Compensation(
-          type: CompensationType.hipDrop,
-          joint: 'hip',
-          chain: null,
-          confidence: confidenceMap['hip'] ?? ConfidenceLevel.medium,
-          value: _getHipAsymmetryValue(angleMap),
-          threshold: _hipDropAsymmetryThreshold,
-          citation: _ferberCitation,
-        ));
+        compensations.add(
+          Compensation(
+            type: CompensationType.hipDrop,
+            joint: 'hip',
+            chain: null,
+            confidence: confidenceMap['hip'] ?? ConfidenceLevel.medium,
+            value: _getHipAsymmetryValue(angleMap),
+            threshold: _hipDropAsymmetryThreshold,
+            citation: _ferberCitation,
+          ),
+        );
       }
       if (hasTrunkLean) {
-        compensations.add(Compensation(
-          type: CompensationType.trunkLean,
-          joint: 'trunk',
-          chain: null,
-          confidence: confidenceMap['hip'] ?? ConfidenceLevel.medium,
-          value: angleMap['trunk_lateral_lean'] ?? 0.0,
-          threshold: _trunkLeanThreshold,
-          citation: _wilkeCitation,
-        ));
+        compensations.add(
+          Compensation(
+            type: CompensationType.trunkLean,
+            joint: 'trunk',
+            chain: null,
+            confidence: confidenceMap['hip'] ?? ConfidenceLevel.medium,
+            value: angleMap['trunk_lateral_lean'] ?? 0.0,
+            threshold: _trunkLeanThreshold,
+            citation: _wilkeCitation,
+          ),
+        );
       }
     }
 
@@ -301,8 +325,9 @@ class RuleBasedChainMapper implements ChainMapper {
   bool _detectKneeValgus(Map<String, double> m, bool isHypermobile) {
     final left = m['left_knee_valgus'] ?? 0.0;
     final right = m['right_knee_valgus'] ?? 0.0;
-    final threshold =
-        isHypermobile ? _kneeValgusHypermobilityCeiling : _kneeValgusThreshold;
+    final threshold = isHypermobile
+        ? _kneeValgusHypermobilityCeiling
+        : _kneeValgusThreshold;
     // For hypermobile: valgus < ceiling means NOT flagged (reversed).
     if (isHypermobile) {
       return false; // Hypermobility uses different interpretation.

@@ -17,52 +17,52 @@ const _citation = Citation(
 );
 
 List<Finding> _sblFindings() => const [
-      Finding(
-        bodyPathDescription:
-            'Your ankle, knee, and hip compensate together along your back body',
-        compensations: [
-          Compensation(
-            type: CompensationType.ankleRestriction,
-            joint: 'left_ankle',
-            chain: ChainType.sbl,
-            confidence: ConfidenceLevel.medium,
-            value: 28.0,
-            threshold: 35.0,
-            citation: _citation,
-          ),
-          Compensation(
-            type: CompensationType.kneeValgus,
-            joint: 'left_knee',
-            chain: ChainType.sbl,
-            confidence: ConfidenceLevel.high,
-            value: 12.0,
-            threshold: 10.0,
-            citation: _citation,
-          ),
-          Compensation(
-            type: CompensationType.hipDrop,
-            joint: 'left_hip',
-            chain: ChainType.sbl,
-            confidence: ConfidenceLevel.high,
-            value: 8.0,
-            threshold: 5.0,
-            citation: _citation,
-          ),
-        ],
-        upstreamDriver: 'left_ankle ankle restriction',
-        recommendation: 'Prioritize ankle and hip mobility work',
-        citations: [_citation],
-        drills: [
-          MobilityDrill(
-            name: 'Ankle Circles',
-            targetArea: 'ankle',
-            durationSeconds: 60,
-            compensationType: CompensationType.ankleRestriction,
-            steps: ['Step 1', 'Step 2'],
-          ),
-        ],
+  Finding(
+    bodyPathDescription:
+        'Your ankle, knee, and hip compensate together along your back body',
+    compensations: [
+      Compensation(
+        type: CompensationType.ankleRestriction,
+        joint: 'left_ankle',
+        chain: ChainType.sbl,
+        confidence: ConfidenceLevel.medium,
+        value: 28.0,
+        threshold: 35.0,
+        citation: _citation,
       ),
-    ];
+      Compensation(
+        type: CompensationType.kneeValgus,
+        joint: 'left_knee',
+        chain: ChainType.sbl,
+        confidence: ConfidenceLevel.high,
+        value: 12.0,
+        threshold: 10.0,
+        citation: _citation,
+      ),
+      Compensation(
+        type: CompensationType.hipDrop,
+        joint: 'left_hip',
+        chain: ChainType.sbl,
+        confidence: ConfidenceLevel.high,
+        value: 8.0,
+        threshold: 5.0,
+        citation: _citation,
+      ),
+    ],
+    upstreamDriver: 'left_ankle ankle restriction',
+    recommendation: 'Prioritize ankle and hip mobility work',
+    citations: [_citation],
+    drills: [
+      MobilityDrill(
+        name: 'Ankle Circles',
+        targetArea: 'ankle',
+        durationSeconds: 60,
+        compensationType: CompensationType.ankleRestriction,
+        steps: ['Step 1', 'Step 2'],
+      ),
+    ],
+  ),
+];
 
 Widget _wrap(Widget child) {
   return MaterialApp(home: Scaffold(body: child));
@@ -75,40 +75,38 @@ Widget _wrap(Widget child) {
 void main() {
   group('BodyMap', () {
     testWidgets('renders CustomPaint with findings', (tester) async {
-      await tester.pumpWidget(_wrap(
-        BodyMap(findings: _sblFindings()),
-      ));
+      await tester.pumpWidget(_wrap(BodyMap(findings: _sblFindings())));
 
       expect(find.byType(BodyMap), findsOneWidget);
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
     testWidgets('renders with empty findings list', (tester) async {
-      await tester.pumpWidget(_wrap(
-        const BodyMap(findings: []),
-      ));
+      await tester.pumpWidget(_wrap(const BodyMap(findings: [])));
 
       expect(find.byType(BodyMap), findsOneWidget);
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('onRegionTap fires when tapping a joint region',
-        (tester) async {
+    testWidgets('onRegionTap fires when tapping a joint region', (
+      tester,
+    ) async {
       int? tappedIndex;
 
-      await tester.pumpWidget(_wrap(
-        BodyMap(
-          findings: _sblFindings(),
-          onRegionTap: (i) => tappedIndex = i,
+      await tester.pumpWidget(
+        _wrap(
+          BodyMap(
+            findings: _sblFindings(),
+            onRegionTap: (i) => tappedIndex = i,
+          ),
         ),
-      ));
+      );
 
       // Tap at normalized position for left_ankle (0.38, 0.92).
       // The GestureDetector wraps a SizedBox with width=size.width
       // and height=width*1.4. We tap within that area.
       final gestureFinder = find.byType(GestureDetector);
-      final gestureBox =
-          tester.renderObject(gestureFinder.first) as RenderBox;
+      final gestureBox = tester.renderObject(gestureFinder.first) as RenderBox;
       final gestureSize = gestureBox.size;
 
       final tapX = gestureSize.width * 0.38;
@@ -120,21 +118,23 @@ void main() {
       expect(tappedIndex, 0);
     });
 
-    testWidgets('tapping outside regions does not fire callback',
-        (tester) async {
+    testWidgets('tapping outside regions does not fire callback', (
+      tester,
+    ) async {
       int? tappedIndex;
 
-      await tester.pumpWidget(_wrap(
-        BodyMap(
-          findings: _sblFindings(),
-          onRegionTap: (i) => tappedIndex = i,
+      await tester.pumpWidget(
+        _wrap(
+          BodyMap(
+            findings: _sblFindings(),
+            onRegionTap: (i) => tappedIndex = i,
+          ),
         ),
-      ));
+      );
 
       // Tap at head area (0.5, 0.1) — no compensation region there.
       final gestureFinder = find.byType(GestureDetector);
-      final gestureBox =
-          tester.renderObject(gestureFinder.first) as RenderBox;
+      final gestureBox = tester.renderObject(gestureFinder.first) as RenderBox;
       final gestureSize = gestureBox.size;
 
       final tapX = gestureSize.width * 0.50;
@@ -147,19 +147,17 @@ void main() {
     });
 
     testWidgets('selectedFindingIndex updates repaint', (tester) async {
-      await tester.pumpWidget(_wrap(
-        BodyMap(
-          findings: _sblFindings(),
-          selectedFindingIndex: 0,
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(BodyMap(findings: _sblFindings(), selectedFindingIndex: 0)),
+      );
 
       // No assertion beyond "it renders without error" when selection is set.
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('multiple findings with different chains render',
-        (tester) async {
+    testWidgets('multiple findings with different chains render', (
+      tester,
+    ) async {
       final findings = [
         ..._sblFindings(),
         const Finding(
@@ -191,9 +189,7 @@ void main() {
         ),
       ];
 
-      await tester.pumpWidget(_wrap(
-        BodyMap(findings: findings),
-      ));
+      await tester.pumpWidget(_wrap(BodyMap(findings: findings)));
 
       expect(find.byType(CustomPaint), findsWidgets);
     });

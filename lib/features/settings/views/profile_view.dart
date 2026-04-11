@@ -7,8 +7,18 @@ class ProfileView extends ConsumerWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
@@ -30,13 +40,24 @@ class ProfileView extends ConsumerWidget {
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: theme.colorScheme.onSurface.withValues(alpha: 0.1),
-              child: Icon(Icons.person, size: 50, color: theme.colorScheme.onSurface.withValues(alpha: 0.2)),
+              backgroundColor: theme.colorScheme.onSurface.withValues(
+                alpha: 0.1,
+              ),
+              child: Icon(
+                Icons.person,
+                size: 50,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
+              ),
             ),
             const SizedBox(height: 24),
             Text(profile.name, style: theme.textTheme.headlineMedium),
             const SizedBox(height: 8),
-            Text(profile.email, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+            Text(
+              profile.email,
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
             const SizedBox(height: 48),
             _infoRow(
               Icons.calendar_today,
@@ -50,12 +71,18 @@ class ProfileView extends ConsumerWidget {
               '${profile.totalScans}',
               theme,
             ),
-            _infoRow(Icons.workspace_premium, 'Account Type', 'Premium (Capstone Edition)', theme),
+            _infoRow(
+              Icons.workspace_premium,
+              'Account Type',
+              'Premium (Capstone Edition)',
+              theme,
+            ),
             const SizedBox(height: 48),
             SizedBox(
               width: double.infinity,
               child: OutlinedButton(
-                onPressed: () => _showEditProfileDialog(context, ref, profile, theme),
+                onPressed: () =>
+                    _showEditProfileDialog(context, ref, profile, theme),
                 child: const Text('EDIT PROFILE'),
               ),
             ),
@@ -65,7 +92,12 @@ class ProfileView extends ConsumerWidget {
     );
   }
 
-  void _showEditProfileDialog(BuildContext context, WidgetRef ref, UserProfile profile, ThemeData theme) {
+  void _showEditProfileDialog(
+    BuildContext context,
+    WidgetRef ref,
+    UserProfile profile,
+    ThemeData theme,
+  ) {
     final nameController = TextEditingController(text: profile.name);
     final emailController = TextEditingController(text: profile.email);
 
@@ -97,12 +129,21 @@ class ProfileView extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('CANCEL', style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.4))),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+              ),
+            ),
           ),
           FilledButton(
             onPressed: () {
-              ref.read(userProfileProvider.notifier).updateName(nameController.text);
-              ref.read(userProfileProvider.notifier).updateEmail(emailController.text);
+              ref
+                  .read(userProfileProvider.notifier)
+                  .updateName(nameController.text);
+              ref
+                  .read(userProfileProvider.notifier)
+                  .updateEmail(emailController.text);
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Profile updated successfully')),
@@ -122,7 +163,12 @@ class ProfileView extends ConsumerWidget {
         children: [
           Icon(icon, size: 20, color: theme.colorScheme.secondary),
           const SizedBox(width: 16),
-          Text(label, style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.7))),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+            ),
+          ),
           const Spacer(),
           Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
         ],

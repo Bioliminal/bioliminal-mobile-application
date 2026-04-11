@@ -92,7 +92,7 @@ class _StickFigureAnimationState extends State<StickFigureAnimation>
 /// Given a list of keyframes and a normalized [t] in [0,1], returns the
 /// interpolated pose. Distributes time evenly across keyframe segments.
 PoseFrame interpolateKeyframes(List<PoseFrame> keyframes, double t) {
-  if (keyframes.isEmpty) return const PoseFrame(all: []);
+  if (keyframes.isEmpty) return PoseFrame.empty;
   if (keyframes.length == 1) return keyframes.first;
 
   final segments = keyframes.length - 1;
@@ -147,8 +147,14 @@ class _StickFigurePainter extends CustomPainter {
     // Draw connections.
     for (final (start, end) in stickFigureConnections) {
       if (start >= joints.length || end >= joints.length) continue;
-      final a = Offset(joints[start].dx * size.width, joints[start].dy * size.height);
-      final b = Offset(joints[end].dx * size.width, joints[end].dy * size.height);
+      final a = Offset(
+        joints[start].dx * size.width,
+        joints[start].dy * size.height,
+      );
+      final b = Offset(
+        joints[end].dx * size.width,
+        joints[end].dy * size.height,
+      );
       canvas.drawLine(a, b, segmentPaint);
     }
 
@@ -162,7 +168,6 @@ class _StickFigurePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _StickFigurePainter oldDelegate) {
-    return !identical(oldDelegate.pose, pose) ||
-        oldDelegate.color != color;
+    return !identical(oldDelegate.pose, pose) || oldDelegate.color != color;
   }
 }

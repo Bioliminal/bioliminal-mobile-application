@@ -182,12 +182,7 @@ void main() {
     test('33 landmarks (BlazePose count) normalizes correctly', () {
       final raw = List.generate(
         33,
-        (i) => (
-          x: i * 20.0,
-          y: i * 15.0,
-          z: 0.0,
-          visibility: 0.9,
-        ),
+        (i) => (x: i * 20.0, y: i * 15.0, z: 0.0, visibility: 0.9),
       );
 
       final landmarks = normalizeRawLandmarks(

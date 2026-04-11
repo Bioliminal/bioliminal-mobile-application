@@ -99,10 +99,7 @@ class BodyMap extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _BodyMapPainter extends CustomPainter {
-  _BodyMapPainter({
-    required this.findings,
-    this.selectedFindingIndex,
-  });
+  _BodyMapPainter({required this.findings, this.selectedFindingIndex});
 
   final List<Finding> findings;
   final int? selectedFindingIndex;
@@ -135,11 +132,13 @@ class _BodyMapPainter extends CustomPainter {
 
     final path = Path();
     // Head
-    path.addOval(Rect.fromCenter(
-      center: Offset(w * 0.50, h * 0.10),
-      width: w * 0.12,
-      height: h * 0.08,
-    ));
+    path.addOval(
+      Rect.fromCenter(
+        center: Offset(w * 0.50, h * 0.10),
+        width: w * 0.12,
+        height: h * 0.08,
+      ),
+    );
 
     // Torso & Limbs (Simplified stylized silhouette)
     path.moveTo(w * 0.38, h * 0.16);
@@ -211,7 +210,8 @@ class _BodyMapPainter extends CustomPainter {
         if (center == null) continue;
 
         final offset = Offset(center.dx * size.width, center.dy * size.height);
-        final isDriver = driverJointName != null && comp.joint == driverJointName;
+        final isDriver =
+            driverJointName != null && comp.joint == driverJointName;
         final color = isDriver ? _driverColor : _symptomColor;
 
         // Glow
@@ -249,15 +249,20 @@ class _BodyMapPainter extends CustomPainter {
     bool isSelected,
   ) {
     final label = _readableJointName(joint).toUpperCase();
-    final builder = ui.ParagraphBuilder(
-      ui.ParagraphStyle(
-        textAlign: TextAlign.center,
-        fontSize: size.width * (isSelected ? 0.035 : 0.028),
-        fontWeight: isSelected ? ui.FontWeight.bold : ui.FontWeight.normal,
-      ),
-    )
-      ..pushStyle(ui.TextStyle(color: isSelected ? Colors.white : Colors.white70))
-      ..addText(label);
+    final builder =
+        ui.ParagraphBuilder(
+            ui.ParagraphStyle(
+              textAlign: TextAlign.center,
+              fontSize: size.width * (isSelected ? 0.035 : 0.028),
+              fontWeight: isSelected
+                  ? ui.FontWeight.bold
+                  : ui.FontWeight.normal,
+            ),
+          )
+          ..pushStyle(
+            ui.TextStyle(color: isSelected ? Colors.white : Colors.white70),
+          )
+          ..addText(label);
 
     final paragraph = builder.build()
       ..layout(ui.ParagraphConstraints(width: size.width * 0.3));

@@ -88,10 +88,7 @@ class PreliminaryFindings extends StatelessWidget {
 }
 
 class _ProgressDots extends StatelessWidget {
-  const _ProgressDots({
-    required this.total,
-    required this.completed,
-  });
+  const _ProgressDots({required this.total, required this.completed});
 
   final int total;
   final int completed;

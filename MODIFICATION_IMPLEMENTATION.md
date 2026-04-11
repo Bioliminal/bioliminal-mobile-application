@@ -6,6 +6,7 @@ This plan outlines the steps to resolve state errors, optimize camera performanc
 - Phase 1 Complete: Refactored cloud providers to be nullable, added null checks in `LoginView`, and updated related unit tests. App should no longer crash on launch when cloud sync is disabled.
 - Phase 2 Complete: Optimized `AppCameraController` with a "busy flag" pattern and a persistent stream, significantly reducing the overhead of ML processing per frame.
 - Phase 3 Complete: Isolated high-frequency UI updates in `ScreeningView`. Header and Footer now use `.select` to avoid unnecessary rebuilds during pose estimation. Added `RepaintBoundary` to the camera and skeleton layers to further reduce GPU load.
+- Phase 4 Complete: Cleaned up extensive dead code in `HistoryView` and `ReportView`. Refined `StickFigureAnimation` with smoother sinusoidal interpolation and a joint glow effect for a more premium aesthetic. Updated sharing integration to use modern APIs.
 
 ## Phase 1: Foundation & State Stabilization
 Goal: Eliminate app crashes caused by cloud provider errors and ensure a clean starting point.
@@ -67,12 +68,21 @@ Goal: Isolate heavy UI elements from high-frequency AI updates.
 ## Phase 4: Premium UI Polish & Cleanup
 Goal: Deliver a sophisticated look and remove technical debt.
 
-- [ ] Remove unused components and "dead code" in `lib/features/report/views/report_view.dart` and `lib/features/history/views/history_view.dart`.
-- [ ] Fully wire the `PDFGenerator` and `SharePlus` integration in `ReportView`.
-- [ ] Refine `StickFigureAnimation` with smoother transitions and improved stroke/joint aesthetics.
-- [ ] Apply a consistent "Glassmorphism" theme (using optimized containers) across all secondary screens.
-- [ ] **Validation & Commit:**
-    - [ ] (Include all standard validation/commit steps from Phase 1)
+- [x] Remove unused components and "dead code" in `lib/features/report/views/report_view.dart` and `lib/features/history/views/history_view.dart`.
+- [x] Fully wire the `PDFGenerator` and `SharePlus` integration in `ReportView`.
+- [x] Refine `StickFigureAnimation` with smoother transitions and improved stroke/joint aesthetics.
+- [x] Apply a consistent "Glassmorphism" theme (using optimized containers) across all secondary screens.
+- [x] **Validation & Commit:**
+    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+    - [x] Run the `dart_fix` tool to clean up the code.
+    - [x] Run the `analyze_files` tool one more time and fix any issues.
+    - [x] Run any tests to make sure they all pass.
+    - [x] Run `dart_format` to make sure that the formatting is correct.
+    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
+    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
+    - [x] Use `git diff` to verify changes and prepare a commit message.
+    - [x] Wait for user approval before committing.
+    - [x] After committing, use `hot_reload` if the app is running.
 
 ## Phase 5: Final Validation & Documentation
 Goal: Ensure everything works as intended and the codebase is well-documented.

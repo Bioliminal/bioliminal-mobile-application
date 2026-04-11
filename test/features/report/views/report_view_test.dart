@@ -23,71 +23,68 @@ const _citation = Citation(
   appUsage: 'Used in test',
 );
 
-
-
 Assessment _assessmentWithCompensations({
   String id = 'test-001',
   DateTime? createdAt,
-}) =>
-    Assessment(
-      id: id,
-      createdAt: createdAt ?? DateTime(2026, 1, 15),
-      movements: const [],
-      compensations: const [
-        Compensation(
-          type: CompensationType.ankleRestriction,
-          joint: 'left_ankle',
-          chain: ChainType.sbl,
-          confidence: ConfidenceLevel.high,
-          value: 28.0,
-          threshold: 35.0,
-          citation: _citation,
-        ),
-        Compensation(
-          type: CompensationType.kneeValgus,
-          joint: 'left_knee',
-          chain: ChainType.sbl,
-          confidence: ConfidenceLevel.high,
-          value: 12.0,
-          threshold: 10.0,
-          citation: _citation,
-        ),
-        Compensation(
-          type: CompensationType.hipDrop,
-          joint: 'left_hip',
-          chain: ChainType.sbl,
-          confidence: ConfidenceLevel.high,
-          value: 8.0,
-          threshold: 5.0,
-          citation: _citation,
-        ),
-      ],
-    );
+}) => Assessment(
+  id: id,
+  createdAt: createdAt ?? DateTime(2026, 1, 15),
+  movements: const [],
+  compensations: const [
+    Compensation(
+      type: CompensationType.ankleRestriction,
+      joint: 'left_ankle',
+      chain: ChainType.sbl,
+      confidence: ConfidenceLevel.high,
+      value: 28.0,
+      threshold: 35.0,
+      citation: _citation,
+    ),
+    Compensation(
+      type: CompensationType.kneeValgus,
+      joint: 'left_knee',
+      chain: ChainType.sbl,
+      confidence: ConfidenceLevel.high,
+      value: 12.0,
+      threshold: 10.0,
+      citation: _citation,
+    ),
+    Compensation(
+      type: CompensationType.hipDrop,
+      joint: 'left_hip',
+      chain: ChainType.sbl,
+      confidence: ConfidenceLevel.high,
+      value: 8.0,
+      threshold: 5.0,
+      citation: _citation,
+    ),
+  ],
+);
 
 Assessment _emptyAssessment() => Assessment(
-      id: 'test-empty',
-      createdAt: DateTime(2026, 1, 15),
-      movements: const [],
-      compensations: const [],
-    );
+  id: 'test-empty',
+  createdAt: DateTime(2026, 1, 15),
+  movements: const [],
+  compensations: const [],
+);
 
 /// Creates multiple assessments with ankle-dominant pattern for longitudinal
 /// context testing.
 List<Assessment> _multipleAssessments() => [
-      // Newest first (as listAssessments returns)
-      _assessmentWithCompensations(
-        id: 'test-003',
-        createdAt: DateTime(2026, 3, 15),
-      ),
-      _assessmentWithCompensations(
-        id: 'test-002',
-        createdAt: DateTime(2026, 2, 15),
-      ),
-      _assessmentWithCompensations(
-        id: 'test-001',
-        createdAt: DateTime(2026, 1, 15),
-      ),
-    ];
+  // Newest first (as listAssessments returns)
+  _assessmentWithCompensations(
+    id: 'test-003',
+    createdAt: DateTime(2026, 3, 15),
+  ),
+  _assessmentWithCompensations(
+    id: 'test-002',
+    createdAt: DateTime(2026, 2, 15),
+  ),
+  _assessmentWithCompensations(
+    id: 'test-001',
+    createdAt: DateTime(2026, 1, 15),
+  ),
+];
 
 // ---------------------------------------------------------------------------
 // Fake local storage that returns controlled assessments
@@ -95,7 +92,7 @@ List<Assessment> _multipleAssessments() => [
 
 class _FakeLocalStorageService extends LocalStorageService {
   _FakeLocalStorageService(this._assessment, {List<Assessment>? allAssessments})
-      : _allAssessments = allAssessments ?? [?_assessment];
+    : _allAssessments = allAssessments ?? [?_assessment];
   final Assessment? _assessment;
   final List<Assessment> _allAssessments;
 
@@ -121,9 +118,8 @@ Widget _buildHarness({
     routes: [
       GoRoute(
         path: '/report/:id',
-        builder: (context, state) => ReportView(
-          id: state.pathParameters['id']!,
-        ),
+        builder: (context, state) =>
+            ReportView(id: state.pathParameters['id']!),
       ),
     ],
   );
@@ -144,28 +140,28 @@ Widget _buildHarness({
 void main() {
   group('ReportView with compensations (via router extra)', () {
     testWidgets('shows body map at top', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       expect(find.byType(BodyMap), findsOneWidget);
     });
 
     testWidgets('shows summary card', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       expect(find.text('Summary'), findsOneWidget);
@@ -173,30 +169,29 @@ void main() {
     });
 
     testWidgets('shows finding cards', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       expect(find.byType(FindingCard), findsWidgets);
       expect(find.text('Your Findings'), findsOneWidget);
     });
 
-    testWidgets('shows legend with driver and symptom labels',
-        (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+    testWidgets('shows legend with driver and symptom labels', (tester) async {
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       expect(find.text('Upstream driver'), findsOneWidget);
@@ -204,14 +199,14 @@ void main() {
     });
 
     testWidgets('tapping finding card selects it', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       // Scroll finding card into view (body map is taller than viewport).
@@ -230,14 +225,14 @@ void main() {
     });
 
     testWidgets('drill cards show name and duration', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       // Scroll to finding card and expand.
@@ -257,14 +252,14 @@ void main() {
     });
 
     testWidgets('drill cards show numbered steps', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       // Scroll to finding card and expand.
@@ -284,14 +279,14 @@ void main() {
     });
 
     testWidgets('practitioner discussion points render', (tester) async {
-      final storage = _FakeLocalStorageService(
-        _assessmentWithCompensations(),
+      final storage = _FakeLocalStorageService(_assessmentWithCompensations());
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: _assessmentWithCompensations(),
+          storageService: storage,
+        ),
       );
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: _assessmentWithCompensations(),
-        storageService: storage,
-      ));
       await tester.pumpAndSettle();
 
       // Scroll down to practitioner points.
@@ -307,10 +302,9 @@ void main() {
 
   group('ReportView empty state', () {
     testWidgets('shows "no significant patterns" message', (tester) async {
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-empty',
-        routerExtra: _emptyAssessment(),
-      ));
+      await tester.pumpWidget(
+        _buildHarness(id: 'test-empty', routerExtra: _emptyAssessment()),
+      );
       await tester.pumpAndSettle();
 
       expect(
@@ -324,13 +318,13 @@ void main() {
 
   group('ReportView deep-link (no router extra)', () {
     testWidgets('loads assessment from LocalStorageService', (tester) async {
-      final fakeStorage =
-          _FakeLocalStorageService(_assessmentWithCompensations());
+      final fakeStorage = _FakeLocalStorageService(
+        _assessmentWithCompensations(),
+      );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        storageService: fakeStorage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(id: 'test-001', storageService: fakeStorage),
+      );
 
       // First pump: loading spinner.
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
@@ -344,14 +338,14 @@ void main() {
       expect(find.byType(FindingCard), findsWidgets);
     });
 
-    testWidgets('shows "Assessment not found" when storage returns null',
-        (tester) async {
+    testWidgets('shows "Assessment not found" when storage returns null', (
+      tester,
+    ) async {
       final fakeStorage = _FakeLocalStorageService(null);
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'nonexistent',
-        storageService: fakeStorage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(id: 'nonexistent', storageService: fakeStorage),
+      );
 
       await tester.pumpAndSettle();
 
@@ -364,34 +358,35 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('ReportView with longitudinal context (3+ assessments)', () {
-    testWidgets('shows movement profile section with archetype name and description',
-        (tester) async {
-      final assessments = _multipleAssessments();
-      final storage = _FakeLocalStorageService(
-        assessments.first,
-        allAssessments: assessments,
-      );
+    testWidgets(
+      'shows movement profile section with archetype name and description',
+      (tester) async {
+        final assessments = _multipleAssessments();
+        final storage = _FakeLocalStorageService(
+          assessments.first,
+          allAssessments: assessments,
+        );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-003',
-        routerExtra: assessments.first,
-        storageService: storage,
-      ));
-      // Pump frames to let didChangeDependencies fire and async futures resolve.
-      await tester.pump();
-      await tester.pump();
-      await tester.pump();
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildHarness(
+            id: 'test-003',
+            routerExtra: assessments.first,
+            storageService: storage,
+          ),
+        );
+        // Pump frames to let didChangeDependencies fire and async futures resolve.
+        await tester.pump();
+        await tester.pump();
+        await tester.pump();
+        await tester.pumpAndSettle();
 
-      expect(find.text('Your Movement Profile'), findsOneWidget);
-      // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
-      // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
-      expect(find.text('Hip-Dominant'), findsOneWidget);
-      expect(
-        find.textContaining('hip and pelvis'),
-        findsOneWidget,
-      );
-    });
+        expect(find.text('Your Movement Profile'), findsOneWidget);
+        // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
+        // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
+        expect(find.text('Hip-Dominant'), findsOneWidget);
+        expect(find.textContaining('hip and pelvis'), findsOneWidget);
+      },
+    );
 
     testWidgets('shows trend badges on finding cards', (tester) async {
       final assessments = _multipleAssessments();
@@ -400,11 +395,13 @@ void main() {
         allAssessments: assessments,
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-003',
-        routerExtra: assessments.first,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-003',
+          routerExtra: assessments.first,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Scroll to finding cards.
@@ -490,11 +487,13 @@ void main() {
         allAssessments: assessments,
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-003',
-        routerExtra: assessments.first,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-003',
+          routerExtra: assessments.first,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // FindingCards are rendered — verify multiple findings exist.
@@ -510,11 +509,13 @@ void main() {
         allAssessments: [assessment],
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: assessment,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: assessment,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Your Movement Profile'), findsNothing);
@@ -527,11 +528,13 @@ void main() {
         allAssessments: [assessment],
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: assessment,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: assessment,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // No trend badges when there's only one assessment.
@@ -541,19 +544,22 @@ void main() {
       expect(find.text('New Pattern'), findsNothing);
     });
 
-    testWidgets('renders identically to pre-longitudinal behavior',
-        (tester) async {
+    testWidgets('renders identically to pre-longitudinal behavior', (
+      tester,
+    ) async {
       final assessment = _assessmentWithCompensations();
       final storage = _FakeLocalStorageService(
         assessment,
         allAssessments: [assessment],
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-001',
-        routerExtra: assessment,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-001',
+          routerExtra: assessment,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Standard elements present.
@@ -568,8 +574,9 @@ void main() {
   });
 
   group('ReportView trend badge colors', () {
-    testWidgets('trend badges use correct color for each classification',
-        (tester) async {
+    testWidgets('trend badges use correct color for each classification', (
+      tester,
+    ) async {
       // Create assessments that produce a worsening trend on ankle
       final assessments = [
         Assessment(
@@ -627,11 +634,13 @@ void main() {
         allAssessments: assessments,
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-003',
-        routerExtra: assessments.first,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-003',
+          routerExtra: assessments.first,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Scroll to finding card area.
@@ -655,11 +664,13 @@ void main() {
         allAssessments: assessments,
       );
 
-      await tester.pumpWidget(_buildHarness(
-        id: 'test-003',
-        routerExtra: assessments.first,
-        storageService: storage,
-      ));
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-003',
+          routerExtra: assessments.first,
+          storageService: storage,
+        ),
+      );
       await tester.pumpAndSettle();
 
       // Verify no chain names appear in the rendered text.

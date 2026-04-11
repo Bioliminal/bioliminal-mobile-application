@@ -33,13 +33,13 @@ class _LoginViewState extends ConsumerState<LoginView> {
     try {
       // Enable cloud sync first to initialize Firebase services
       ref.read(cloudSyncEnabledProvider.notifier).enable();
-      
+
       final auth = ref.read(authServiceProvider);
       if (auth == null) {
         throw StateError('AuthService failed to initialize.');
       }
       await auth.signIn(); // Using existing anonymous or future email/pass
-      
+
       if (mounted) context.go('/history');
     } catch (e) {
       if (mounted) {
@@ -88,7 +88,9 @@ class _LoginViewState extends ConsumerState<LoginView> {
             const SizedBox(height: 16),
             Text(
               'Sync your assessments across devices and never lose your movement history.',
-              style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.7)),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 48),

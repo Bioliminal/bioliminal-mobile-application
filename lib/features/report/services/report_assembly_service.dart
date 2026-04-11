@@ -10,8 +10,7 @@ const _bodyPathDescriptions = <ChainType, String>{
       'Your ankle, knee, and hip compensate together along your back body',
   ChainType.bfl:
       'Your shoulder and opposite hip are connected through your back',
-  ChainType.ffl:
-      'Your front body -- ankle, knee, hip -- compensates as a unit',
+  ChainType.ffl: 'Your front body -- ankle, knee, hip -- compensates as a unit',
 };
 
 const _standaloneDescription = 'An isolated finding at';
@@ -154,8 +153,9 @@ class ReportAssemblyService {
       final trendClass = _lookupTrend(comps, trendReport);
 
       // Recommendation logic.
-      final hasAnkleRestriction =
-          comps.any((c) => c.type == CompensationType.ankleRestriction);
+      final hasAnkleRestriction = comps.any(
+        (c) => c.type == CompensationType.ankleRestriction,
+      );
       final isRestrictionChain =
           chain == ChainType.sbl || chain == ChainType.ffl;
 
@@ -166,8 +166,7 @@ class ReportAssemblyService {
         recommendation =
             'Focus on neuromuscular control and stability training';
       } else {
-        recommendation =
-            'Discuss this pattern with a movement professional';
+        recommendation = 'Discuss this pattern with a movement professional';
       }
 
       // Evolve recommendation based on trend.
@@ -194,15 +193,17 @@ class ReportAssemblyService {
         archetype: archetype,
       );
 
-      findings.add(Finding(
-        bodyPathDescription: bodyPath,
-        compensations: comps,
-        upstreamDriver: upstreamDriver,
-        recommendation: recommendation,
-        citations: citationSet.values.toList(),
-        drills: drills,
-        trendStatus: trendClass,
-      ));
+      findings.add(
+        Finding(
+          bodyPathDescription: bodyPath,
+          compensations: comps,
+          upstreamDriver: upstreamDriver,
+          recommendation: recommendation,
+          citations: citationSet.values.toList(),
+          drills: drills,
+          trendStatus: trendClass,
+        ),
+      );
     }
 
     // 4. Sort findings by priority (stable sort).
@@ -232,13 +233,16 @@ class ReportAssemblyService {
       final f = findings[i];
       if (f.upstreamDriver != null) {
         final symptomJoints = f.compensations
-            .where((c) =>
-                !c.joint.contains(_chainOriginJoint[f.compensations.first.chain] ?? ''))
+            .where(
+              (c) => !c.joint.contains(
+                _chainOriginJoint[f.compensations.first.chain] ?? '',
+              ),
+            )
             .map((c) => c.joint)
             .toSet();
         if (symptomJoints.isNotEmpty) {
           practitionerPointsByFinding[i] =
-            'Ask about ${f.upstreamDriver} and how it affects ${symptomJoints.join(', ')}';
+              'Ask about ${f.upstreamDriver} and how it affects ${symptomJoints.join(', ')}';
         } else {
           practitionerPointsByFinding[i] =
               'Ask about ${f.upstreamDriver} as a possible driver';
@@ -264,11 +268,11 @@ class ReportAssemblyService {
 
   static bool _hasHypermobilityIndicators(List<Compensation> comps) {
     // Low valgus value with high ROM suggests hypermobility.
-    final valgusComps =
-        comps.where((c) => c.type == CompensationType.kneeValgus);
+    final valgusComps = comps.where(
+      (c) => c.type == CompensationType.kneeValgus,
+    );
     if (valgusComps.isEmpty) return false;
-    return valgusComps
-        .any((c) => c.value < 5.0 && c.chain == null);
+    return valgusComps.any((c) => c.value < 5.0 && c.chain == null);
   }
 
   // -------------------------------------------------------------------------
@@ -370,8 +374,9 @@ class ReportAssemblyService {
     }
 
     // Default logic (balanced / null archetype).
-    final hasAnkle =
-        comps.any((c) => c.type == CompensationType.ankleRestriction);
+    final hasAnkle = comps.any(
+      (c) => c.type == CompensationType.ankleRestriction,
+    );
     final primaryType = comps.first.type;
 
     if (hasAnkle) {
@@ -391,7 +396,9 @@ class ReportAssemblyService {
   }
 
   /// Map archetype to its preferred CompensationType for drill boosting.
-  static CompensationType? _archetypePreferredType(MobilityArchetype archetype) {
+  static CompensationType? _archetypePreferredType(
+    MobilityArchetype archetype,
+  ) {
     switch (archetype) {
       case MobilityArchetype.ankleDominant:
         return CompensationType.ankleRestriction;

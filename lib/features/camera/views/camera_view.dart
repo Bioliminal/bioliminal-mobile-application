@@ -14,7 +14,8 @@ class CameraView extends ConsumerStatefulWidget {
   ConsumerState<CameraView> createState() => _CameraViewState();
 }
 
-class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObserver {
+class _CameraViewState extends ConsumerState<CameraView>
+    with WidgetsBindingObserver {
   bool _setupComplete = false;
   late final AppCameraController _cameraNotifier;
 
@@ -55,9 +56,8 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
     return Scaffold(
       backgroundColor: Colors.black,
       body: cameraAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
         error: (error, _) => _ErrorView(
           message: error.toString(),
           onRetry: () {
@@ -66,42 +66,40 @@ class _CameraViewState extends ConsumerState<CameraView> with WidgetsBindingObse
         ),
         data: (cameraState) => switch (cameraState) {
           CameraUninitialized() => const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
           CameraPermissionDenied(:final permanent) => _PermissionDeniedView(
-              permanent: permanent,
-              onRetry: permanent
-                  ? () => AppSettings.openAppSettings()
-                  : () {
-                      ref
-                          .read(appCameraControllerProvider.notifier)
-                          .requestPermission();
-                    },
-            ),
+            permanent: permanent,
+            onRetry: permanent
+                ? () => AppSettings.openAppSettings()
+                : () {
+                    ref
+                        .read(appCameraControllerProvider.notifier)
+                        .requestPermission();
+                  },
+          ),
           CameraReady(:final controller) => CameraBody(
-              controller: controller,
-              setupComplete: _setupComplete,
-              onSetupComplete: () => setState(() => _setupComplete = true),
-              onStartStreaming: () {
-                ref
-                    .read(appCameraControllerProvider.notifier)
-                    .startStreaming();
-              },
-            ),
+            controller: controller,
+            setupComplete: _setupComplete,
+            onSetupComplete: () => setState(() => _setupComplete = true),
+            onStartStreaming: () {
+              ref.read(appCameraControllerProvider.notifier).startStreaming();
+            },
+          ),
           CameraStreaming(:final controller) => CameraBody(
-              controller: controller,
-              setupComplete: _setupComplete,
-              onSetupComplete: () => setState(() => _setupComplete = true),
-              onStartStreaming: null,
-            ),
+            controller: controller,
+            setupComplete: _setupComplete,
+            onSetupComplete: () => setState(() => _setupComplete = true),
+            onStartStreaming: null,
+          ),
           CameraError(:final message) => _ErrorView(
-              message: message,
-              onRetry: () {
-                ref
-                    .read(appCameraControllerProvider.notifier)
-                    .requestPermission();
-              },
-            ),
+            message: message,
+            onRetry: () {
+              ref
+                  .read(appCameraControllerProvider.notifier)
+                  .requestPermission();
+            },
+          ),
         },
       ),
     );
@@ -157,7 +155,8 @@ class _CameraBodyState extends State<CameraBody> {
   @override
   Widget build(BuildContext context) {
     final isFront =
-        widget.controller.description.lensDirection == CameraLensDirection.front;
+        widget.controller.description.lensDirection ==
+        CameraLensDirection.front;
 
     return Stack(
       fit: StackFit.expand,
@@ -171,9 +170,7 @@ class _CameraBodyState extends State<CameraBody> {
         ),
 
         // Layer 2: Skeleton overlay.
-        Positioned.fill(
-          child: SkeletonOverlay(isFrontCamera: isFront),
-        ),
+        Positioned.fill(child: SkeletonOverlay(isFrontCamera: isFront)),
 
         // Layer 3: Setup checklist (shown until all checks pass).
         if (!widget.setupComplete)
@@ -190,10 +187,7 @@ class _CameraBodyState extends State<CameraBody> {
 // ---------------------------------------------------------------------------
 
 class _PermissionDeniedView extends StatelessWidget {
-  const _PermissionDeniedView({
-    required this.permanent,
-    required this.onRetry,
-  });
+  const _PermissionDeniedView({required this.permanent, required this.onRetry});
 
   final bool permanent;
   final VoidCallback onRetry;
@@ -220,7 +214,9 @@ class _PermissionDeniedView extends StatelessWidget {
               permanent
                   ? 'Camera permission was permanently denied. Please enable it in your device settings.'
                   : 'AuraLink needs camera access to perform the movement screening.',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white70,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -265,7 +261,9 @@ class _ErrorView extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               message,
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white70),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: Colors.white70,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),

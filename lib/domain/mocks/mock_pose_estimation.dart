@@ -199,12 +199,7 @@ class MockPoseEstimationService implements PoseEstimationService {
             visibility: hipVisibility,
           );
         case 24: // right hip
-          return Landmark(
-            x: 0.55,
-            y: hipY,
-            z: 0.0,
-            visibility: hipVisibility,
-          );
+          return Landmark(x: 0.55, y: hipY, z: 0.0, visibility: hipVisibility);
         case 25: // left knee
           return Landmark(
             x: 0.45 + kneeMedialOffset,
@@ -234,12 +229,7 @@ class MockPoseEstimationService implements PoseEstimationService {
             visibility: ankleVisibility,
           );
         default:
-          return const Landmark(
-            x: 0.5,
-            y: 0.5,
-            z: 0.0,
-            visibility: 0.90,
-          );
+          return const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.90);
       }
     });
   }

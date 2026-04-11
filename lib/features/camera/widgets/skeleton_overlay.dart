@@ -22,34 +22,29 @@ const List<(int, int)> blazePoseConnections = [
   (5, 6), // right eye -> right eye outer
   (6, 8), // right eye outer -> right ear
   (9, 10), // mouth left -> mouth right
-
   // Torso
   (11, 12), // left shoulder -> right shoulder
   (11, 23), // left shoulder -> left hip
   (12, 24), // right shoulder -> right hip
   (23, 24), // left hip -> right hip
-
   // Left arm
   (11, 13), // left shoulder -> left elbow
   (13, 15), // left elbow -> left wrist
   (15, 17), // left wrist -> left pinky
   (15, 19), // left wrist -> left index
   (15, 21), // left wrist -> left thumb
-
   // Right arm
   (12, 14), // right shoulder -> right elbow
   (14, 16), // right elbow -> right wrist
   (16, 18), // right wrist -> right pinky
   (16, 20), // right wrist -> right index
   (16, 22), // right wrist -> right thumb
-
   // Left leg
   (23, 25), // left hip -> left knee
   (25, 27), // left knee -> left ankle
   (27, 29), // left ankle -> left heel
   (27, 31), // left ankle -> left foot index
   (29, 31), // left heel -> left foot index
-
   // Right leg
   (24, 26), // right hip -> right knee
   (26, 28), // right knee -> right ankle
@@ -102,8 +97,9 @@ class SkeletonPainter extends CustomPainter {
       final endPt = transformLandmark(endLm, size, isFrontCamera);
 
       // Segment color = lower confidence of its two endpoints.
-      final minVisibility =
-          startLm.visibility < endLm.visibility ? startLm.visibility : endLm.visibility;
+      final minVisibility = startLm.visibility < endLm.visibility
+          ? startLm.visibility
+          : endLm.visibility;
       final segmentColor = AuraLinkTheme.confidenceColor(minVisibility);
 
       final paint = Paint()

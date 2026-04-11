@@ -14,7 +14,9 @@ const _testCitation = Citation(
 );
 
 Widget _wrap(Widget child) {
-  return MaterialApp(home: Scaffold(body: SingleChildScrollView(child: child)));
+  return MaterialApp(
+    home: Scaffold(body: SingleChildScrollView(child: child)),
+  );
 }
 
 void main() {
@@ -99,68 +101,71 @@ void main() {
       ],
     );
 
-    testWidgets('displays body-path labels instead of compensation type names',
-        (tester) async {
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer, older],
-          onTap: (_) {},
-        ),
-      ));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'displays body-path labels instead of compensation type names',
+      (tester) async {
+        await tester.pumpWidget(
+          _wrap(AssessmentTimeline(assessments: [newer, older], onTap: (_) {})),
+        );
+        await tester.pumpAndSettle();
 
-      // Body-path labels should appear.
-      expect(find.text('Ankle flexibility'), findsOneWidget);
-      expect(find.text('Knee alignment'), findsOneWidget);
-      expect(find.text('Pelvic level'), findsOneWidget);
-      expect(find.text('Torso balance'), findsOneWidget);
+        // Body-path labels should appear.
+        expect(find.text('Ankle flexibility'), findsOneWidget);
+        expect(find.text('Knee alignment'), findsOneWidget);
+        expect(find.text('Pelvic level'), findsOneWidget);
+        expect(find.text('Torso balance'), findsOneWidget);
 
-      // Raw compensation type names should NOT appear.
-      expect(find.text('ankleRestriction'), findsNothing);
-      expect(find.text('kneeValgus'), findsNothing);
-      expect(find.text('hipDrop'), findsNothing);
-      expect(find.text('trunkLean'), findsNothing);
-    });
+        // Raw compensation type names should NOT appear.
+        expect(find.text('ankleRestriction'), findsNothing);
+        expect(find.text('kneeValgus'), findsNothing);
+        expect(find.text('hipDrop'), findsNothing);
+        expect(find.text('trunkLean'), findsNothing);
+      },
+    );
 
     testWidgets('delta chips show trend arrow icons', (tester) async {
-      const trendReport = TrendReport(trends: [
-        CompensationTrend(
-          compensationType: CompensationType.ankleRestriction,
-          joint: 'ankle',
-          trend: TrendClassification.improving,
-          values: [15.0, 10.0],
-          slope: -5.0,
-        ),
-        CompensationTrend(
-          compensationType: CompensationType.kneeValgus,
-          joint: 'knee',
-          trend: TrendClassification.worsening,
-          values: [14.0, 18.0],
-          slope: 4.0,
-        ),
-        CompensationTrend(
-          compensationType: CompensationType.hipDrop,
-          joint: 'hip',
-          trend: TrendClassification.stable,
-          values: [5.0, 5.0],
-          slope: 0.0,
-        ),
-        CompensationTrend(
-          compensationType: CompensationType.trunkLean,
-          joint: 'trunk',
-          trend: TrendClassification.worsening,
-          values: [8.0, 12.0],
-          slope: 4.0,
-        ),
-      ]);
+      const trendReport = TrendReport(
+        trends: [
+          CompensationTrend(
+            compensationType: CompensationType.ankleRestriction,
+            joint: 'ankle',
+            trend: TrendClassification.improving,
+            values: [15.0, 10.0],
+            slope: -5.0,
+          ),
+          CompensationTrend(
+            compensationType: CompensationType.kneeValgus,
+            joint: 'knee',
+            trend: TrendClassification.worsening,
+            values: [14.0, 18.0],
+            slope: 4.0,
+          ),
+          CompensationTrend(
+            compensationType: CompensationType.hipDrop,
+            joint: 'hip',
+            trend: TrendClassification.stable,
+            values: [5.0, 5.0],
+            slope: 0.0,
+          ),
+          CompensationTrend(
+            compensationType: CompensationType.trunkLean,
+            joint: 'trunk',
+            trend: TrendClassification.worsening,
+            values: [8.0, 12.0],
+            slope: 4.0,
+          ),
+        ],
+      );
 
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer, older],
-          trendReport: trendReport,
-          onTap: (_) {},
+      await tester.pumpWidget(
+        _wrap(
+          AssessmentTimeline(
+            assessments: [newer, older],
+            trendReport: trendReport,
+            onTap: (_) {},
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       // Improving gets trending_down, worsening gets trending_up,
@@ -171,23 +176,27 @@ void main() {
     });
 
     testWidgets('delta chips are color-coded by trend', (tester) async {
-      const trendReport = TrendReport(trends: [
-        CompensationTrend(
-          compensationType: CompensationType.ankleRestriction,
-          joint: 'ankle',
-          trend: TrendClassification.improving,
-          values: [15.0, 10.0],
-          slope: -5.0,
-        ),
-      ]);
+      const trendReport = TrendReport(
+        trends: [
+          CompensationTrend(
+            compensationType: CompensationType.ankleRestriction,
+            joint: 'ankle',
+            trend: TrendClassification.improving,
+            values: [15.0, 10.0],
+            slope: -5.0,
+          ),
+        ],
+      );
 
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer, older],
-          trendReport: trendReport,
-          onTap: (_) {},
+      await tester.pumpWidget(
+        _wrap(
+          AssessmentTimeline(
+            assessments: [newer, older],
+            trendReport: trendReport,
+            onTap: (_) {},
+          ),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       // Find the chip container for "Ankle flexibility".
@@ -208,12 +217,9 @@ void main() {
     });
 
     testWidgets('delta chips show delta values', (tester) async {
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer, older],
-          onTap: (_) {},
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(AssessmentTimeline(assessments: [newer, older], onTap: (_) {})),
+      );
       await tester.pumpAndSettle();
 
       // Ankle: |10 - 15| = 5
@@ -227,12 +233,11 @@ void main() {
     testWidgets('tap on timeline node fires callback', (tester) async {
       Assessment? tapped;
 
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer],
-          onTap: (a) => tapped = a,
+      await tester.pumpWidget(
+        _wrap(
+          AssessmentTimeline(assessments: [newer], onTap: (a) => tapped = a),
         ),
-      ));
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Apr 1, 2026'));
@@ -275,12 +280,9 @@ void main() {
       );
 
       // No trendReport passed — should still render delta chips.
-      await tester.pumpWidget(_wrap(
-        AssessmentTimeline(
-          assessments: [newer, older],
-          onTap: (_) {},
-        ),
-      ));
+      await tester.pumpWidget(
+        _wrap(AssessmentTimeline(assessments: [newer, older], onTap: (_) {})),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('Ankle flexibility'), findsOneWidget);

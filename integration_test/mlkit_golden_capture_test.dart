@@ -60,8 +60,7 @@ void main() {
     final movementName = entry.key;
     final assetPath = entry.value;
 
-    testWidgets('capture golden landmarks: $movementName',
-        (tester) async {
+    testWidgets('capture golden landmarks: $movementName', (tester) async {
       // Copy asset to a real file path MLKit can read.
       final bytes = await rootBundle.load(assetPath);
       final tempFile = File('${tempImageDir.path}/$movementName.jpg');
@@ -78,10 +77,18 @@ void main() {
       final inputImage = InputImage.fromFilePath(tempFile.path);
       final poses = await detector.processImage(inputImage);
 
-      expect(poses, isNotEmpty, reason: 'MLKit found no poses in $movementName');
-      expect(poses.length, 1,
-          reason: '$movementName: expected 1 pose, got ${poses.length}. '
-              'Image may contain multiple people.');
+      expect(
+        poses,
+        isNotEmpty,
+        reason: 'MLKit found no poses in $movementName',
+      );
+      expect(
+        poses.length,
+        1,
+        reason:
+            '$movementName: expected 1 pose, got ${poses.length}. '
+            'Image may contain multiple people.',
+      );
 
       final pose = poses.first;
 
@@ -101,10 +108,13 @@ void main() {
       }).toList();
 
       // Verify we got meaningful landmarks (not all zeros).
-      final visibleCount =
-          landmarks.where((lm) => lm.visibility > 0.5).length;
-      expect(visibleCount, greaterThan(10),
-          reason: '$movementName: expected >10 visible landmarks, got $visibleCount');
+      final visibleCount = landmarks.where((lm) => lm.visibility > 0.5).length;
+      expect(
+        visibleCount,
+        greaterThan(10),
+        reason:
+            '$movementName: expected >10 visible landmarks, got $visibleCount',
+      );
 
       // Save as JSON matching server ingestion schema so the same
       // fixtures test both the Flutter capture path and the server
@@ -132,9 +142,11 @@ void main() {
       );
 
       // ignore: avoid_print
-      print('[$movementName] ${imgWidth.toInt()}x${imgHeight.toInt()}, '
-          '${landmarks.length} landmarks, $visibleCount visible, '
-          'saved to ${file.path}');
+      print(
+        '[$movementName] ${imgWidth.toInt()}x${imgHeight.toInt()}, '
+        '${landmarks.length} landmarks, $visibleCount visible, '
+        'saved to ${file.path}',
+      );
     });
   }
 
@@ -148,8 +160,10 @@ void main() {
     }
 
     // ignore: avoid_print
-    print('\nTo pull fixtures off device:\n'
-        '  adb pull ${outputDir.path}/ test/fixtures/golden_landmarks/\n'
-        'Or for iOS, check the app container in Xcode.');
+    print(
+      '\nTo pull fixtures off device:\n'
+      '  adb pull ${outputDir.path}/ test/fixtures/golden_landmarks/\n'
+      'Or for iOS, check the app container in Xcode.',
+    );
   });
 }

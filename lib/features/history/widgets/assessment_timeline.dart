@@ -33,7 +33,9 @@ class AssessmentTimeline extends StatelessWidget {
       child: Column(
         children: List.generate(assessments.length, (i) {
           final assessment = assessments[i];
-          final previous = i + 1 < assessments.length ? assessments[i + 1] : null;
+          final previous = i + 1 < assessments.length
+              ? assessments[i + 1]
+              : null;
           final metrics = previous != null
               ? ComparisonService.compare(previous, assessment)
               : <ComparisonMetric>[];
@@ -65,11 +67,7 @@ class _TimelinePainter extends CustomPainter {
       ..strokeWidth = 2;
 
     const x = 24.0;
-    canvas.drawLine(
-      const Offset(x, 0),
-      Offset(x, size.height),
-      paint,
-    );
+    canvas.drawLine(const Offset(x, 0), Offset(x, size.height), paint);
   }
 
   @override
@@ -94,10 +92,9 @@ class _TimelineNode extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final date = assessment.createdAt;
-    final dateStr =
-        '${_monthName(date.month)} ${date.day}, ${date.year}';
-    final findingCount = assessment.report?.findings.length ??
-        assessment.compensations.length;
+    final dateStr = '${_monthName(date.month)} ${date.day}, ${date.year}';
+    final findingCount =
+        assessment.report?.findings.length ?? assessment.compensations.length;
     final confidence = _overallConfidence(assessment);
 
     return InkWell(
@@ -152,10 +149,12 @@ class _TimelineNode extends StatelessWidget {
                           spacing: 6,
                           runSpacing: 6,
                           children: metrics
-                              .map((m) => _DeltaChip(
-                                    metric: m,
-                                    trendReport: trendReport,
-                                  ))
+                              .map(
+                                (m) => _DeltaChip(
+                                  metric: m,
+                                  trendReport: trendReport,
+                                ),
+                              )
                               .toList(),
                         ),
                       ],
@@ -179,8 +178,18 @@ class _TimelineNode extends StatelessWidget {
 
   static String _monthName(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[month - 1];
   }
@@ -214,19 +223,16 @@ class _ConfidenceBadge extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
 }
 
 class _DeltaChip extends StatelessWidget {
-  const _DeltaChip({
-    required this.metric,
-    this.trendReport,
-  });
+  const _DeltaChip({required this.metric, this.trendReport});
 
   final ComparisonMetric metric;
   final TrendReport? trendReport;
@@ -234,7 +240,8 @@ class _DeltaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final label = _bodyPathLabels[metric.compensationType] ??
+    final label =
+        _bodyPathLabels[metric.compensationType] ??
         metric.compensationType.name;
 
     // Determine trend classification from TrendReport if available,
@@ -290,8 +297,10 @@ class _DeltaChip extends StatelessWidget {
   }
 
   TrendClassification _resolveTrend() {
-    final fromReport =
-        trendReport?.trendFor(metric.compensationType, metric.joint);
+    final fromReport = trendReport?.trendFor(
+      metric.compensationType,
+      metric.joint,
+    );
     if (fromReport != null) return fromReport.trend;
 
     // Fallback to pairwise comparison.

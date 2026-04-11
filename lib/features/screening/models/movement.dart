@@ -40,8 +40,7 @@ const screeningMovements = <MovementConfig>[
   MovementConfig(
     type: MovementType.overheadReach,
     name: 'Overhead Reach',
-    instruction:
-        'Stand tall. Reach both arms as high as you can, then lower.',
+    instruction: 'Stand tall. Reach both arms as high as you can, then lower.',
     targetReps: 5,
     primaryJoint: 'leftShoulder',
     peakIsMinimum: false,

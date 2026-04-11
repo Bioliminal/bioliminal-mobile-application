@@ -52,10 +52,12 @@ void main() {
     test('providers.dart does not import Firebase packages', () {
       // Static analysis: read the source file and verify no Firebase imports.
       final projectRoot = _findProjectRoot();
-      final providersFile =
-          File('$projectRoot/lib/core/providers.dart');
-      expect(providersFile.existsSync(), isTrue,
-          reason: 'providers.dart must exist');
+      final providersFile = File('$projectRoot/lib/core/providers.dart');
+      expect(
+        providersFile.existsSync(),
+        isTrue,
+        reason: 'providers.dart must exist',
+      );
 
       final content = providersFile.readAsStringSync();
 

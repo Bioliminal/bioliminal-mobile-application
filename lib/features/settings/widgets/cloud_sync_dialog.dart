@@ -74,8 +74,9 @@ class _CloudSyncDialogState extends ConsumerState<CloudSyncDialog> {
             const SizedBox(height: 12),
             Text(
               'What is NOT synced:',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             _bulletPoint('Camera footage or images'),
@@ -89,8 +90,9 @@ class _CloudSyncDialogState extends ConsumerState<CloudSyncDialog> {
             const SizedBox(height: 16),
             Text(
               'Type SYNC below to confirm:',
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             TextField(

@@ -4,17 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:auralink/core/theme.dart';
 
 class MainScaffold extends StatelessWidget {
-  const MainScaffold({
-    super.key,
-    required this.navigationShell,
-  });
+  const MainScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       extendBody: true, // Allows content to show under the glass nav bar
       body: navigationShell,
@@ -34,12 +31,21 @@ class MainScaffold extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 elevation: 0,
                 selectedItemColor: theme.colorScheme.secondary,
-                unselectedItemColor: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                unselectedItemColor: theme.colorScheme.onSurface.withValues(
+                  alpha: 0.3,
+                ),
                 type: BottomNavigationBarType.fixed,
                 showSelectedLabels: true,
                 showUnselectedLabels: true,
-                selectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, letterSpacing: 1.0),
-                unselectedLabelStyle: const TextStyle(fontSize: 12, letterSpacing: 1.0),
+                selectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.0,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 12,
+                  letterSpacing: 1.0,
+                ),
                 items: const [
                   BottomNavigationBarItem(
                     icon: Icon(Icons.history_outlined),

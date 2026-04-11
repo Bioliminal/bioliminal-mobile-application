@@ -51,11 +51,17 @@ void main() {
       final restored = assessmentFromJson(json);
 
       expect(restored.id, original.id);
-      expect(restored.createdAt.toIso8601String(), original.createdAt.toIso8601String());
+      expect(
+        restored.createdAt.toIso8601String(),
+        original.createdAt.toIso8601String(),
+      );
       expect(restored.movements.length, original.movements.length);
       expect(restored.movements.first.type, MovementType.overheadSquat);
       expect(restored.movements.first.landmarks.first.length, 2);
-      expect(restored.movements.first.keyframeAngles.first.joint, 'left_knee_valgus');
+      expect(
+        restored.movements.first.keyframeAngles.first.joint,
+        'left_knee_valgus',
+      );
       expect(restored.movements.first.duration.inSeconds, 45);
       expect(restored.compensations.length, 1);
       expect(restored.compensations.first.type, CompensationType.kneeValgus);
@@ -130,59 +136,73 @@ void main() {
       expect(restored.findings.length, 1);
       expect(restored.findings.first.bodyPathDescription, 'Test path');
       expect(restored.findings.first.upstreamDriver, 'ankle restriction');
-      expect(restored.findings.first.citations.first.type, CitationType.clinical);
+      expect(
+        restored.findings.first.citations.first.type,
+        CitationType.clinical,
+      );
       expect(restored.practitionerPoints.first, 'Ask about ankle');
       expect(restored.pdfUrl, 'https://storage.example.com/report.pdf');
     });
 
     test('null chain in compensation round-trips', () {
-      final json = assessmentToJson(Assessment(
-        id: 'null-chain',
-        createdAt: DateTime(2026, 1, 1),
-        movements: const [],
-        compensations: const [
-          Compensation(
-            type: CompensationType.kneeValgus,
-            joint: 'knee',
-            chain: null,
-            confidence: ConfidenceLevel.medium,
-            value: 12.0,
-            threshold: 10.0,
-            citation: Citation(
-              finding: 'test', source: 'test', url: 'http://test',
-              type: CitationType.research, appUsage: 'test',
+      final json = assessmentToJson(
+        Assessment(
+          id: 'null-chain',
+          createdAt: DateTime(2026, 1, 1),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.kneeValgus,
+              joint: 'knee',
+              chain: null,
+              confidence: ConfidenceLevel.medium,
+              value: 12.0,
+              threshold: 10.0,
+              citation: Citation(
+                finding: 'test',
+                source: 'test',
+                url: 'http://test',
+                type: CitationType.research,
+                appUsage: 'test',
+              ),
             ),
-          ),
-        ],
-      ));
+          ],
+        ),
+      );
 
       final restored = assessmentFromJson(json);
       expect(restored.compensations.first.chain, isNull);
     });
 
     test('enum serialization uses name', () {
-      final json = assessmentToJson(Assessment(
-        id: 'enum-test',
-        createdAt: DateTime(2026, 1, 1),
-        movements: const [],
-        compensations: const [
-          Compensation(
-            type: CompensationType.hipDrop,
-            joint: 'hip',
-            chain: ChainType.bfl,
-            confidence: ConfidenceLevel.low,
-            value: 12.0,
-            threshold: 10.0,
-            citation: Citation(
-              finding: 'test', source: 'test', url: 'http://test',
-              type: CitationType.guideline, appUsage: 'test',
+      final json = assessmentToJson(
+        Assessment(
+          id: 'enum-test',
+          createdAt: DateTime(2026, 1, 1),
+          movements: const [],
+          compensations: const [
+            Compensation(
+              type: CompensationType.hipDrop,
+              joint: 'hip',
+              chain: ChainType.bfl,
+              confidence: ConfidenceLevel.low,
+              value: 12.0,
+              threshold: 10.0,
+              citation: Citation(
+                finding: 'test',
+                source: 'test',
+                url: 'http://test',
+                type: CitationType.guideline,
+                appUsage: 'test',
+              ),
             ),
-          ),
-        ],
-      ));
+          ],
+        ),
+      );
 
       // Check that enums are serialized by name.
-      final comp = (json['compensations'] as List).first as Map<String, dynamic>;
+      final comp =
+          (json['compensations'] as List).first as Map<String, dynamic>;
       expect(comp['type'], 'hipDrop');
       expect(comp['chain'], 'bfl');
       expect(comp['confidence'], 'low');

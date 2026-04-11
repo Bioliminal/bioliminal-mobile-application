@@ -5,9 +5,7 @@ import 'package:auralink/main.dart';
 
 void main() {
   testWidgets('App renders disclaimer view', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(child: AuraLinkApp()),
-    );
+    await tester.pumpWidget(const ProviderScope(child: AuraLinkApp()));
     expect(find.text('Before We Begin'), findsOneWidget);
   });
 }

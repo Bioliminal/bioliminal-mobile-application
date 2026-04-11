@@ -11,9 +11,7 @@ import 'package:auralink/features/screening/models/movement.dart';
 void main() {
   // Helper: pump a ProviderScope with the screening view's active-movement
   // subtree, overriding providers as needed.
-  Widget buildActiveMovementScreen({
-    required List<Landmark> landmarks,
-  }) {
+  Widget buildActiveMovementScreen({required List<Landmark> landmarks}) {
     final activeState = ActiveMovement(
       movementIndex: 0,
       config: screeningMovements.first,
@@ -29,28 +27,20 @@ void main() {
         }),
         currentLandmarksProvider.overrideWithValue(landmarks),
       ],
-      child: const MaterialApp(
-        home: _ActiveMovementHarness(),
-      ),
+      child: const MaterialApp(home: _ActiveMovementHarness()),
     );
   }
 
   group('SkeletonOverlay in ActiveMovementScreen', () {
-    testWidgets('renders SkeletonOverlay when landmarks are present',
-        (tester) async {
+    testWidgets('renders SkeletonOverlay when landmarks are present', (
+      tester,
+    ) async {
       final landmarks = List.generate(
         33,
-        (i) => Landmark(
-          x: i / 33,
-          y: i / 33,
-          z: 0,
-          visibility: 0.9,
-        ),
+        (i) => Landmark(x: i / 33, y: i / 33, z: 0, visibility: 0.9),
       );
 
-      await tester.pumpWidget(buildActiveMovementScreen(
-        landmarks: landmarks,
-      ));
+      await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks));
 
       // SkeletonOverlay should be in the tree.
       expect(find.byType(SkeletonOverlay), findsOneWidget);
@@ -58,11 +48,10 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('SkeletonOverlay renders empty when no landmarks',
-        (tester) async {
-      await tester.pumpWidget(buildActiveMovementScreen(
-        landmarks: const [],
-      ));
+    testWidgets('SkeletonOverlay renders empty when no landmarks', (
+      tester,
+    ) async {
+      await tester.pumpWidget(buildActiveMovementScreen(landmarks: const []));
 
       // SkeletonOverlay is in the tree but renders SizedBox.shrink.
       expect(find.byType(SkeletonOverlay), findsOneWidget);
@@ -72,17 +61,10 @@ void main() {
     testWidgets('UI overlays render on top of skeleton', (tester) async {
       final landmarks = List.generate(
         33,
-        (i) => Landmark(
-          x: i / 33,
-          y: i / 33,
-          z: 0,
-          visibility: 0.9,
-        ),
+        (i) => Landmark(x: i / 33, y: i / 33, z: 0, visibility: 0.9),
       );
 
-      await tester.pumpWidget(buildActiveMovementScreen(
-        landmarks: landmarks,
-      ));
+      await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks));
 
       // Key UI elements still present.
       expect(find.text('Skip'), findsOneWidget);
@@ -90,8 +72,9 @@ void main() {
       expect(find.textContaining('Rep 0 of'), findsOneWidget);
     });
 
-    testWidgets('SkeletonOverlay updates when landmarks change',
-        (tester) async {
+    testWidgets('SkeletonOverlay updates when landmarks change', (
+      tester,
+    ) async {
       final landmarks1 = List.generate(
         33,
         (i) => const Landmark(x: 0.1, y: 0.1, z: 0, visibility: 0.9),
@@ -102,15 +85,11 @@ void main() {
       );
 
       // Pump with first set.
-      await tester.pumpWidget(buildActiveMovementScreen(
-        landmarks: landmarks1,
-      ));
+      await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks1));
       expect(find.byType(SkeletonOverlay), findsOneWidget);
 
       // Pump with updated landmarks.
-      await tester.pumpWidget(buildActiveMovementScreen(
-        landmarks: landmarks2,
-      ));
+      await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks2));
       expect(find.byType(SkeletonOverlay), findsOneWidget);
     });
   });
@@ -137,12 +116,8 @@ class _ActiveMovementHarness extends ConsumerWidget {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          const Positioned.fill(
-            child: ColoredBox(color: Color(0xFF111111)),
-          ),
-          const Positioned.fill(
-            child: SkeletonOverlay(),
-          ),
+          const Positioned.fill(child: ColoredBox(color: Color(0xFF111111))),
+          const Positioned.fill(child: SkeletonOverlay()),
           Positioned(
             top: 48,
             left: 16,
@@ -168,8 +143,9 @@ class _ActiveMovementHarness extends ConsumerWidget {
                 onPressed: () {},
                 child: Text(
                   'Skip',
-                  style:
-                      theme.textTheme.labelLarge?.copyWith(color: Colors.white54),
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: Colors.white54,
+                  ),
                 ),
               ),
             ),

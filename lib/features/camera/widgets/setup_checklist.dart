@@ -131,8 +131,8 @@ class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
 
 final setupChecklistProvider =
     NotifierProvider<SetupChecklistNotifier, SetupChecklistState>(
-  SetupChecklistNotifier.new,
-);
+      SetupChecklistNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Setup step definitions
@@ -244,7 +244,9 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
   }
 
   Widget _buildOverlay(
-      BuildContext context, SetupChecklistState checklistState) {
+    BuildContext context,
+    SetupChecklistState checklistState,
+  ) {
     final theme = Theme.of(context);
 
     return Container(
@@ -302,8 +304,8 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
                     passed: passed,
                     onConfirm: step.isManual && !passed
                         ? () => ref
-                            .read(setupChecklistProvider.notifier)
-                            .confirmClothing()
+                              .read(setupChecklistProvider.notifier)
+                              .confirmClothing()
                         : null,
                   ),
                 );
@@ -331,11 +333,7 @@ class _SetupChecklistState extends ConsumerState<SetupChecklist>
 // ---------------------------------------------------------------------------
 
 class _StepCard extends StatelessWidget {
-  const _StepCard({
-    required this.step,
-    required this.passed,
-    this.onConfirm,
-  });
+  const _StepCard({required this.step, required this.passed, this.onConfirm});
 
   final SetupStep step;
   final bool passed;
@@ -361,14 +359,16 @@ class _StepCard extends StatelessWidget {
                 children: [
                   Text(
                     step.title,
-                    style: theme.textTheme.titleSmall
-                        ?.copyWith(color: Colors.white),
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     step.instruction,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: Colors.white70),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: Colors.white70,
+                    ),
                   ),
                 ],
               ),
@@ -377,10 +377,7 @@ class _StepCard extends StatelessWidget {
             if (passed)
               const Icon(Icons.check_circle, color: Colors.green, size: 28)
             else if (onConfirm != null)
-              FilledButton(
-                onPressed: onConfirm,
-                child: const Text('Confirm'),
-              )
+              FilledButton(onPressed: onConfirm, child: const Text('Confirm'))
             else
               const SizedBox(
                 width: 20,

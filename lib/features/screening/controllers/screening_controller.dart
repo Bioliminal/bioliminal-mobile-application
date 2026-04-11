@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/models.dart';
@@ -81,8 +80,10 @@ class ScreeningController extends Notifier<ScreeningState> {
     _chainMapper = ref.read(core_providers.chainMapperProvider);
 
     // Listen to landmarks and forward to controller.
-    ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider,
-        (previous, next) {
+    ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider, (
+      previous,
+      next,
+    ) {
       onLandmarkFrame(next);
     });
 
@@ -164,10 +165,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     }
 
     final config = screeningMovements[index];
-    state = MovementPreparation(
-      movementIndex: index,
-      config: config,
-    );
+    state = MovementPreparation(movementIndex: index, config: config);
   }
 
   void _startMovement(int index) {
@@ -306,12 +304,14 @@ class ScreeningController extends Notifier<ScreeningState> {
         ? DateTime.now().difference(_movementStartTime!)
         : Duration.zero;
 
-    _completedMovements.add(Movement(
-      type: current.config.type,
-      landmarks: List.unmodifiable(_currentCapturedFrames),
-      keyframeAngles: List.unmodifiable(allAngles),
-      duration: duration,
-    ));
+    _completedMovements.add(
+      Movement(
+        type: current.config.type,
+        landmarks: List.unmodifiable(_currentCapturedFrames),
+        keyframeAngles: List.unmodifiable(allAngles),
+        duration: duration,
+      ),
+    );
     _allCompensations.addAll(_currentMovementCompensations);
 
     // If this was the final movement, skip findings and finish.
@@ -382,7 +382,6 @@ class ScreeningController extends Notifier<ScreeningState> {
     if (joint.contains('trunk')) return 'core';
     return 'movement';
   }
-
 }
 
 // ---------------------------------------------------------------------------
@@ -391,5 +390,5 @@ class ScreeningController extends Notifier<ScreeningState> {
 
 final screeningControllerProvider =
     NotifierProvider<ScreeningController, ScreeningState>(
-  ScreeningController.new,
-);
+      ScreeningController.new,
+    );

@@ -37,9 +37,9 @@ class PdfGenerator {
       ConfidenceLevel.worstOf(compensations.map((c) => c.confidence));
 
   static ConfidenceLevel _overallConfidence(List<Finding> findings) =>
-      ConfidenceLevel.worstOf(findings.map(
-        (f) => _worstConfidence(f.compensations),
-      ));
+      ConfidenceLevel.worstOf(
+        findings.map((f) => _worstConfidence(f.compensations)),
+      );
 
   static Future<Uint8List> generate(
     Report report, {
@@ -88,10 +88,7 @@ class PdfGenerator {
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
-                pw.Text(
-                  formattedDate,
-                  style: const pw.TextStyle(fontSize: 12),
-                ),
+                pw.Text(formattedDate, style: const pw.TextStyle(fontSize: 12)),
               ],
             ),
           ),
@@ -128,7 +125,9 @@ class PdfGenerator {
                     ),
                     pw.Container(
                       padding: const pw.EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 2),
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: pw.BoxDecoration(
                         color: _confidencePdfColor(overall),
                         borderRadius: pw.BorderRadius.circular(10),
@@ -168,10 +167,7 @@ class PdfGenerator {
             level: 1,
             child: pw.Text(
               'Your Findings',
-              style: pw.TextStyle(
-                fontSize: 16,
-                fontWeight: pw.FontWeight.bold,
-              ),
+              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
             ),
           ),
           ...report.findings.map(_buildFindingSection),
@@ -198,11 +194,15 @@ class PdfGenerator {
                       child: pw.Row(
                         crossAxisAlignment: pw.CrossAxisAlignment.start,
                         children: [
-                          pw.Text('  \u2022  ',
-                              style: const pw.TextStyle(fontSize: 11)),
+                          pw.Text(
+                            '  \u2022  ',
+                            style: const pw.TextStyle(fontSize: 11),
+                          ),
                           pw.Expanded(
-                            child: pw.Text(point,
-                                style: const pw.TextStyle(fontSize: 11)),
+                            child: pw.Text(
+                              point,
+                              style: const pw.TextStyle(fontSize: 11),
+                            ),
                           ),
                         ],
                       ),
@@ -245,8 +245,10 @@ class PdfGenerator {
                 ),
               ),
               pw.Container(
-                padding:
-                    const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: const pw.EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 2,
+                ),
                 decoration: pw.BoxDecoration(
                   color: _confidencePdfColor(confidence),
                   borderRadius: pw.BorderRadius.circular(10),
@@ -294,10 +296,7 @@ class PdfGenerator {
             pw.SizedBox(height: 8),
             pw.Text(
               'Evidence:',
-              style: pw.TextStyle(
-                fontSize: 10,
-                fontWeight: pw.FontWeight.bold,
-              ),
+              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
             ),
             ...finding.citations.map(
               (c) => pw.Padding(

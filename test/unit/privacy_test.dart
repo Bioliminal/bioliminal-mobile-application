@@ -77,18 +77,22 @@ void main() {
 
       final service = LocalStorageService(directory: tempDir);
 
-      await service.saveAssessment(Assessment(
-        id: 'list-test-001',
-        createdAt: DateTime(2026, 4, 8),
-        movements: const [],
-        compensations: const [],
-      ));
-      await service.saveAssessment(Assessment(
-        id: 'list-test-002',
-        createdAt: DateTime(2026, 4, 9),
-        movements: const [],
-        compensations: const [],
-      ));
+      await service.saveAssessment(
+        Assessment(
+          id: 'list-test-001',
+          createdAt: DateTime(2026, 4, 8),
+          movements: const [],
+          compensations: const [],
+        ),
+      );
+      await service.saveAssessment(
+        Assessment(
+          id: 'list-test-002',
+          createdAt: DateTime(2026, 4, 9),
+          movements: const [],
+          compensations: const [],
+        ),
+      );
 
       final list = await service.listAssessments();
       expect(list.length, 2);
@@ -102,12 +106,14 @@ void main() {
 
       final service = LocalStorageService(directory: tempDir);
 
-      await service.saveAssessment(Assessment(
-        id: 'delete-test',
-        createdAt: DateTime(2026, 4, 8),
-        movements: const [],
-        compensations: const [],
-      ));
+      await service.saveAssessment(
+        Assessment(
+          id: 'delete-test',
+          createdAt: DateTime(2026, 4, 8),
+          movements: const [],
+          compensations: const [],
+        ),
+      );
 
       await service.deleteAssessment('delete-test');
       final loaded = await service.loadAssessment('delete-test');

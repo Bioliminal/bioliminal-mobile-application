@@ -20,7 +20,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(core_providers.appCameraControllerProvider.notifier).requestPermission();
+      ref
+          .read(core_providers.appCameraControllerProvider.notifier)
+          .requestPermission();
     });
   }
 
@@ -53,7 +55,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
 
   @override
   Widget build(BuildContext context) {
-    final cameraState = ref.watch(core_providers.appCameraControllerProvider).value;
+    final cameraState = ref
+        .watch(core_providers.appCameraControllerProvider)
+        .value;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -61,7 +65,8 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
       body: Stack(
         children: [
           // Camera Preview
-          if (cameraState is core_providers.CameraStreaming || cameraState is core_providers.CameraReady)
+          if (cameraState is core_providers.CameraStreaming ||
+              cameraState is core_providers.CameraReady)
             Positioned.fill(
               child: _CameraPreviewWrapper(
                 controller: cameraState is core_providers.CameraStreaming
@@ -112,13 +117,18 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                     ],
                   ),
                   const Spacer(),
-                  
+
                   // Scanning UI
                   Container(
                     width: 250,
                     height: 250,
                     decoration: BoxDecoration(
-                      border: Border.all(color: theme.colorScheme.secondary.withValues(alpha: 0.5), width: 2),
+                      border: Border.all(
+                        color: theme.colorScheme.secondary.withValues(
+                          alpha: 0.5,
+                        ),
+                        width: 2,
+                      ),
                       borderRadius: BorderRadius.circular(24),
                     ),
                     child: Stack(
@@ -136,7 +146,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                                     end: Alignment.bottomCenter,
                                     colors: [
                                       Colors.transparent,
-                                      theme.colorScheme.secondary.withValues(alpha: 0.2),
+                                      theme.colorScheme.secondary.withValues(
+                                        alpha: 0.2,
+                                      ),
                                       Colors.transparent,
                                     ],
                                     stops: [value - 0.1, value, value + 0.1],
@@ -145,23 +157,28 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                               );
                             },
                             onEnd: () {
-                              if (_calibrating) setState(() {}); // Loop animation
+                              if (_calibrating)
+                                setState(() {}); // Loop animation
                             },
                           ),
                         Icon(
                           Icons.center_focus_strong,
                           size: 80,
-                          color: theme.colorScheme.secondary.withValues(alpha: 0.5),
+                          color: theme.colorScheme.secondary.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 48),
-                  
+
                   Text(
                     _status,
-                    style: theme.textTheme.headlineSmall?.copyWith(color: Colors.white),
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      color: Colors.white,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
@@ -171,7 +188,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                       child: LinearProgressIndicator(
                         value: _progress,
                         backgroundColor: Colors.white12,
-                        valueColor: AlwaysStoppedAnimation(theme.colorScheme.secondary),
+                        valueColor: AlwaysStoppedAnimation(
+                          theme.colorScheme.secondary,
+                        ),
                       ),
                     )
                   else
@@ -180,9 +199,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                       style: TextStyle(color: Colors.white54),
                       textAlign: TextAlign.center,
                     ),
-                  
+
                   const Spacer(),
-                  
+
                   if (!_calibrating)
                     SizedBox(
                       width: double.infinity,
@@ -218,9 +237,7 @@ class _CameraPreviewWrapper extends StatelessWidget {
     return ClipRect(
       child: Transform.scale(
         scale: scale,
-        child: Center(
-          child: CameraPreview(controller),
-        ),
+        child: Center(child: CameraPreview(controller)),
       ),
     );
   }

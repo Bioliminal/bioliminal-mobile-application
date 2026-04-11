@@ -49,9 +49,7 @@ final goRouter = GoRouter(
     GoRoute(
       path: '/report/:id',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => ReportView(
-        id: state.pathParameters['id']!,
-      ),
+      builder: (context, state) => ReportView(id: state.pathParameters['id']!),
     ),
     GoRoute(
       path: '/login',

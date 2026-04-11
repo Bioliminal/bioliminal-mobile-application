@@ -5,7 +5,10 @@ import '../models.dart';
 /// Pure rotation math — no native dependencies.
 /// Returns the rotation in degrees to apply to a camera image
 /// based on sensor orientation and whether it's a front-facing camera.
-int rotationDegreesForSensor(int sensorOrientation, {required bool isFrontCamera}) {
+int rotationDegreesForSensor(
+  int sensorOrientation, {
+  required bool isFrontCamera,
+}) {
   if (isFrontCamera) {
     return (360 - sensorOrientation) % 360;
   }
@@ -56,13 +59,15 @@ List<Landmark> normalizeRawLandmarks({
   required double imageHeight,
 }) {
   return raw
-      .map((r) => normalizeLandmark(
-            x: r.x,
-            y: r.y,
-            z: r.z,
-            visibility: r.visibility,
-            imageWidth: imageWidth,
-            imageHeight: imageHeight,
-          ))
+      .map(
+        (r) => normalizeLandmark(
+          x: r.x,
+          y: r.y,
+          z: r.z,
+          visibility: r.visibility,
+          imageWidth: imageWidth,
+          imageHeight: imageHeight,
+        ),
+      )
       .toList();
 }

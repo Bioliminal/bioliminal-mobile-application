@@ -27,10 +27,7 @@ class AuraLinkTheme {
     return BoxDecoration(
       color: Colors.white.withValues(alpha: 0.1),
       borderRadius: BorderRadius.circular(16),
-      border: Border.all(
-        color: Colors.white.withValues(alpha: 0.2),
-        width: 1,
-      ),
+      border: Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1),
     );
   }
 
@@ -75,15 +72,8 @@ class AuraLinkTheme {
           fontWeight: FontWeight.w500,
           color: Colors.white70,
         ),
-        bodyLarge: TextStyle(
-          fontSize: 16,
-          height: 1.6,
-          color: Colors.white,
-        ),
-        bodyMedium: TextStyle(
-          fontSize: 14,
-          color: Colors.white70,
-        ),
+        bodyLarge: TextStyle(fontSize: 16, height: 1.6, color: Colors.white),
+        bodyMedium: TextStyle(fontSize: 14, color: Colors.white70),
         labelLarge: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w600,
@@ -95,10 +85,7 @@ class AuraLinkTheme {
           letterSpacing: 0.5,
           color: Colors.white38,
         ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          color: Colors.white38,
-        ),
+        bodySmall: TextStyle(fontSize: 12, color: Colors.white38),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -108,13 +95,9 @@ class AuraLinkTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          textStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
       ),
     );
   }
 }
-

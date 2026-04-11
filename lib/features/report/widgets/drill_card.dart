@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import '../../../domain/models.dart';
 
 class DrillCard extends StatelessWidget {
-  const DrillCard({super.key, required this.drill, this.isArchetypeMatch = false});
+  const DrillCard({
+    super.key,
+    required this.drill,
+    this.isArchetypeMatch = false,
+  });
 
   final MobilityDrill drill;
   final bool isArchetypeMatch;
@@ -37,14 +41,14 @@ class DrillCard extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: Text(
-                    drill.name,
-                    style: theme.textTheme.titleMedium,
-                  ),
+                  child: Text(drill.name, style: theme.textTheme.titleMedium),
                 ),
                 if (isArchetypeMatch) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: colorScheme.secondaryContainer,
                       borderRadius: BorderRadius.circular(10),
@@ -59,8 +63,10 @@ class DrillCard extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(10),

@@ -20,24 +20,6 @@ import '../widgets/finding_card.dart';
 // Archetype descriptions — user-facing, no chain names
 // ---------------------------------------------------------------------------
 
-const _archetypeDescriptions = <MobilityArchetype, String>{
-  MobilityArchetype.ankleDominant:
-      'Your movement patterns suggest ankle mobility is a key focus area. '
-          'The patterns we see in your ankles tend to influence your knees and hips.',
-  MobilityArchetype.hipDominant:
-      'Your hip and pelvis area shows the most consistent patterns. '
-          'Strengthening here could improve your overall movement quality.',
-  MobilityArchetype.trunkDominant:
-      'Your core and torso balance is the most prominent pattern. '
-          'Building stability here supports everything above and below.',
-  MobilityArchetype.hypermobile:
-      'You show more range of motion than average. '
-          'Your focus should be on control and stability rather than flexibility.',
-  MobilityArchetype.balanced:
-      'Your movement patterns are well-distributed. '
-          'No single area dominates \u2014 keep up the balanced approach.',
-};
-
 const _archetypeDisplayNames = <MobilityArchetype, String>{
   MobilityArchetype.ankleDominant: 'Ankle-Dominant',
   MobilityArchetype.hipDominant: 'Hip-Dominant',
@@ -106,15 +88,14 @@ class _ReportViewState extends ConsumerState<ReportView> {
     setState(() => _generating = true);
     try {
       final path = await _generatePdf(report, assessment);
-      await Share.share(
-        path,
-        subject: 'AuraLink Movement Screen',
+      await SharePlus.instance.share(
+        ShareParams(files: [XFile(path)], subject: 'AuraLink Movement Screen'),
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to share: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to share: $e')));
       }
     } finally {
       if (mounted) setState(() => _generating = false);
@@ -138,10 +119,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
 
     // Deep-link: no router extra, load from local storage.
     setState(() => _loading = true);
-    ref
-        .read(localStorageServiceProvider)
-        .loadAssessment(widget.id)
-        .then((loaded) {
+    ref.read(localStorageServiceProvider).loadAssessment(widget.id).then((
+      loaded,
+    ) {
       if (!mounted) return;
       setState(() {
         _assessment = loaded;
@@ -154,8 +134,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
   }
 
   Future<void> _loadLongitudinalContext() async {
-    final allAssessments =
-        await ref.read(localStorageServiceProvider).listAssessments();
+    final allAssessments = await ref
+        .read(localStorageServiceProvider)
+        .listAssessments();
 
     if (!mounted || allAssessments.length <= 1) return;
 
@@ -280,10 +261,15 @@ class _ReportViewState extends ConsumerState<ReportView> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                        color: theme.colorScheme.secondary.withValues(
+                          alpha: 0.1,
+                        ),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(Icons.person_search, color: theme.colorScheme.secondary),
+                      child: Icon(
+                        Icons.person_search,
+                        color: theme.colorScheme.secondary,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -299,7 +285,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                           ),
                           Text(
                             'Movement Archetype',
-                            style: theme.textTheme.bodySmall?.copyWith(color: Colors.white54),
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white54,
+                            ),
                           ),
                         ],
                       ),
@@ -339,7 +327,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                   ),
                   Text(
                     '${report.findings.length} DETECTED',
-                    style: theme.textTheme.labelSmall?.copyWith(color: Colors.white38),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: Colors.white38,
+                    ),
                   ),
                 ],
               ),
@@ -395,17 +385,28 @@ class _ReportViewState extends ConsumerState<ReportView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...report.practitionerPoints.map((p) => Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Icon(Icons.check_circle_outline, size: 16, color: Colors.white38),
-                            const SizedBox(width: 8),
-                            Expanded(child: Text(p, style: theme.textTheme.bodyMedium)),
-                          ],
+                      ...report.practitionerPoints.map(
+                        (p) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(
+                                Icons.check_circle_outline,
+                                size: 16,
+                                color: Colors.white38,
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  p,
+                                  style: theme.textTheme.bodyMedium,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ),

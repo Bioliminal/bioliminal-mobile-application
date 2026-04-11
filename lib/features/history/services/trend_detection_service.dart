@@ -59,13 +59,15 @@ class TrendDetectionService {
         }
       }
 
-      trends.add(CompensationTrend(
-        compensationType: key.$1,
-        joint: key.$2,
-        trend: classification,
-        values: values,
-        slope: slope,
-      ));
+      trends.add(
+        CompensationTrend(
+          compensationType: key.$1,
+          joint: key.$2,
+          trend: classification,
+          values: values,
+          slope: slope,
+        ),
+      );
     }
 
     return TrendReport(trends: trends);

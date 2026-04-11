@@ -48,10 +48,7 @@ void main() {
 
     getController().skipMovement();
     // After skipping the first movement, should show findings or advance.
-    expect(
-      getState(),
-      anyOf(isA<ShowingFindings>(), isA<ActiveMovement>()),
-    );
+    expect(getState(), anyOf(isA<ShowingFindings>(), isA<ActiveMovement>()));
   });
 
   test('skipMovement is no-op from non-ActiveMovement states', () {

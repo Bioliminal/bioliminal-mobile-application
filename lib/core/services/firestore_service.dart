@@ -26,11 +26,11 @@ class FirestoreService {
   /// and [FirebaseStorage.instance], ensuring those SDKs are not initialized
   /// until opt-in.
   factory FirestoreService.withFirebase(AuthService auth) => FirestoreService(
-        FirebaseFirestore.instance,
-        FirebaseStorage.instance,
-        auth,
-        cloudSyncEnabled: true,
-      );
+    FirebaseFirestore.instance,
+    FirebaseStorage.instance,
+    auth,
+    cloudSyncEnabled: true,
+  );
 
   final FirebaseFirestore _firestore;
   final FirebaseStorage _storage;
@@ -109,8 +109,9 @@ class FirestoreService {
 
   Future<List<Assessment>> listAssessments() async {
     _requireCloudSync();
-    final snapshot =
-        await _assessments.orderBy('createdAt', descending: true).get();
+    final snapshot = await _assessments
+        .orderBy('createdAt', descending: true)
+        .get();
     return snapshot.docs
         .map((doc) => _assessmentFromFirestore(doc.data()))
         .toList();

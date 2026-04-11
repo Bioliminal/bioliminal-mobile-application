@@ -28,12 +28,17 @@ class HistoryView extends ConsumerWidget {
         backgroundColor: Colors.transparent,
       ),
       floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 90), // Offset for floating bottom nav
+        padding: const EdgeInsets.only(
+          bottom: 90,
+        ), // Offset for floating bottom nav
         child: FloatingActionButton.extended(
           onPressed: () => context.go('/screening'),
           backgroundColor: theme.colorScheme.secondary,
           foregroundColor: AuraLinkTheme.screenBackground,
-          label: const Text('NEW SCAN', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2)),
+          label: const Text(
+            'NEW SCAN',
+            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          ),
           icon: const Icon(Icons.add),
         ),
       ),
@@ -144,24 +149,52 @@ class _TrendGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final improving = trendReport.trends.where((t) => t.trend == TrendClassification.improving).length;
-    final worsening = trendReport.trends.where((t) => t.trend == TrendClassification.worsening).length;
-    final stable = trendReport.trends.where((t) => t.trend == TrendClassification.stable).length;
+    final improving = trendReport.trends
+        .where((t) => t.trend == TrendClassification.improving)
+        .length;
+    final worsening = trendReport.trends
+        .where((t) => t.trend == TrendClassification.worsening)
+        .length;
+    final stable = trendReport.trends
+        .where((t) => t.trend == TrendClassification.stable)
+        .length;
 
     return Row(
       children: [
-        Expanded(child: _TrendCard(count: improving, label: 'IMPROVING', color: AuraLinkTheme.confidenceHigh)),
+        Expanded(
+          child: _TrendCard(
+            count: improving,
+            label: 'IMPROVING',
+            color: AuraLinkTheme.confidenceHigh,
+          ),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _TrendCard(count: stable, label: 'STABLE', color: AuraLinkTheme.confidenceMedium)),
+        Expanded(
+          child: _TrendCard(
+            count: stable,
+            label: 'STABLE',
+            color: AuraLinkTheme.confidenceMedium,
+          ),
+        ),
         const SizedBox(width: 12),
-        Expanded(child: _TrendCard(count: worsening, label: 'REGRESSING', color: AuraLinkTheme.confidenceLow)),
+        Expanded(
+          child: _TrendCard(
+            count: worsening,
+            label: 'REGRESSING',
+            color: AuraLinkTheme.confidenceLow,
+          ),
+        ),
       ],
     );
   }
 }
 
 class _TrendCard extends StatelessWidget {
-  const _TrendCard({required this.count, required this.label, required this.color});
+  const _TrendCard({
+    required this.count,
+    required this.label,
+    required this.color,
+  });
   final int count;
   final String label;
   final Color color;

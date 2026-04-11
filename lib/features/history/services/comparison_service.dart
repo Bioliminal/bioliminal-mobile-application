@@ -21,16 +21,12 @@ class ComparisonMetric {
 class ComparisonService {
   ComparisonService._();
 
-  static List<ComparisonMetric> compare(
-    Assessment older,
-    Assessment newer,
-  ) {
+  static List<ComparisonMetric> compare(Assessment older, Assessment newer) {
     final metrics = <ComparisonMetric>[];
 
     for (final newComp in newer.compensations) {
       final oldComp = older.compensations
-          .where((c) =>
-              c.type == newComp.type && c.joint == newComp.joint)
+          .where((c) => c.type == newComp.type && c.joint == newComp.joint)
           .firstOrNull;
       if (oldComp == null) continue;
 
@@ -38,14 +34,16 @@ class ComparisonService {
       // For all compensation types, lower value = improved.
       final improved = newComp.value < oldComp.value;
 
-      metrics.add(ComparisonMetric(
-        joint: newComp.joint,
-        compensationType: newComp.type,
-        oldValue: oldComp.value,
-        newValue: newComp.value,
-        delta: delta,
-        improved: improved,
-      ));
+      metrics.add(
+        ComparisonMetric(
+          joint: newComp.joint,
+          compensationType: newComp.type,
+          oldValue: oldComp.value,
+          newValue: newComp.value,
+          delta: delta,
+          improved: improved,
+        ),
+      );
     }
 
     return metrics;

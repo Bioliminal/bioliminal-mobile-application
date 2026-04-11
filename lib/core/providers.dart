@@ -39,8 +39,9 @@ class CloudSyncNotifier extends Notifier<bool> {
   void disable() => state = false;
 }
 
-final cloudSyncEnabledProvider =
-    NotifierProvider<CloudSyncNotifier, bool>(CloudSyncNotifier.new);
+final cloudSyncEnabledProvider = NotifierProvider<CloudSyncNotifier, bool>(
+  CloudSyncNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // AI Engine Selection — persist in-memory for this session (can extend to local storage).
@@ -52,8 +53,9 @@ class AIModelNotifier extends Notifier<String> {
   void set(String model) => state = model;
 }
 
-final selectedAIModelProvider =
-    NotifierProvider<AIModelNotifier, String>(AIModelNotifier.new);
+final selectedAIModelProvider = NotifierProvider<AIModelNotifier, String>(
+  AIModelNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // User Profile — In-memory for now, could link to auth/firestore.
@@ -72,11 +74,7 @@ class UserProfile {
     required this.totalScans,
   });
 
-  UserProfile copyWith({
-    String? name,
-    String? email,
-    int? totalScans,
-  }) {
+  UserProfile copyWith({String? name, String? email, int? totalScans}) {
     return UserProfile(
       name: name ?? this.name,
       email: email ?? this.email,
@@ -99,11 +97,13 @@ class UserProfileNotifier extends Notifier<UserProfile> {
 
   void updateName(String name) => state = state.copyWith(name: name);
   void updateEmail(String email) => state = state.copyWith(email: email);
-  void incrementScans() => state = state.copyWith(totalScans: state.totalScans + 1);
+  void incrementScans() =>
+      state = state.copyWith(totalScans: state.totalScans + 1);
 }
 
-final userProfileProvider =
-    NotifierProvider<UserProfileNotifier, UserProfile>(UserProfileNotifier.new);
+final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(
+  UserProfileNotifier.new,
+);
 
 // ---------------------------------------------------------------------------
 // Core providers — always available, offline-first.
@@ -119,22 +119,20 @@ class CameraDescriptionNotifier extends Notifier<CameraDescription?> {
 
 final cameraDescriptionProvider =
     NotifierProvider<CameraDescriptionNotifier, CameraDescription?>(
-  CameraDescriptionNotifier.new,
-);
+      CameraDescriptionNotifier.new,
+    );
 
 final poseEstimationServiceProvider =
-    Provider<pose_service.PoseEstimationService>(
-  (ref) {
-    if (ref.watch(useMockPoseServiceProvider)) {
-      return MockPoseEstimationService();
-    }
-    final cam = ref.watch(cameraDescriptionProvider);
-    return MlKitPoseEstimationService(
-      sensorOrientation: cam?.sensorOrientation ?? 0,
-      lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
-    );
-  },
-);
+    Provider<pose_service.PoseEstimationService>((ref) {
+      if (ref.watch(useMockPoseServiceProvider)) {
+        return MockPoseEstimationService();
+      }
+      final cam = ref.watch(cameraDescriptionProvider);
+      return MlKitPoseEstimationService(
+        sensorOrientation: cam?.sensorOrientation ?? 0,
+        lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
+      );
+    });
 
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(
   (ref) => RuleBasedAngleCalculator(),
@@ -153,22 +151,20 @@ final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
 // Only instantiated when the user explicitly opts into cloud backup.
 // ---------------------------------------------------------------------------
 
-final authServiceProvider = Provider<AuthService?>(
-  (ref) {
-    if (!ref.watch(cloudSyncEnabledProvider)) {
-      return null;
-    }
-    return AuthService.withFirebase();
-  },
-);
+final authServiceProvider = Provider<AuthService?>((ref) {
+  if (!ref.watch(cloudSyncEnabledProvider)) {
+    return null;
+  }
+  return AuthService.withFirebase();
+});
 
-final firestoreServiceProvider = Provider<firestore_impl.FirestoreService?>(
-  (ref) {
-    if (!ref.watch(cloudSyncEnabledProvider)) {
-      return null;
-    }
-    final auth = ref.watch(authServiceProvider);
-    if (auth == null) return null;
-    return firestore_impl.FirestoreService.withFirebase(auth);
-  },
-);
+final firestoreServiceProvider = Provider<firestore_impl.FirestoreService?>((
+  ref,
+) {
+  if (!ref.watch(cloudSyncEnabledProvider)) {
+    return null;
+  }
+  final auth = ref.watch(authServiceProvider);
+  if (auth == null) return null;
+  return firestore_impl.FirestoreService.withFirebase(auth);
+});

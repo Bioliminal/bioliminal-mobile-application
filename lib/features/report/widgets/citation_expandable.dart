@@ -31,17 +31,11 @@ class CitationExpandable extends StatelessWidget {
         size: 18,
         color: colorScheme.primary,
       ),
-      title: Text(
-        citation.source,
-        style: theme.textTheme.bodyMedium,
-      ),
+      title: Text(citation.source, style: theme.textTheme.bodyMedium),
       children: [
         Align(
           alignment: Alignment.centerLeft,
-          child: Text(
-            citation.finding,
-            style: theme.textTheme.bodyMedium,
-          ),
+          child: Text(citation.finding, style: theme.textTheme.bodyMedium),
         ),
         const SizedBox(height: 8),
         if (citation.url.isNotEmpty)

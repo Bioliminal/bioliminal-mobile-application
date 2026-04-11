@@ -30,8 +30,11 @@ void main() {
           value: 7.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
         const Compensation(
@@ -42,13 +45,18 @@ void main() {
           value: 15.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(
+        makeAssessment(compensations),
+      );
 
       // Both compensations should be in one finding (same chain).
       expect(report.findings.length, 1);
@@ -65,8 +73,11 @@ void main() {
           value: 7.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
         const Compensation(
@@ -77,13 +88,18 @@ void main() {
           value: 15.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(
+        makeAssessment(compensations),
+      );
       // SBL upstream driver is ankle.
       expect(report.findings.first.upstreamDriver, isNotNull);
       expect(report.findings.first.upstreamDriver, contains('ankle'));
@@ -99,13 +115,18 @@ void main() {
           value: 15.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(
+        makeAssessment(compensations),
+      );
       expect(report.findings.first.citations, isNotEmpty);
     });
 
@@ -119,8 +140,11 @@ void main() {
           value: 7.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
         const Compensation(
@@ -131,13 +155,18 @@ void main() {
           value: 15.0,
           threshold: 10.0,
           citation: Citation(
-            finding: 'test', source: 'test', url: 'http://test',
-            type: CitationType.research, appUsage: 'test',
+            finding: 'test',
+            source: 'test',
+            url: 'http://test',
+            type: CitationType.research,
+            appUsage: 'test',
           ),
         ),
       ];
 
-      final report = ReportAssemblyService.buildReport(makeAssessment(compensations));
+      final report = ReportAssemblyService.buildReport(
+        makeAssessment(compensations),
+      );
       expect(report.practitionerPoints, isNotEmpty);
     });
   });
@@ -156,8 +185,11 @@ void main() {
               value: 15.0,
               threshold: 10.0,
               citation: Citation(
-                finding: 'test', source: 'test', url: 'http://test',
-                type: CitationType.research, appUsage: 'test',
+                finding: 'test',
+                source: 'test',
+                url: 'http://test',
+                type: CitationType.research,
+                appUsage: 'test',
               ),
             ),
             Compensation(
@@ -168,8 +200,11 @@ void main() {
               value: 7.0,
               threshold: 10.0,
               citation: Citation(
-                finding: 'test', source: 'test', url: 'http://test',
-                type: CitationType.research, appUsage: 'test',
+                finding: 'test',
+                source: 'test',
+                url: 'http://test',
+                type: CitationType.research,
+                appUsage: 'test',
               ),
             ),
           ],
@@ -178,7 +213,10 @@ void main() {
         ),
       ];
 
-      expect(ReportAssemblyService.overallConfidence(findings), ConfidenceLevel.low);
+      expect(
+        ReportAssemblyService.overallConfidence(findings),
+        ConfidenceLevel.low,
+      );
     });
   });
 }

@@ -5,20 +5,20 @@ import 'package:auralink/features/screening/widgets/stick_figure_animation.dart'
 
 /// Helper: create a uniform PoseFrame with all joints at the same offset.
 PoseFrame _uniform(double x, double y) => PoseFrame(
-      head: Offset(x, y),
-      leftShoulder: Offset(x, y),
-      rightShoulder: Offset(x, y),
-      leftElbow: Offset(x, y),
-      rightElbow: Offset(x, y),
-      leftWrist: Offset(x, y),
-      rightWrist: Offset(x, y),
-      leftHip: Offset(x, y),
-      rightHip: Offset(x, y),
-      leftKnee: Offset(x, y),
-      rightKnee: Offset(x, y),
-      leftAnkle: Offset(x, y),
-      rightAnkle: Offset(x, y),
-    );
+  head: Offset(x, y),
+  leftShoulder: Offset(x, y),
+  rightShoulder: Offset(x, y),
+  leftElbow: Offset(x, y),
+  rightElbow: Offset(x, y),
+  leftWrist: Offset(x, y),
+  rightWrist: Offset(x, y),
+  leftHip: Offset(x, y),
+  rightHip: Offset(x, y),
+  leftKnee: Offset(x, y),
+  rightKnee: Offset(x, y),
+  leftAnkle: Offset(x, y),
+  rightAnkle: Offset(x, y),
+);
 
 void main() {
   group('PoseFrame.lerp', () {
@@ -155,11 +155,17 @@ void main() {
       // t=0.0 -> frame 0
       expect(interpolateKeyframes(keyframes, 0.0).head.dx, closeTo(0.0, 1e-10));
       // t=0.25 -> frame 1
-      expect(interpolateKeyframes(keyframes, 0.25).head.dx, closeTo(0.25, 1e-10));
+      expect(
+        interpolateKeyframes(keyframes, 0.25).head.dx,
+        closeTo(0.25, 1e-10),
+      );
       // t=0.5 -> frame 2
       expect(interpolateKeyframes(keyframes, 0.5).head.dx, closeTo(0.5, 1e-10));
       // t=0.75 -> frame 3
-      expect(interpolateKeyframes(keyframes, 0.75).head.dx, closeTo(0.75, 1e-10));
+      expect(
+        interpolateKeyframes(keyframes, 0.75).head.dx,
+        closeTo(0.75, 1e-10),
+      );
       // t=1.0 -> frame 4
       expect(interpolateKeyframes(keyframes, 1.0).head.dx, closeTo(1.0, 1e-10));
     });

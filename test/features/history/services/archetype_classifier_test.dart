@@ -42,18 +42,13 @@ Compensation _makeCompensation(
 void main() {
   group('ArchetypeClassifier.classify', () {
     test('returns balanced for empty assessment list', () {
-      expect(
-        ArchetypeClassifier.classify([]),
-        MobilityArchetype.balanced,
-      );
+      expect(ArchetypeClassifier.classify([]), MobilityArchetype.balanced);
     });
 
     test('returns balanced for single assessment', () {
       final assessment = _makeAssessment(
         id: 'a1',
-        compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-        ],
+        compensations: [_makeCompensation(CompensationType.ankleRestriction)],
       );
 
       expect(
@@ -68,19 +63,28 @@ void main() {
       // Assessment 3: 1 ankle + 1 trunk = 2
       // Total: 7. Ankle = 5/7 = 71%.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.hipDrop),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.ankleRestriction),
-        ]),
-        _makeAssessment(id: 'a3', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.trunkLean),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.hipDrop),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.ankleRestriction),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a3',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.trunkLean),
+          ],
+        ),
       ];
 
       expect(
@@ -94,14 +98,20 @@ void main() {
       // Assessment 2: 1 hipDrop + 1 ankle = 2
       // Total: 4. Hip bucket = 3/4 = 75%.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.hipDrop),
-          _makeCompensation(CompensationType.kneeValgus),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.hipDrop),
-          _makeCompensation(CompensationType.ankleRestriction),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.hipDrop),
+            _makeCompensation(CompensationType.kneeValgus),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.hipDrop),
+            _makeCompensation(CompensationType.ankleRestriction),
+          ],
+        ),
       ];
 
       expect(
@@ -115,15 +125,21 @@ void main() {
       // Assessment 2: 2 trunk = 2
       // Total: 5. Trunk = 4/5 = 80%.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.trunkLean),
-          _makeCompensation(CompensationType.trunkLean),
-          _makeCompensation(CompensationType.ankleRestriction),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.trunkLean),
-          _makeCompensation(CompensationType.trunkLean),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.trunkLean),
+            _makeCompensation(CompensationType.trunkLean),
+            _makeCompensation(CompensationType.ankleRestriction),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.trunkLean),
+            _makeCompensation(CompensationType.trunkLean),
+          ],
+        ),
       ];
 
       expect(
@@ -132,25 +148,39 @@ void main() {
       );
     });
 
-    test(
-        'returns hypermobile when low-value chain-null compensations '
+    test('returns hypermobile when low-value chain-null compensations '
         'in >= 50% of assessments', () {
       // 3 of 4 assessments have a comp with value < 5 and chain == null.
       // 3/4 = 75% >= 50%.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction, value: 3.0),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.hipDrop, value: 3.0),
-        ]),
-        _makeAssessment(id: 'a3', compensations: [
-          _makeCompensation(CompensationType.trunkLean, value: 3.0),
-        ]),
-        _makeAssessment(id: 'a4', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction,
-              value: 12.0, chain: ChainType.sbl),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction, value: 3.0),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.hipDrop, value: 3.0),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a3',
+          compensations: [
+            _makeCompensation(CompensationType.trunkLean, value: 3.0),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a4',
+          compensations: [
+            _makeCompensation(
+              CompensationType.ankleRestriction,
+              value: 12.0,
+              chain: ChainType.sbl,
+            ),
+          ],
+        ),
       ];
 
       expect(
@@ -163,21 +193,30 @@ void main() {
       // Each assessment has 1 ankle, 1 hip, 1 trunk = even distribution.
       // Each bucket = 3/9 = 33%.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.hipDrop),
-          _makeCompensation(CompensationType.trunkLean),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.hipDrop),
-          _makeCompensation(CompensationType.trunkLean),
-        ]),
-        _makeAssessment(id: 'a3', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction),
-          _makeCompensation(CompensationType.hipDrop),
-          _makeCompensation(CompensationType.trunkLean),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.hipDrop),
+            _makeCompensation(CompensationType.trunkLean),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.hipDrop),
+            _makeCompensation(CompensationType.trunkLean),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a3',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction),
+            _makeCompensation(CompensationType.hipDrop),
+            _makeCompensation(CompensationType.trunkLean),
+          ],
+        ),
       ];
 
       expect(
@@ -190,14 +229,20 @@ void main() {
       // All assessments have hypermobility indicators AND ankle dominance.
       // Hypermobility is checked first, so it wins.
       final assessments = [
-        _makeAssessment(id: 'a1', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction, value: 3.0),
-          _makeCompensation(CompensationType.ankleRestriction),
-        ]),
-        _makeAssessment(id: 'a2', compensations: [
-          _makeCompensation(CompensationType.ankleRestriction, value: 4.0),
-          _makeCompensation(CompensationType.ankleRestriction),
-        ]),
+        _makeAssessment(
+          id: 'a1',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction, value: 3.0),
+            _makeCompensation(CompensationType.ankleRestriction),
+          ],
+        ),
+        _makeAssessment(
+          id: 'a2',
+          compensations: [
+            _makeCompensation(CompensationType.ankleRestriction, value: 4.0),
+            _makeCompensation(CompensationType.ankleRestriction),
+          ],
+        ),
       ];
 
       expect(
