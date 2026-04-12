@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 
 /// Supported movement types. Must match the server's MovementType literal.
 enum MovementType {
@@ -163,6 +165,11 @@ class SessionPayload {
             .map((e) => PoseFrame.fromJson(e as Map<String, dynamic>))
             .toList(),
       );
+
+  /// Serialize to JSON string in a background isolate.
+  static Future<String> serializeAsync(SessionPayload payload) async {
+    return compute((p) => jsonEncode(p.toJson()), payload);
+  }
 }
 
 class JointAngle {

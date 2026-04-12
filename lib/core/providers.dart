@@ -15,6 +15,7 @@ import 'package:auralink/core/services/firestore_service.dart'
     as firestore_impl;
 import 'package:auralink/core/services/local_storage_service.dart'
     as local_impl;
+import 'package:auralink/features/camera/services/pose_detector.dart';
 
 // Re-export camera providers so screening can import from one place.
 export 'package:auralink/features/camera/controllers/camera_controller.dart'
@@ -124,15 +125,21 @@ final cameraDescriptionProvider =
 
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>((ref) {
-      if (ref.watch(useMockPoseServiceProvider)) {
-        return MockPoseEstimationService();
-      }
-      final cam = ref.watch(cameraDescriptionProvider);
-      return MlKitPoseEstimationService(
-        sensorOrientation: cam?.sensorOrientation ?? 0,
-        lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
-      );
-    });
+  if (ref.watch(useMockPoseServiceProvider)) {
+    return MockPoseEstimationService();
+  }
+  final cam = ref.watch(cameraDescriptionProvider);
+  return MlKitPoseEstimationService(
+    sensorOrientation: cam?.sensorOrientation ?? 0,
+    lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
+  );
+});
+
+final poseDetectorProvider = Provider<PoseDetector>((ref) {
+  final detector = MediaPipePoseDetector();
+  ref.onDispose(() => detector.dispose());
+  return detector;
+});
 
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(
   (ref) => RuleBasedAngleCalculator(),

@@ -4,6 +4,7 @@ This plan transitions the AuraLink mobile app to a high-fidelity capture tool fo
 
 ## Journal
 - Phase 1 Complete: Refactored core data models to align with server Pydantic schemas. Renamed `Landmark` to `PoseLandmark` (adding `presence` field) and introduced `PoseFrame`, `SessionMetadata`, and `SessionPayload`. Updated `MovementType` and `screeningMovements` to match the clinical priority list (Overhead Squat, Single-Leg Squat, Push-up, Rollup). Updated all services and tests to match new models. Verified zero static analysis errors.
+- Phase 2 Complete: Implemented the `PoseDetector` interface and `MediaPipePoseDetector` using `google_mlkit_pose_detection`. Overhauled the ML pipeline to capture exactly 33 BlazePose landmarks. Refactored `AppCameraController` to use the new `poseDetectorProvider` for better testability. Implemented background JSON serialization for large `SessionPayload` data using `compute` (Isolate). Resolved test environment issues by adding `MockPoseDetector` and binding initialization to unit tests.
 
 ## Phase 1: Data Model & Clinical Movement Update
 Goal: Align core models and movement configurations with the clinical priority list.
@@ -27,12 +28,21 @@ Goal: Align core models and movement configurations with the clinical priority l
 ## Phase 2: ML Pipeline & Capture Overhaul
 Goal: Implement the 33-landmark high-fidelity capture pipeline.
 
-- [ ] Implement the `PoseDetector` interface in `lib/features/camera/services/pose_detector.dart`.
-- [ ] Create the `MediaPipePoseDetector` implementation using `google_mlkit_pose_detection`.
-- [ ] Refactor `AppCameraController` to use the new `PoseDetector` and buffer `PoseFrame`s during active capture.
-- [ ] Implement `Isolate.run()` for `SessionPayload` JSON serialization.
-- [ ] **Validation & Commit:**
-    - [ ] (Include all standard validation/commit steps from Phase 1)
+- [x] Implement the `PoseDetector` interface in `lib/features/camera/services/pose_detector.dart`.
+- [x] Create the `MediaPipePoseDetector` implementation using `google_mlkit_pose_detection`.
+- [x] Refactor `AppCameraController` to use the new `PoseDetector` and buffer `PoseFrame`s during active capture.
+- [x] Implement `Isolate.run()` for `SessionPayload` JSON serialization.
+- [x] **Validation & Commit:**
+    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+    - [x] Run the `dart_fix` tool to clean up the code.
+    - [x] Run the `analyze_files` tool one more time and fix any issues.
+    - [x] Run any tests to make sure they all pass.
+    - [x] Run `dart_format` to make sure that the formatting is correct.
+    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
+    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
+    - [x] Use `git diff` to verify changes and prepare a commit message.
+    - [x] Wait for user approval before committing.
+    - [x] After committing, use `hot_reload` if the app is running.
 
 ## Phase 3: Server Integration & Session Management
 Goal: Establish communication with the AuraLink clinical server.

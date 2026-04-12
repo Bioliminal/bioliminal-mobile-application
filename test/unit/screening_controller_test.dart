@@ -2,14 +2,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:auralink/domain/models.dart';
+import 'package:auralink/core/providers.dart';
+import 'package:auralink/features/camera/services/pose_detector.dart';
 import 'package:auralink/features/screening/controllers/screening_controller.dart';
 import 'package:auralink/features/screening/models/movement.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late ProviderContainer container;
 
   setUp(() {
-    container = ProviderContainer();
+    container = ProviderContainer(
+      overrides: [
+        poseDetectorProvider.overrideWithValue(MockPoseDetector()),
+      ],
+    );
   });
 
   tearDown(() {
