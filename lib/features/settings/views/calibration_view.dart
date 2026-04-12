@@ -157,8 +157,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                               );
                             },
                             onEnd: () {
-                              if (_calibrating)
+                              if (_calibrating) {
                                 setState(() {}); // Loop animation
+                              }
                             },
                           ),
                         Icon(

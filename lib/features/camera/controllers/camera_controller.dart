@@ -33,7 +33,7 @@ class CameraReady extends CameraState {
 class CameraStreaming extends CameraState {
   const CameraStreaming({required this.controller, this.landmarks = const []});
   final CameraController controller;
-  final List<Landmark> landmarks;
+  final List<PoseLandmark> landmarks;
 }
 
 class CameraError extends CameraState {
@@ -119,6 +119,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     } on CameraException catch (e) {
       // CameraException code 'CameraAccessDenied' means user denied.
       if (e.code == 'CameraAccessDenied' ||
+          e.code == 'CameraPermissionDenied' ||
           e.code == 'CameraAccessDeniedWithoutPrompt') {
         final permanent = e.code == 'CameraAccessDeniedWithoutPrompt';
         state = AsyncData(CameraPermissionDenied(permanent: permanent));
@@ -206,7 +207,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
   }
 
   /// Update landmarks from pose estimation (called by the service integration).
-  void updateLandmarks(List<Landmark> landmarks) {
+  void updateLandmarks(List<PoseLandmark> landmarks) {
     final current = state.value;
     if (current is CameraStreaming) {
       state = AsyncData(
@@ -228,7 +229,7 @@ final appCameraControllerProvider =
 /// Derived provider exposing only the current landmarks.
 /// Widgets that only need landmark data watch this instead of the full
 /// camera state — avoids rebuilds on camera lifecycle transitions.
-final currentLandmarksProvider = Provider<List<Landmark>>((ref) {
+final currentLandmarksProvider = Provider<List<PoseLandmark>>((ref) {
   final cameraState = ref.watch(appCameraControllerProvider).value;
   if (cameraState is CameraStreaming) {
     return cameraState.landmarks;

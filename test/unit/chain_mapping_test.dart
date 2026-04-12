@@ -16,7 +16,13 @@ void main() {
     // Build landmarks with specific visibility to test confidence propagation.
     final landmarks = List.generate(
       33,
-      (_) => const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.95),
+      (_) => const PoseLandmark(
+        x: 0.5,
+        y: 0.5,
+        z: 0.0,
+        visibility: 0.95,
+        presence: 0.95,
+      ),
     );
     return calc.calculateAngles(landmarks);
   }
@@ -132,9 +138,21 @@ void main() {
       // Create landmarks with low visibility at ankles (indices 27, 28).
       final landmarks = List.generate(33, (i) {
         if (i == 27 || i == 28) {
-          return const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.4);
+          return const PoseLandmark(
+            x: 0.5,
+            y: 0.5,
+            z: 0.0,
+            visibility: 0.4,
+            presence: 0.4,
+          );
         }
-        return const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.95);
+        return const PoseLandmark(
+          x: 0.5,
+          y: 0.5,
+          z: 0.0,
+          visibility: 0.95,
+          presence: 0.95,
+        );
       });
       final angles = calc.calculateAngles(landmarks);
       final compensations = mapper.mapCompensations(angles);

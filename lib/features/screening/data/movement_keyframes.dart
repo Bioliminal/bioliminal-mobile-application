@@ -3,8 +3,8 @@ import 'dart:ui';
 /// A single pose in a movement animation — normalized [0,1] joint positions.
 /// Uses the simplified 13-point skeleton: head, left/right shoulder, elbow,
 /// wrist, hip, knee, ankle.
-class PoseFrame {
-  const PoseFrame({
+class AnimationPoseFrame {
+  const AnimationPoseFrame({
     required this.head,
     required this.leftShoulder,
     required this.rightShoulder,
@@ -21,7 +21,7 @@ class PoseFrame {
   });
 
   /// An empty pose with all points at zero.
-  static const empty = PoseFrame(
+  static const empty = AnimationPoseFrame(
     head: Offset.zero,
     leftShoulder: Offset.zero,
     rightShoulder: Offset.zero,
@@ -52,24 +52,24 @@ class PoseFrame {
   final Offset rightAnkle;
 
   List<Offset> get all => [
-    head,
-    leftShoulder,
-    rightShoulder,
-    leftElbow,
-    rightElbow,
-    leftWrist,
-    rightWrist,
-    leftHip,
-    rightHip,
-    leftKnee,
-    rightKnee,
-    leftAnkle,
-    rightAnkle,
-  ];
+        head,
+        leftShoulder,
+        rightShoulder,
+        leftElbow,
+        rightElbow,
+        leftWrist,
+        rightWrist,
+        leftHip,
+        rightHip,
+        leftKnee,
+        rightKnee,
+        leftAnkle,
+        rightAnkle,
+      ];
 
   /// Linearly interpolate between two poses.
-  static PoseFrame lerp(PoseFrame a, PoseFrame b, double t) {
-    return PoseFrame(
+  static AnimationPoseFrame lerp(AnimationPoseFrame a, AnimationPoseFrame b, double t) {
+    return AnimationPoseFrame(
       head: Offset.lerp(a.head, b.head, t)!,
       leftShoulder: Offset.lerp(a.leftShoulder, b.leftShoulder, t)!,
       rightShoulder: Offset.lerp(a.rightShoulder, b.rightShoulder, t)!,
@@ -88,7 +88,7 @@ class PoseFrame {
 }
 
 /// Connections between joints for drawing the stick figure.
-/// Indices into [PoseFrame.all].
+/// Indices into [AnimationPoseFrame.all].
 const stickFigureConnections = <(int, int)>[
   // Head to shoulders
   (0, 1), // head -> left shoulder
@@ -117,7 +117,7 @@ const stickFigureConnections = <(int, int)>[
 // Standing neutral — shared starting pose
 // ---------------------------------------------------------------------------
 
-const _standing = PoseFrame(
+const _standing = AnimationPoseFrame(
   head: Offset(0.50, 0.10),
   leftShoulder: Offset(0.42, 0.22),
   rightShoulder: Offset(0.58, 0.22),
@@ -137,7 +137,7 @@ const _standing = PoseFrame(
 // Overhead Squat
 // ---------------------------------------------------------------------------
 
-const _overheadSquatArmsUp = PoseFrame(
+const _overheadSquatArmsUp = AnimationPoseFrame(
   head: Offset(0.50, 0.10),
   leftShoulder: Offset(0.42, 0.22),
   rightShoulder: Offset(0.58, 0.22),
@@ -153,7 +153,7 @@ const _overheadSquatArmsUp = PoseFrame(
   rightAnkle: Offset(0.55, 0.88),
 );
 
-const _overheadSquatBottom = PoseFrame(
+const _overheadSquatBottom = AnimationPoseFrame(
   head: Offset(0.50, 0.22),
   leftShoulder: Offset(0.42, 0.34),
   rightShoulder: Offset(0.58, 0.34),
@@ -169,7 +169,7 @@ const _overheadSquatBottom = PoseFrame(
   rightAnkle: Offset(0.55, 0.88),
 );
 
-const overheadSquatKeyframes = <PoseFrame>[
+const overheadSquatKeyframes = <AnimationPoseFrame>[
   _standing,
   _overheadSquatArmsUp,
   _overheadSquatBottom,
@@ -178,63 +178,62 @@ const overheadSquatKeyframes = <PoseFrame>[
 ];
 
 // ---------------------------------------------------------------------------
-// Single-Leg Balance
+// Single-Leg Squat (Mapped from Balance for now)
 // ---------------------------------------------------------------------------
 
-const _singleLegBalanceUp = PoseFrame(
-  head: Offset(0.50, 0.10),
-  leftShoulder: Offset(0.42, 0.22),
-  rightShoulder: Offset(0.58, 0.22),
-  leftElbow: Offset(0.34, 0.30),
-  rightElbow: Offset(0.66, 0.30),
-  leftWrist: Offset(0.30, 0.38),
-  rightWrist: Offset(0.70, 0.38),
-  leftHip: Offset(0.45, 0.50),
-  rightHip: Offset(0.55, 0.50),
-  leftKnee: Offset(0.48, 0.56),
-  rightKnee: Offset(0.55, 0.68),
-  leftAnkle: Offset(0.52, 0.62),
-  rightAnkle: Offset(0.55, 0.88),
-);
-
-const singleLegBalanceKeyframes = <PoseFrame>[
-  _standing,
-  _singleLegBalanceUp,
-  _singleLegBalanceUp, // hold
-  _standing,
-];
-
-// ---------------------------------------------------------------------------
-// Overhead Reach
-// ---------------------------------------------------------------------------
-
-const _overheadReachUp = PoseFrame(
-  head: Offset(0.50, 0.10),
-  leftShoulder: Offset(0.42, 0.22),
-  rightShoulder: Offset(0.58, 0.22),
-  leftElbow: Offset(0.40, 0.12),
-  rightElbow: Offset(0.60, 0.12),
-  leftWrist: Offset(0.42, 0.02),
-  rightWrist: Offset(0.58, 0.02),
-  leftHip: Offset(0.45, 0.50),
-  rightHip: Offset(0.55, 0.50),
-  leftKnee: Offset(0.45, 0.68),
+const _singleLegSquatDown = AnimationPoseFrame(
+  head: Offset(0.50, 0.15),
+  leftShoulder: Offset(0.42, 0.27),
+  rightShoulder: Offset(0.58, 0.27),
+  leftElbow: Offset(0.34, 0.35),
+  rightElbow: Offset(0.66, 0.35),
+  leftWrist: Offset(0.30, 0.43),
+  rightWrist: Offset(0.70, 0.43),
+  leftHip: Offset(0.45, 0.55),
+  rightHip: Offset(0.55, 0.55),
+  leftKnee: Offset(0.42, 0.75),
   rightKnee: Offset(0.55, 0.68),
   leftAnkle: Offset(0.45, 0.88),
   rightAnkle: Offset(0.55, 0.88),
 );
 
-const overheadReachKeyframes = <PoseFrame>[
+const singleLegSquatKeyframes = <AnimationPoseFrame>[
   _standing,
-  _overheadReachUp,
+  _singleLegSquatDown,
   _standing,
 ];
 
 // ---------------------------------------------------------------------------
-// Forward Fold
+// Push-up (Mapped from Reach for now)
 // ---------------------------------------------------------------------------
 
-const _forwardFoldDown = PoseFrame(
+const _pushUpDown = AnimationPoseFrame(
+  head: Offset(0.50, 0.30),
+  leftShoulder: Offset(0.40, 0.35),
+  rightShoulder: Offset(0.60, 0.35),
+  leftElbow: Offset(0.35, 0.45),
+  rightElbow: Offset(0.65, 0.45),
+  leftWrist: Offset(0.40, 0.55),
+  rightWrist: Offset(0.60, 0.55),
+  leftHip: Offset(0.45, 0.60),
+  rightHip: Offset(0.55, 0.60),
+  leftKnee: Offset(0.45, 0.75),
+  rightKnee: Offset(0.55, 0.75),
+  leftAnkle: Offset(0.45, 0.90),
+  rightAnkle: Offset(0.55, 0.90),
+);
+
+const pushUpKeyframes = <AnimationPoseFrame>[
+  _standing,
+  _pushUpDown,
+  _standing,
+];
+
+// ---------------------------------------------------------------------------
+// Rollup (Mapped from Fold for now)
+// ---------------------------------------------------------------------------
+
+const _rollupDown = AnimationPoseFrame(
   head: Offset(0.50, 0.42),
   leftShoulder: Offset(0.44, 0.38),
   rightShoulder: Offset(0.56, 0.38),
@@ -250,8 +249,8 @@ const _forwardFoldDown = PoseFrame(
   rightAnkle: Offset(0.55, 0.88),
 );
 
-const forwardFoldKeyframes = <PoseFrame>[
+const rollupKeyframes = <AnimationPoseFrame>[
   _standing,
-  _forwardFoldDown,
+  _rollupDown,
   _standing,
 ];

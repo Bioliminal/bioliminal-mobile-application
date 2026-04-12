@@ -8,6 +8,6 @@ import '../models.dart';
 /// CameraImage comes from the `camera` package. Each frame yields
 /// 33 MediaPipe BlazePose landmarks in normalized coordinates (0.0-1.0).
 abstract class PoseEstimationService {
-  Stream<List<Landmark>> processFrame(CameraImage? frame);
+  Stream<List<PoseLandmark>> processFrame(CameraImage image);
   void dispose();
 }

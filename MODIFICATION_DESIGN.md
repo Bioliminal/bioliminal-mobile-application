@@ -1,79 +1,56 @@
-# DESIGN: AuraLink App Stabilization & Premium Overhaul
+# DESIGN: AuraLink Mobile Hand-off Integration (Server-Centric)
 
 ## Overview
-AuraLink is an AI-powered movement screening app that bridges computer vision with fascial chain science. The current implementation suffers from performance bottlenecks (high GPU/CPU usage causing slowness), state management errors (crashes when cloud sync is disabled), and a UI that lacks a "premium" feel. This overhaul aims to stabilize the app, optimize the camera pipeline for high-FPS performance, and deliver a sophisticated, modern UI.
+This modification aligns the AuraLink mobile app with the clinical research and server-side mandates established by Aaron (2026-04-11). The phone's role is refocused as a **high-fidelity capture tool** using MediaPipe BlazePose Full. Core biomechanical reasoning and MSI classification are migrated to the server to ensure clinical audibility and leverage advanced kinetics models (OpenCap Monocular).
 
 ## Detailed Analysis
 
-### 1. State Errors (Crashes)
-- **Problem:** `AuthService` and `FirestoreService` providers are hardcoded to throw `StateError` if `cloudSyncEnabledProvider` is false.
-- **Impact:** Any widget or service that watches these providers will crash the app upon build if the user hasn't explicitly opted into cloud sync.
-- **Root Cause:** Aggressive error-throwing in the provider definition without UI-level guards.
+### 1. Architectural Shift (Phone as Capture Tool)
+- **Mandate:** "No chain reasoning on the phone. Everything else lives on the server."
+- **Action:** Deprecate the local `ChainMapper` and `AngleCalculator` for final report generation. Retain a "light" version only for real-time user feedback (live skeleton and rep counting).
+- **New Pipeline:** `Camera` → `PoseDetector` (MediaPipe BlazePose Full) → `SessionPayload` (33 landmarks) → `AuraLinkServer`.
 
-### 2. Performance (Slowness & Lag)
-- **Problem A: Camera Pipeline:** The `AppCameraController` cancels and recreates the pose estimation subscription on every frame.
-- **Problem B: High-Frequency UI Rebuilds:** The `ScreeningView` and `SkeletonOverlay` are forced to rebuild the entire widget tree (including expensive `BackdropFilter` and `Stack` operations) at 30-60 FPS because they watch the raw landmark stream.
-- **Problem C: Heavy UI Elements:** Extensive use of `BackdropFilter` for "glass" effects is GPU-intensive on mobile devices when combined with high-frequency rebuilds.
+### 2. Clinical Movement Alignment
+- **Mandate:** Support the clinical priority list.
+- **New Movement Set:**
+  - `overhead_squat`
+  - `single_leg_squat` (replaces singleLegBalance)
+  - `push_up` (replaces overheadReach)
+  - `rollup` (replaces forwardFold)
 
-### 3. Wiring & UI
-- **Problem:** Many features in `ReportView` and `HistoryView` (e.g., PDF export, archetype badges) are implemented as "dead code" or unused components. The navigation flow is incomplete in several places.
+### 3. Data Model Adherence
+- **Mandate:** Exact adherence to the server's Pydantic schema.
+- **New Models:** Integrate `PoseLandmark`, `PoseFrame`, and `SessionPayload` from the handover package. Ensure exactly 33 landmarks are captured per frame.
+
+### 4. Privacy & Disclaimer
+- **Privacy Policy:** Maintain the "Privacy-First" claim by keeping raw video on-device. Landmarks are transmitted to the cloud for analysis.
+- **Onboarding:** Retain the `DisclaimerView` as a legal shield and clinical context setter, but simplify the flow to reduce friction.
 
 ## Detailed Design
 
-### 1. State Stabilization
-- **Refactor Providers:** Modify `authServiceProvider` and `firestoreServiceProvider` to return `null` (or an `Option` type) instead of throwing errors.
-- **UI Guards:** Implement `Consumer` widgets or provider `select` patterns that check for `null` before attempting to access cloud features.
+### Model Integration
+- **`PoseDetector` (Interface):** Abstract class to decouple the UI from the ML backend.
+- **`MediaPipePoseDetector` (Implementation):** Uses `google_mlkit_pose_detection` to produce 33-landmark `PoseFrame`s.
+- **`AuraLinkClient` (Service):** New service to handle `POST /sessions` and `GET /reports`.
 
-### 2. Optimized Camera & AI Pipeline
-- **Busy-Flag Pattern:** Implement a persistent stream in `AppCameraController`. Use a `_isProcessing` boolean to skip incoming frames if the previous frame's pose estimation is still in flight.
-- **Isolate-Based Landmarks:** (Optional/Future) Offload landmark smoothing to a background isolate if Dart-side jitter is observed.
-
-### 3. High-Performance Premium UI
-- **Rebuild Isolation:** 
-  - Use Riverpod's `select` to ensure widgets only rebuild when specific fields (e.g., `repsCompleted`) change, rather than on every landmark update.
-  - Separate the `SkeletonOverlay` into its own layer so the background and header/footer widgets don't rebuild on every frame.
-- **Optimized Glassmorphism:**
-  - Use `BackdropFilter` sparingly. For static elements, use pre-rendered semi-transparent gradients or "glass" textures.
-  - Group expensive filters into a single `RepaintBoundary`.
-- **Sophisticated Aesthetics:**
-  - **Color Palette:** Deep navy/slate backgrounds (`#0F172A`) with vibrant secondary accents (AuraLink secondary color).
-  - **Typography:** Refined use of `labelSmall` and `headlineLarge` from the theme to create a clinical yet modern feel.
-
-### 4. Wiring & Feature Completion
-- **Report View:** Fully wire the `PDFGenerator` and `SharePlus` integration.
-- **History View:** Integrate the `ArchetypeClassifier` and `TrendDetectionService` results into the history cards.
-
-## Diagrams
-
-### Optimized Camera Pipeline (Mermaid)
+### Session Capture Flow (Mermaid)
 ```mermaid
 graph TD
-    A["Camera Frame (30-60 FPS)"] --> B{"isProcessing?"}
-    B -- "Yes" --> C["Skip Frame"]
-    B -- "No" --> D["Set isProcessing = true"]
-    D --> E["Native ML Kit (Pose Detection)"]
-    E --> F["Update currentLandmarksProvider"]
-    F --> G["Set isProcessing = false"]
-    G --> H["UI Skeleton Update (Isolated)"]
-```
-
-### UI Rebuild Layering (Mermaid)
-```mermaid
-graph TD
-    subgraph "Screening Screen"
-        A["Static Background (Gradient)"]
-        B["Camera Preview (Optimized Scale)"]
-        C["Skeleton Layer (Rebuilds 30 FPS)"]
-        D["Control UI (Rebuilds only on Rep/State change)"]
-    end
-    C --- B
-    D --- C
+    A["Disclaimer & Onboarding"] --> B["Clinical Movement Selection"]
+    B --> C["Setup Validation (Progressive Lighting/Distance)"]
+    C --> D["Active Capture (33 landmarks, 25+ FPS)"]
+    D --> E["Bundle into SessionPayload (Isolate-based)"]
+    E --> F["POST to /sessions"]
+    F --> G["Wait for Server Analysis (Pending UI)"]
+    G --> H["Fetch & Render Clinical Report"]
 ```
 
 ## Summary
-The overhaul focuses on **decoupling high-frequency AI data from the heavy UI tree**. By stabilizing the state providers and optimizing the camera stream processing, we will eliminate crashes and lag. The "premium" feel will be achieved through surgical UI updates that prioritize smoothness and sophisticated design over computationally expensive filters.
+The integration transitions AuraLink from a "local prototype" to a "professional-grade clinical tool." By adopting the server-side logic backbone, we unlock joint moments, ground reaction forces, and MUSCLE force analysis that are impossible to calculate on-device today.
 
 ## References
-- [Flutter Camera Stream Optimization](https://pub.dev/packages/camera)
-- [Riverpod Performance Best Practices](https://riverpod.dev/docs/concepts/modifiers/select)
-- [Glassmorphism in Flutter Performance](https://api.flutter.dev/flutter/widgets/BackdropFilter-class.html)
+- `docs/aaron's docs/2026-04-11-plan-changes-plain-english.md`
+- `software/mobile-handover/README.md`
+- `software/mobile-handover/interface/models.dart`
+- Van Dillen et al. 2016 (MSI RCT)
+- Harris-Hayes 2018 (Kinematic Correlation)

@@ -5,27 +5,26 @@ import 'package:camera/camera.dart';
 import '../models.dart';
 import '../services/pose_estimation_service.dart';
 
-/// Streams pre-built landmark sequences for each of 4 movements
-/// with realistic visibility scores. Ankle visibility degrades in
-/// forward fold and mid-squat, matching known MediaPipe weaknesses.
+/// Streams pre-built landmark sequences for each of the clinical movements
+/// with realistic visibility scores.
 class MockPoseEstimationService implements PoseEstimationService {
   MockPoseEstimationService({this.movementType = MovementType.overheadSquat});
 
   final MovementType movementType;
-  StreamController<List<Landmark>>? _controller;
+  StreamController<List<PoseLandmark>>? _controller;
   Timer? _timer;
 
   bool _disposed = false;
 
   @override
-  Stream<List<Landmark>> processFrame(CameraImage? frame) {
+  Stream<List<PoseLandmark>> processFrame(CameraImage? frame) {
     // Dispose previous timer/controller to prevent leaks on repeated calls.
     _timer?.cancel();
     _timer = null;
     _controller?.close();
 
     _disposed = false;
-    _controller = StreamController<List<Landmark>>();
+    _controller = StreamController<List<PoseLandmark>>();
     final frames = _framesForMovement(movementType);
     var frameIndex = 0;
 
@@ -55,28 +54,24 @@ class MockPoseEstimationService implements PoseEstimationService {
     _controller = null;
   }
 
-  List<List<Landmark>> _framesForMovement(MovementType type) {
+  List<List<PoseLandmark>> _framesForMovement(MovementType type) {
     switch (type) {
       case MovementType.overheadSquat:
         return _overheadSquatFrames();
-      case MovementType.singleLegBalance:
-        return _singleLegBalanceFrames();
-      case MovementType.overheadReach:
-        return _overheadReachFrames();
-      case MovementType.forwardFold:
-        return _forwardFoldFrames();
+      case MovementType.singleLegSquat:
+        return _singleLegSquatFrames();
+      case MovementType.pushUp:
+        return _pushUpFrames();
+      case MovementType.rollup:
+        return _rollupFrames();
     }
   }
 
-  /// 30 frames simulating descent to parallel. Knee landmarks drift
-  /// medially (valgus). Ankle visibility degrades mid-squat (0.6-0.7).
-  List<List<Landmark>> _overheadSquatFrames() {
+  List<List<PoseLandmark>> _overheadSquatFrames() {
     return List.generate(30, (i) {
-      final progress = i / 29.0; // 0.0 at top, 1.0 at bottom
-      final depth = progress * 0.3; // hip drops 0.3 in y
-      // Knee drifts medially as squat deepens (valgus)
+      final progress = i / 29.0;
+      final depth = progress * 0.3;
       final kneeMedialDrift = progress * 0.04;
-      // Ankle visibility degrades mid-squat
       final ankleVisibility = (progress > 0.3 && progress < 0.7)
           ? 0.6 + (0.1 * (1.0 - progress))
           : 0.85;
@@ -93,55 +88,48 @@ class MockPoseEstimationService implements PoseEstimationService {
     });
   }
 
-  /// Standing leg stable. Non-stance leg elevated. Hip drop via pelvis
-  /// asymmetry. Trunk lean ~7 degrees lateral. Ankle visibility medium.
-  List<List<Landmark>> _singleLegBalanceFrames() {
+  List<List<PoseLandmark>> _singleLegSquatFrames() {
     return List.generate(30, (i) {
-      final sway = 0.01 * (i % 5 - 2); // small balance sway
+      final progress = i / 29.0;
+      final depth = progress * 0.2;
       return _buildLandmarks(
-        hipY: 0.5,
-        kneeMedialOffset: 0.01 + sway,
+        hipY: 0.5 + depth,
+        kneeMedialOffset: 0.02 + (progress * 0.03),
         ankleVisibility: 0.75,
         hipVisibility: 0.93,
         kneeVisibility: 0.91,
         shoulderVisibility: 0.92,
-        trunkLateralOffset: 0.03, // ~7 deg lean
-        hipDropOffset: 0.025, // pelvis asymmetry
+        trunkLateralOffset: 0.03,
+        hipDropOffset: 0.025 * progress,
       );
     });
   }
 
-  /// Arms overhead. Shoulder landmarks show slight asymmetry (left
-  /// depression). Thoracic landmarks show limited rotation. All upper
-  /// body visibility high.
-  List<List<Landmark>> _overheadReachFrames() {
+  List<List<PoseLandmark>> _pushUpFrames() {
     return List.generate(30, (i) {
+      final progress = i / 29.0;
+      final depth = progress * 0.15;
       return _buildLandmarks(
-        hipY: 0.55,
+        hipY: 0.7,
         kneeMedialOffset: 0.0,
         ankleVisibility: 0.88,
         hipVisibility: 0.94,
         kneeVisibility: 0.93,
         shoulderVisibility: 0.96,
         trunkLateralOffset: 0.0,
-        leftShoulderDepression: 0.02, // asymmetry
+        leftShoulderDepression: depth,
       );
     });
   }
 
-  /// Forward bend. Ankle landmarks often occluded (visibility 0.4-0.5).
-  /// Hip/spine visibility medium.
-  List<List<Landmark>> _forwardFoldFrames() {
+  List<List<PoseLandmark>> _rollupFrames() {
     return List.generate(30, (i) {
       final progress = i / 29.0;
-      final bendDepth = progress * 0.4;
-      // Ankle visibility severely degrades during fold
-      final ankleVis = 0.5 - (progress * 0.1);
-
+      final lift = progress * 0.4;
       return _buildLandmarks(
-        hipY: 0.5 + bendDepth * 0.3,
+        hipY: 0.8 - (lift * 0.2),
         kneeMedialOffset: 0.005,
-        ankleVisibility: ankleVis.clamp(0.35, 0.55),
+        ankleVisibility: 0.5,
         hipVisibility: 0.80,
         kneeVisibility: 0.85,
         shoulderVisibility: 0.82,
@@ -150,10 +138,7 @@ class MockPoseEstimationService implements PoseEstimationService {
     });
   }
 
-  /// Build 33 landmarks in MediaPipe BlazePose order. Only the
-  /// clinically relevant landmarks (hips, knees, ankles, shoulders,
-  /// spine proxies) vary per movement; others get stable defaults.
-  List<Landmark> _buildLandmarks({
+  List<PoseLandmark> _buildLandmarks({
     required double hipY,
     required double kneeMedialOffset,
     required double ankleVisibility,
@@ -164,72 +149,88 @@ class MockPoseEstimationService implements PoseEstimationService {
     double hipDropOffset = 0.0,
     double leftShoulderDepression = 0.0,
   }) {
-    // MediaPipe BlazePose indices:
-    // 0: nose, 11: left shoulder, 12: right shoulder,
-    // 23: left hip, 24: right hip, 25: left knee, 26: right knee,
-    // 27: left ankle, 28: right ankle
     return List.generate(33, (idx) {
       switch (idx) {
         case 0: // nose
-          return Landmark(
+          return PoseLandmark(
             x: 0.5 + trunkLateralOffset,
             y: 0.15,
             z: 0.0,
             visibility: 0.98,
+            presence: 0.99,
           );
         case 11: // left shoulder
-          return Landmark(
+          return PoseLandmark(
             x: 0.4 + trunkLateralOffset,
             y: 0.25 + leftShoulderDepression,
             z: 0.0,
             visibility: shoulderVisibility,
+            presence: 0.95,
           );
         case 12: // right shoulder
-          return Landmark(
+          return PoseLandmark(
             x: 0.6 + trunkLateralOffset,
             y: 0.25,
             z: 0.0,
             visibility: shoulderVisibility,
+            presence: 0.95,
           );
         case 23: // left hip
-          return Landmark(
+          return PoseLandmark(
             x: 0.45,
             y: hipY + hipDropOffset,
             z: 0.0,
             visibility: hipVisibility,
+            presence: 0.95,
           );
         case 24: // right hip
-          return Landmark(x: 0.55, y: hipY, z: 0.0, visibility: hipVisibility);
+          return PoseLandmark(
+            x: 0.55,
+            y: hipY,
+            z: 0.0,
+            visibility: hipVisibility,
+            presence: 0.95,
+          );
         case 25: // left knee
-          return Landmark(
+          return PoseLandmark(
             x: 0.45 + kneeMedialOffset,
             y: hipY + 0.2,
             z: 0.0,
             visibility: kneeVisibility,
+            presence: 0.95,
           );
         case 26: // right knee
-          return Landmark(
+          return PoseLandmark(
             x: 0.55 - kneeMedialOffset,
             y: hipY + 0.2,
             z: 0.0,
             visibility: kneeVisibility,
+            presence: 0.95,
           );
         case 27: // left ankle
-          return Landmark(
+          return PoseLandmark(
             x: 0.45,
             y: hipY + 0.4,
             z: 0.0,
             visibility: ankleVisibility,
+            presence: 0.95,
           );
         case 28: // right ankle
-          return Landmark(
+          return PoseLandmark(
             x: 0.55,
             y: hipY + 0.4,
             z: 0.0,
             visibility: ankleVisibility,
+            presence: 0.95,
           );
         default:
-          return const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.90);
+          return const PoseLandmark(
+            x: 0.5,
+            y: 0.5,
+            z: 0.0,
+            visibility: 0.90,
+            presence: 0.90,
+          );
       }
     });
   }

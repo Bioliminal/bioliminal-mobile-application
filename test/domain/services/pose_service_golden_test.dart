@@ -30,12 +30,12 @@ const _occlusionProneIndices = {27, 28};
 
 const _movements = [
   'overhead_squat',
-  'single_leg_balance',
-  'forward_fold',
-  'overhead_reach',
+  'single_leg_squat',
+  'rollup',
+  'push_up',
 ];
 
-List<Landmark>? _loadGolden(String movementName) {
+List<PoseLandmark>? _loadGolden(String movementName) {
   final file = File('test/fixtures/golden_landmarks/$movementName.json');
   if (!file.existsSync()) return null;
   final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
@@ -43,14 +43,14 @@ List<Landmark>? _loadGolden(String movementName) {
   final firstFrame = frames.first as Map<String, dynamic>;
   final rawLandmarks = firstFrame['landmarks'] as List;
   return rawLandmarks
-      .map((lm) => Landmark.fromJson(lm as Map<String, dynamic>))
+      .map((lm) => PoseLandmark.fromJson(lm as Map<String, dynamic>))
       .toList();
 }
 
 void main() {
   for (final movement in _movements) {
     group('golden validation: $movement', () {
-      late List<Landmark>? goldenLandmarks;
+      late List<PoseLandmark>? goldenLandmarks;
 
       setUpAll(() {
         goldenLandmarks = _loadGolden(movement);

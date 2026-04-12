@@ -10,18 +10,32 @@ import '../../domain/models.dart';
 // JSON serialization helpers for domain models
 // ---------------------------------------------------------------------------
 
-Map<String, dynamic> _landmarkToJson(Landmark l) => {
+Map<String, dynamic> _landmarkToJson(PoseLandmark l) => {
       'x': l.x,
       'y': l.y,
       'z': l.z,
       'visibility': l.visibility,
+      'presence': l.presence,
     };
 
-Landmark _landmarkFromJson(Map<String, dynamic> m) => Landmark(
+PoseLandmark _landmarkFromJson(Map<String, dynamic> m) => PoseLandmark(
       x: (m['x'] as num).toDouble(),
       y: (m['y'] as num).toDouble(),
       z: (m['z'] as num).toDouble(),
       visibility: (m['visibility'] as num).toDouble(),
+      presence: (m['presence'] as num?)?.toDouble() ?? (m['visibility'] as num).toDouble(),
+    );
+
+Map<String, dynamic> _poseFrameToJson(PoseFrame f) => {
+      'timestamp_ms': f.timestampMs,
+      'landmarks': f.landmarks.map(_landmarkToJson).toList(),
+    };
+
+PoseFrame _poseFrameFromJson(Map<String, dynamic> m) => PoseFrame(
+      timestampMs: m['timestamp_ms'] as int,
+      landmarks: (m['landmarks'] as List)
+          .map((l) => _landmarkFromJson(l as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _jointAngleToJson(JointAngle j) => {
@@ -75,27 +89,49 @@ Compensation _compensationFromJson(Map<String, dynamic> m) => Compensation(
     );
 
 Map<String, dynamic> _movementToJson(Movement m) => {
-      'type': m.type.name,
-      'landmarks': m.landmarks
-          .map((frame) => frame.map(_landmarkToJson).toList())
-          .toList(),
+      'type': m.type.wire,
+      'frames': m.frames.map(_poseFrameToJson).toList(),
       'keyframeAngles': m.keyframeAngles.map(_jointAngleToJson).toList(),
       'durationMs': m.duration.inMilliseconds,
     };
 
 Movement _movementFromJson(Map<String, dynamic> m) => Movement(
-      type: MovementType.values.byName(m['type'] as String),
-      landmarks: (m['landmarks'] as List)
-          .map(
-            (frame) => (frame as List)
-                .map((l) => _landmarkFromJson(l as Map<String, dynamic>))
-                .toList(),
-          )
+      type: MovementType.fromWire(m['type'] as String),
+      frames: (m['frames'] as List)
+          .map((f) => _poseFrameFromJson(f as Map<String, dynamic>))
           .toList(),
       keyframeAngles: (m['keyframeAngles'] as List)
           .map((j) => _jointAngleFromJson(j as Map<String, dynamic>))
           .toList(),
       duration: Duration(milliseconds: m['durationMs'] as int),
+    );
+
+Map<String, dynamic> _sessionMetadataToJson(SessionMetadata m) => {
+      'movement': m.movement.wire,
+      'device': m.device,
+      'model': m.model,
+      'frame_rate': m.frameRate,
+      'captured_at': m.capturedAt.toUtc().toIso8601String(),
+    };
+
+SessionMetadata _sessionMetadataFromJson(Map<String, dynamic> m) => SessionMetadata(
+      movement: MovementType.fromWire(m['movement'] as String),
+      device: m['device'] as String,
+      model: m['model'] as String,
+      frameRate: (m['frame_rate'] as num).toDouble(),
+      capturedAt: DateTime.parse(m['captured_at'] as String),
+    );
+
+Map<String, dynamic> _sessionPayloadToJson(SessionPayload p) => {
+      'metadata': _sessionMetadataToJson(p.metadata),
+      'frames': p.frames.map(_poseFrameToJson).toList(),
+    };
+
+SessionPayload _sessionPayloadFromJson(Map<String, dynamic> m) => SessionPayload(
+      metadata: _sessionMetadataFromJson(m['metadata'] as Map<String, dynamic>),
+      frames: (m['frames'] as List)
+          .map((f) => _poseFrameFromJson(f as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _mobilityDrillToJson(MobilityDrill d) => {
@@ -162,6 +198,7 @@ Map<String, dynamic> assessmentToJson(Assessment a) => {
       'movements': a.movements.map(_movementToJson).toList(),
       'compensations': a.compensations.map(_compensationToJson).toList(),
       'report': a.report != null ? reportToJson(a.report!) : null,
+      'payload': a.payload != null ? _sessionPayloadToJson(a.payload!) : null,
     };
 
 Assessment assessmentFromJson(Map<String, dynamic> m) => Assessment(
@@ -175,6 +212,9 @@ Assessment assessmentFromJson(Map<String, dynamic> m) => Assessment(
           .toList(),
       report: m['report'] != null
           ? reportFromJson(m['report'] as Map<String, dynamic>)
+          : null,
+      payload: m['payload'] != null
+          ? _sessionPayloadFromJson(m['payload'] as Map<String, dynamic>)
           : null,
     );
 

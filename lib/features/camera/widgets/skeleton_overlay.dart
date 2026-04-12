@@ -59,7 +59,7 @@ const List<(int, int)> blazePoseConnections = [
 
 /// Convert a normalized [0,1] landmark to canvas pixel coordinates.
 /// Mirrors horizontally when [mirror] is true (front camera).
-Offset transformLandmark(Landmark lm, Size canvasSize, bool mirror) {
+Offset transformLandmark(PoseLandmark lm, Size canvasSize, bool mirror) {
   final x = mirror ? (1.0 - lm.x) * canvasSize.width : lm.x * canvasSize.width;
   final y = lm.y * canvasSize.height;
   return Offset(x, y);
@@ -76,7 +76,7 @@ class SkeletonPainter extends CustomPainter {
     this.isFrontCamera = false,
   });
 
-  final List<Landmark> landmarks;
+  final List<PoseLandmark> landmarks;
   final Size previewSize;
   final bool isFrontCamera;
 

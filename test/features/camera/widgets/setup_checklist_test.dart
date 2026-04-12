@@ -7,10 +7,16 @@ import 'package:auralink/features/camera/widgets/setup_checklist.dart';
 
 /// Builds 33 landmarks where every landmark has the given [visibility],
 /// and hip landmarks (23, 24) have the given [hipY].
-List<Landmark> _buildLandmarks({double visibility = 0.9, double hipY = 0.5}) {
+List<PoseLandmark> _buildLandmarks({double visibility = 0.9, double hipY = 0.5}) {
   return List.generate(33, (idx) {
     final y = (idx == kLeftHipIndex || idx == kRightHipIndex) ? hipY : 0.5;
-    return Landmark(x: 0.5, y: y, z: 0.0, visibility: visibility);
+    return PoseLandmark(
+      x: 0.5,
+      y: y,
+      z: 0.0,
+      visibility: visibility,
+      presence: visibility,
+    );
   });
 }
 
@@ -88,7 +94,13 @@ void main() {
     test('fewer than 33 landmarks fails distance check', () {
       final landmarks = List.generate(
         20,
-        (_) => const Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.9),
+        (_) => const PoseLandmark(
+          x: 0.5,
+          y: 0.5,
+          z: 0.0,
+          visibility: 0.9,
+          presence: 0.9,
+        ),
       );
       final container = ProviderContainer(
         overrides: [currentLandmarksProvider.overrideWithValue(landmarks)],

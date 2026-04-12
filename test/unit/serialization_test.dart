@@ -9,27 +9,36 @@ void main() {
       final original = Assessment(
         id: 'test-rt-001',
         createdAt: DateTime(2026, 4, 8, 12, 30),
-        movements: const [
+        movements: [
           Movement(
             type: MovementType.overheadSquat,
-            landmarks: [
-              [
-                Landmark(x: 0.5, y: 0.5, z: 0.0, visibility: 0.95),
-                Landmark(x: 0.6, y: 0.4, z: 0.1, visibility: 0.8),
-              ],
+            frames: [
+              PoseFrame(
+                timestampMs: 100,
+                landmarks: List.generate(
+                  33,
+                  (idx) => PoseLandmark(
+                    x: 0.5 + idx * 0.01,
+                    y: 0.5,
+                    z: 0.0,
+                    visibility: 0.95,
+                    presence: 0.99,
+                  ),
+                ),
+              ),
             ],
-            keyframeAngles: [
+            keyframeAngles: const [
               JointAngle(
                 joint: 'left_knee_valgus',
                 angleDegrees: 15.0,
                 confidence: ConfidenceLevel.high,
               ),
             ],
-            duration: Duration(seconds: 45),
+            duration: const Duration(seconds: 45),
           ),
         ],
-        compensations: [
-          const Compensation(
+        compensations: const [
+          Compensation(
             type: CompensationType.kneeValgus,
             joint: 'knee',
             chain: ChainType.sbl,
@@ -57,7 +66,7 @@ void main() {
       );
       expect(restored.movements.length, original.movements.length);
       expect(restored.movements.first.type, MovementType.overheadSquat);
-      expect(restored.movements.first.landmarks.first.length, 2);
+      expect(restored.movements.first.frames.first.landmarks.length, 33);
       expect(
         restored.movements.first.keyframeAngles.first.joint,
         'left_knee_valgus',

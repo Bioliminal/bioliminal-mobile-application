@@ -44,7 +44,7 @@ class ActiveMovement extends ScreeningState {
   final int movementIndex;
   final MovementConfig config;
   final int repsCompleted;
-  final List<List<Landmark>> capturedFrames;
+  final List<PoseFrame> capturedFrames;
   final List<Compensation> movementCompensations;
 }
 
@@ -80,7 +80,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     _chainMapper = ref.read(core_providers.chainMapperProvider);
 
     // Listen to landmarks and forward to controller.
-    ref.listen<List<Landmark>>(core_providers.currentLandmarksProvider, (
+    ref.listen<List<PoseLandmark>>(core_providers.currentLandmarksProvider, (
       previous,
       next,
     ) {
@@ -92,11 +92,12 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   // Internal tracking state
   final List<double> _angleHistory = [];
-  final List<List<Landmark>> _frameBuffer = [];
+  final List<List<PoseLandmark>> _frameBuffer = [];
   final List<Movement> _completedMovements = [];
   final List<Compensation> _allCompensations = [];
+  final List<PoseFrame> _allCapturedFrames = [];
   List<Compensation> _currentMovementCompensations = [];
-  List<List<Landmark>> _currentCapturedFrames = [];
+  List<PoseFrame> _currentMovementFrames = [];
   DateTime? _movementStartTime;
   int _currentReps = 0;
 
@@ -133,14 +134,27 @@ class ScreeningController extends Notifier<ScreeningState> {
     _completeMovement();
   }
 
-  void onLandmarkFrame(List<Landmark> landmarks) {
+  void onLandmarkFrame(List<PoseLandmark> landmarks) {
     final current = state;
-    if (current is! ActiveMovement) return;
+    if (current is! ActiveMovement || landmarks.isEmpty) return;
 
-    // Update rolling frame buffer.
+    // Update rolling frame buffer for rep counting / peak detection.
     _frameBuffer.add(landmarks);
     if (_frameBuffer.length > _frameBufferSize) {
       _frameBuffer.removeAt(0);
+    }
+
+    // Capture the frame for the server payload.
+    final timestamp = _movementStartTime != null
+        ? DateTime.now().difference(_movementStartTime!).inMilliseconds
+        : 0;
+    
+    // BlazePose expects exactly 33 landmarks. 
+    // Ensure we have exactly 33 before creating PoseFrame.
+    if (landmarks.length == 33) {
+      _currentMovementFrames.add(
+        PoseFrame(timestampMs: timestamp, landmarks: landmarks),
+      );
     }
 
     // Calculate angles and track the primary joint.
@@ -172,7 +186,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     _angleHistory.clear();
     _frameBuffer.clear();
     _currentMovementCompensations = [];
-    _currentCapturedFrames = [];
+    _currentMovementFrames = [];
     _currentReps = 0;
     _movementStartTime = DateTime.now();
 
@@ -190,7 +204,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     // Map MovementConfig.primaryJoint to angle joint names.
     final jointMapping = {
       'leftKnee': 'left_knee_valgus',
-      'leftHip': 'left_hip_abduction',
+      'leftHip': 'left_hip_flexion',
       'leftShoulder': 'left_shoulder_elevation',
     };
     final jointName = jointMapping[config.primaryJoint];
@@ -211,8 +225,6 @@ class ScreeningController extends Notifier<ScreeningState> {
     final currDelta = _angleHistory[len - 1] - _angleHistory[len - 2];
 
     // Peak detection: sign change in derivative.
-    // peakIsMinimum: we look for negative→positive (valley).
-    // peakIsMaximum: we look for positive→negative (peak).
     final bool peakDetected;
     if (config.peakIsMinimum) {
       peakDetected = prevDelta < 0 && currDelta >= 0;
@@ -230,11 +242,10 @@ class ScreeningController extends Notifier<ScreeningState> {
     if (current is! ActiveMovement) return;
     if (_frameBuffer.isEmpty) return;
 
-    // Average the frame buffer element-wise.
+    // Average the frame buffer element-wise for a "stable" keyframe.
     final averaged = _averageFrameBuffer();
-    _currentCapturedFrames.add(averaged);
 
-    // Run averaged landmarks through the full pipeline.
+    // Run averaged landmarks through the local triage pipeline.
     final angles = _angleCalculator.calculateAngles(averaged);
     final compensations = _chainMapper.mapCompensations(angles);
     _currentMovementCompensations.addAll(compensations);
@@ -245,7 +256,7 @@ class ScreeningController extends Notifier<ScreeningState> {
       movementIndex: current.movementIndex,
       config: current.config,
       repsCompleted: _currentReps,
-      capturedFrames: List.unmodifiable(_currentCapturedFrames),
+      capturedFrames: List.unmodifiable(_currentMovementFrames),
       movementCompensations: List.unmodifiable(_currentMovementCompensations),
     );
 
@@ -255,7 +266,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     }
   }
 
-  List<Landmark> _averageFrameBuffer() {
+  List<PoseLandmark> _averageFrameBuffer() {
     if (_frameBuffer.length == 1) return _frameBuffer.first;
 
     final landmarkCount = _frameBuffer.first.length;
@@ -265,6 +276,7 @@ class ScreeningController extends Notifier<ScreeningState> {
       var sumY = 0.0;
       var sumZ = 0.0;
       var sumVis = 0.0;
+      var sumPres = 0.0;
       var count = 0;
 
       for (final frame in _frameBuffer) {
@@ -273,19 +285,21 @@ class ScreeningController extends Notifier<ScreeningState> {
           sumY += frame[i].y;
           sumZ += frame[i].z;
           sumVis += frame[i].visibility;
+          sumPres += frame[i].presence;
           count++;
         }
       }
 
       if (count == 0) {
-        return const Landmark(x: 0, y: 0, z: 0, visibility: 0);
+        return const PoseLandmark(x: 0, y: 0, z: 0, visibility: 0, presence: 0);
       }
 
-      return Landmark(
+      return PoseLandmark(
         x: sumX / count,
         y: sumY / count,
         z: sumZ / count,
         visibility: sumVis / count,
+        presence: sumPres / count,
       );
     });
   }
@@ -295,9 +309,10 @@ class ScreeningController extends Notifier<ScreeningState> {
     if (current is! ActiveMovement) return;
 
     // Build the completed Movement record.
+    // Use the frames captured during this movement.
     final allAngles = <JointAngle>[];
-    for (final frame in _currentCapturedFrames) {
-      allAngles.addAll(_angleCalculator.calculateAngles(frame));
+    if (_currentMovementFrames.isNotEmpty) {
+      allAngles.addAll(_angleCalculator.calculateAngles(_currentMovementFrames.last.landmarks));
     }
 
     final duration = _movementStartTime != null
@@ -307,12 +322,13 @@ class ScreeningController extends Notifier<ScreeningState> {
     _completedMovements.add(
       Movement(
         type: current.config.type,
-        landmarks: List.unmodifiable(_currentCapturedFrames),
+        frames: List.unmodifiable(_currentMovementFrames),
         keyframeAngles: List.unmodifiable(allAngles),
         duration: duration,
       ),
     );
     _allCompensations.addAll(_currentMovementCompensations);
+    _allCapturedFrames.addAll(_currentMovementFrames);
 
     // If this was the final movement, skip findings and finish.
     if (current.movementIndex == screeningMovements.length - 1) {
@@ -320,7 +336,7 @@ class ScreeningController extends Notifier<ScreeningState> {
       return;
     }
 
-    // Pick top 1-2 compensations by confidence for findings.
+    // Pick top findings for intermediate feedback.
     final findings = _topFindings(_currentMovementCompensations);
     final message = _buildFeedbackMessage(findings);
 
@@ -333,12 +349,31 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   void _finishScreening() {
     final now = DateTime.now();
+    
+    // We bundle EVERYTHING for the server payload.
+    // For now, we'll just pick the first movement's frames as a sample payload
+    // or concatenate them. The schema TBD might need one payload per movement.
+    // Based on Aaron's doc, it seems one session = one movement? 
+    // "Capture overhead-squat... Bundle the frames into a SessionPayload".
+    // I'll create a SessionPayload for the overall assessment.
+    
+    final payload = SessionPayload(
+      metadata: SessionMetadata(
+        movement: _completedMovements.firstOrNull?.type ?? MovementType.overheadSquat,
+        device: 'iPhone 11', // TODO: use real device info
+        model: 'mediapipe_blazepose_full',
+        frameRate: 30.0, // TODO: measure real FPS
+      ),
+      frames: List.unmodifiable(_allCapturedFrames),
+    );
+
     final assessment = Assessment(
       id: '${now.millisecondsSinceEpoch}-${now.microsecond}',
-      createdAt: DateTime.now(),
+      createdAt: now,
       movements: List.unmodifiable(_completedMovements),
       compensations: List.unmodifiable(_allCompensations),
       report: null,
+      payload: payload,
     );
 
     state = ScreeningComplete(assessment: assessment);
@@ -346,11 +381,8 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   List<Compensation> _topFindings(List<Compensation> compensations) {
     if (compensations.isEmpty) return const [];
-
-    // Sort by confidence: high (index 0) first, then medium, then low.
     final sorted = List<Compensation>.from(compensations)
       ..sort((a, b) => a.confidence.index.compareTo(b.confidence.index));
-
     return sorted.take(2).toList();
   }
 
@@ -358,16 +390,11 @@ class ScreeningController extends Notifier<ScreeningState> {
     if (findings.isEmpty) {
       return 'Everything looked good on that one. Let\'s keep going!';
     }
-
-    // Body-path language: map joint to user-friendly area names.
-    // No chain names, no clinical jargon.
     final areas = findings.map((f) => _jointToBodyArea(f.joint)).toSet();
-
     if (areas.length == 1) {
       return 'We noticed something in your ${areas.first} area '
           '-- we\'ll check it from another angle in the next movement.';
     }
-
     final areaList = areas.toList();
     return 'We noticed something in your ${areaList.first} and '
         '${areaList.last} areas -- we\'ll look at these from '
