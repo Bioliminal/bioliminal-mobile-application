@@ -198,6 +198,14 @@ class Citation {
   final String url;
   final CitationType type;
   final String appUsage;
+
+  factory Citation.fromJson(Map<String, dynamic> json) => Citation(
+        finding: json['finding'] as String,
+        source: json['source'] as String,
+        url: json['url'] as String,
+        type: CitationType.values.byName(json['type'] as String),
+        appUsage: json['app_usage'] as String,
+      );
 }
 
 class Compensation {
@@ -218,6 +226,19 @@ class Compensation {
   final double value;
   final double threshold;
   final Citation citation;
+
+  factory Compensation.fromJson(Map<String, dynamic> json) => Compensation(
+        type: CompensationType.values.byName(json['type'] as String),
+        joint: json['joint'] as String,
+        chain: json['chain'] != null
+            ? ChainType.values.byName(json['chain'] as String)
+            : null,
+        confidence:
+            ConfidenceLevel.values.byName(json['confidence'] as String),
+        value: (json['value'] as num).toDouble(),
+        threshold: (json['threshold'] as num).toDouble(),
+        citation: Citation.fromJson(json['citation'] as Map<String, dynamic>),
+      );
 }
 
 class Movement {
@@ -248,6 +269,15 @@ class MobilityDrill {
   final int durationSeconds;
   final List<String> steps;
   final CompensationType compensationType;
+
+  factory MobilityDrill.fromJson(Map<String, dynamic> json) => MobilityDrill(
+        name: json['name'] as String,
+        targetArea: json['target_area'] as String,
+        durationSeconds: json['duration_seconds'] as int,
+        steps: (json['steps'] as List<dynamic>).cast<String>(),
+        compensationType: CompensationType.values
+            .byName(json['compensation_type'] as String),
+      );
 }
 
 enum TrendClassification { improving, worsening, stable, newPattern }
@@ -270,6 +300,26 @@ class Finding {
   final List<Citation> citations;
   final List<MobilityDrill> drills;
   final TrendClassification? trendStatus;
+
+  factory Finding.fromJson(Map<String, dynamic> json) => Finding(
+        bodyPathDescription: json['body_path_description'] as String,
+        compensations: (json['compensations'] as List<dynamic>)
+            .map((e) => Compensation.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        upstreamDriver: json['upstream_driver'] as String?,
+        recommendation: json['recommendation'] as String,
+        citations: (json['citations'] as List<dynamic>)
+            .map((e) => Citation.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        drills: json['drills'] != null
+            ? (json['drills'] as List<dynamic>)
+                .map((e) => MobilityDrill.fromJson(e as Map<String, dynamic>))
+                .toList()
+            : const [],
+        trendStatus: json['trend_status'] != null
+            ? TrendClassification.values.byName(json['trend_status'] as String)
+            : null,
+      );
 }
 
 class Report {
@@ -282,6 +332,15 @@ class Report {
   final List<Finding> findings;
   final List<String> practitionerPoints;
   final String? pdfUrl;
+
+  factory Report.fromJson(Map<String, dynamic> json) => Report(
+        findings: (json['findings'] as List<dynamic>)
+            .map((e) => Finding.fromJson(e as Map<String, dynamic>))
+            .toList(),
+        practitionerPoints: (json['practitioner_points'] as List<dynamic>)
+            .cast<String>(),
+        pdfUrl: json['pdf_url'] as String?,
+      );
 }
 
 class Assessment {

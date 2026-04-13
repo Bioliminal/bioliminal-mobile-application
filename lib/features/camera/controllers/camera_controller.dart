@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:auralink/core/providers.dart';
 import 'package:auralink/domain/models.dart';
-import '../services/pose_detector.dart';
 
 // ---------------------------------------------------------------------------
 // CameraState — sealed class covering the full permission + lifecycle surface

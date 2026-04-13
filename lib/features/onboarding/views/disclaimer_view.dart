@@ -34,9 +34,9 @@ class _DisclaimerViewState extends State<DisclaimerView> {
               ),
               const _OnboardingSlide(
                 icon: Icons.shield_outlined,
-                title: 'Privacy-First\nArchitecture',
+                title: 'Secure & Private\nArchitecture',
                 body:
-                    'Your movement data never leaves your device. All analysis is performed locally using on-device AI.',
+                    'Your raw video never leaves your device. Only anonymized movement landmarks are sent to our secure clinical server for processing.',
               ),
               _DisclaimerSlide(
                 onScrollToBottom: () =>
@@ -170,8 +170,6 @@ class _DisclaimerSlide extends StatelessWidget {
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
-                  // If the content is too short to scroll (maxScrollExtent == 0),
-                  // or if we've reached the bottom, trigger the callback.
                   if (n.metrics.maxScrollExtent == 0 ||
                       n.metrics.pixels >= n.metrics.maxScrollExtent - 20) {
                     onScrollToBottom();
@@ -198,8 +196,8 @@ class _DisclaimerSlide extends StatelessWidget {
                         theme,
                       ),
                       _section(
-                        'Data Privacy',
-                        'All movement analysis is performed locally on your device. We do not transmit or store your raw video data on any external servers.',
+                        'Data Privacy & Cloud Processing',
+                        'Analysis is performed on our secure clinical server. Only anonymized landmark data is transmitted. Your raw video never leaves your device.',
                         theme,
                       ),
                       _section(
@@ -216,7 +214,7 @@ class _DisclaimerSlide extends StatelessWidget {
                       ),
                       const SizedBox(
                         height: 40,
-                      ), // Ensure extra space at bottom
+                      ),
                     ],
                   ),
                 ),

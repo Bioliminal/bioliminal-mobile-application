@@ -119,7 +119,7 @@ Widget _buildHarness({
       GoRoute(
         path: '/report/:id',
         builder: (context, state) =>
-            ReportView(id: state.pathParameters['id']!),
+            ReportView(id: state.pathParameters['id']!, localOnly: true),
       ),
     ],
   );

@@ -15,6 +15,7 @@ import 'package:auralink/core/services/firestore_service.dart'
     as firestore_impl;
 import 'package:auralink/core/services/local_storage_service.dart'
     as local_impl;
+import 'package:auralink/core/services/auralink_client.dart';
 import 'package:auralink/features/camera/services/pose_detector.dart';
 
 // Re-export camera providers so screening can import from one place.
@@ -152,6 +153,12 @@ final chainMapperProvider = Provider<chain_service.ChainMapper>(
 final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
   (ref) => local_impl.LocalStorageService(),
 );
+
+final auraLinkClientProvider = Provider<AuraLinkClient>((ref) {
+  final client = AuraLinkClient();
+  ref.onDispose(() => client.dispose());
+  return client;
+});
 
 // ---------------------------------------------------------------------------
 // Cloud-only providers — throw when cloud sync is disabled.

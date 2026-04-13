@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../domain/models.dart';
@@ -347,15 +348,8 @@ class ScreeningController extends Notifier<ScreeningState> {
     );
   }
 
-  void _finishScreening() {
+  void _finishScreening() async {
     final now = DateTime.now();
-    
-    // We bundle EVERYTHING for the server payload.
-    // For now, we'll just pick the first movement's frames as a sample payload
-    // or concatenate them. The schema TBD might need one payload per movement.
-    // Based on Aaron's doc, it seems one session = one movement? 
-    // "Capture overhead-squat... Bundle the frames into a SessionPayload".
-    // I'll create a SessionPayload for the overall assessment.
     
     final payload = SessionPayload(
       metadata: SessionMetadata(
@@ -377,6 +371,14 @@ class ScreeningController extends Notifier<ScreeningState> {
     );
 
     state = ScreeningComplete(assessment: assessment);
+
+    // Async upload to server.
+    try {
+      final client = ref.read(core_providers.auraLinkClientProvider);
+      await client.submitSession(payload);
+    } catch (e) {
+      developer.log('Auto-upload failed', error: e, name: 'ScreeningController');
+    }
   }
 
   List<Compensation> _topFindings(List<Compensation> compensations) {
