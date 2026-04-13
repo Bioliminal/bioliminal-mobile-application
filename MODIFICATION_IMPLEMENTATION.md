@@ -4,6 +4,7 @@ This plan transforms the AuraLink app into Bioliminal and integrates the 10-chan
 
 ## Journal
 - Phase 1 Complete: Successfully rebranded the entire project to Bioliminal. This included updating `pubspec.yaml`, performing a global search and replace of all `package:auralink/` imports with `package:bioliminal/`, and renaming all UI strings, class names (e.g., `BioliminalApp`), and providers. Updated Android `applicationId` and iOS `bundleId` to `com.bioliminal.app`. Verified with zero static analysis errors and passing tests.
+- Phase 2 Complete: Integrated `flutter_blue_plus` for BLE communication. Implemented `HardwareController` with support for 10-channel sEMG data streaming, real-time EMA smoothing, and anatomical mapping (Gastroc, Soleus, VM, Glute Med, Erector Spinae). Added a mock data mode for demonstrations and a "Hardware Status" indicator to the `MainScaffold`. Resolved several BLE-related compilation issues and verified stability.
 
 ## Phase 1: Full-Project Rebranding (Bioliminal)
 Goal: Rename the package and all UI references to Bioliminal.
@@ -30,13 +31,22 @@ Goal: Rename the package and all UI references to Bioliminal.
 ## Phase 2: Hardware Core & BLE Integration
 Goal: Establish communication with the ESP32-S3 sensor hub.
 
-- [ ] Add `flutter_blue_plus: ^1.34.5` to `pubspec.yaml`.
-- [ ] Implement `HardwareController` in `lib/core/services/hardware_controller.dart`.
-- [ ] Map the 10 sEMG channels based on the clinical priority list (Gastroc, Soleus, VM, Glute Med, Erector Spinae).
-- [ ] Implement real-time data smoothing (EMA) for the EMG stream.
-- [ ] Add a "Hardware Status" indicator to the Main Scaffold.
-- [ ] **Validation & Commit:**
-    - [ ] (Include all standard validation/commit steps from Phase 1)
+- [x] Add `flutter_blue_plus: ^1.34.5` to `pubspec.yaml`.
+- [x] Implement `HardwareController` in `lib/core/services/hardware_controller.dart`.
+- [x] Map the 10 sEMG channels based on the clinical priority list (Gastroc, Soleus, VM, Glute Med, Erector Spinae).
+- [x] Implement real-time data smoothing (EMA) for the EMG stream.
+- [x] Add a "Hardware Status" indicator to the Main Scaffold.
+- [x] **Validation & Commit:**
+    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+    - [x] Run the `dart_fix` tool to clean up the code.
+    - [x] Run the `analyze_files` tool one more time and fix any issues.
+    - [x] Run any tests to make sure they all pass.
+    - [x] Run `dart_format` to make sure that the formatting is correct.
+    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
+    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
+    - [x] Use `git diff` to verify changes and prepare a commit message.
+    - [x] Wait for user approval before committing.
+    - [x] After committing, use `hot_reload` if the app is running.
 
 ## Phase 3: Premium Tier & Biofeedback Engine
 Goal: Implement the "Premium" logic and demo toggle.
