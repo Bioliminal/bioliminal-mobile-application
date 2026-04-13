@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bioliminal/features/camera/widgets/signal_led.dart';
 
 // ---------------------------------------------------------------------------
 // Hardware Models
@@ -14,11 +15,9 @@ enum HardwareConnectionState { disconnected, scanning, connecting, connected }
 class EMGData {
   const EMGData({required this.channels, required this.timestamp});
 
-  /// 10 channels of raw/processed sEMG data (0.0 to 1.0 normalized).
   final List<double> channels;
   final DateTime timestamp;
 
-  /// Mapping indices to anatomical regions.
   double get lGastroc => channels[0];
   double get lSoleus => channels[1];
   double get rGastroc => channels[2];
@@ -48,14 +47,15 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   final _emgDataController = StreamController<EMGData>.broadcast();
   Stream<EMGData> get emgDataStream => _emgDataController.stream;
 
-  // Smoothing (Exponential Moving Average)
+  final _signalStatusController =
+      StreamController<Map<int, SignalStatus>>.broadcast();
+  Stream<Map<int, SignalStatus>> get signalStatusStream =>
+      _signalStatusController.stream;
+
   final List<double> _smoothedValues = List.filled(10, 0.0);
   static const double _alpha = 0.2;
-
-  // Random for mock data
   final _random = math.Random();
 
-  // Placeholder UUIDs for ESP32-S3
   static const String _serviceUuid = 'FF01';
   static const String _characteristicUuid = 'FF02';
 
@@ -66,11 +66,10 @@ class HardwareController extends Notifier<HardwareConnectionState> {
       _dataSubscription?.cancel();
       _targetDevice?.disconnect();
       _emgDataController.close();
+      _signalStatusController.close();
     });
     return HardwareConnectionState.disconnected;
   }
-
-  // -- Connection Logic --
 
   Future<void> startScan() async {
     if (state != HardwareConnectionState.disconnected) return;
@@ -96,7 +95,7 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   Future<void> _connectToDevice(BluetoothDevice device) async {
     _scanSubscription?.cancel();
     await FlutterBluePlus.stopScan();
-    
+
     state = HardwareConnectionState.connecting;
     _targetDevice = device;
 
@@ -116,7 +115,11 @@ class HardwareController extends Notifier<HardwareConnectionState> {
         }
       }
     } catch (e) {
-      developer.log('BLE Connection Error', error: e, name: 'HardwareController');
+      developer.log(
+        'BLE Connection Error',
+        error: e,
+        name: 'HardwareController',
+      );
       state = HardwareConnectionState.disconnected;
     }
   }
@@ -132,26 +135,38 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   }
 
   void _processRawData(List<double> raw) {
-    for (var i = 0; i < 10; i++) {
-      _smoothedValues[i] = (_alpha * raw[i]) + ((1 - _alpha) * _smoothedValues[i]);
-    }
-    _emgDataController.add(EMGData(
-      channels: List.from(_smoothedValues),
-      timestamp: DateTime.now(),
-    ));
-  }
+    final statusMap = <int, SignalStatus>{};
 
-  // -- Mock Mode for Demos --
+    for (var i = 0; i < 10; i++) {
+      _smoothedValues[i] =
+          (_alpha * raw[i]) + ((1 - _alpha) * _smoothedValues[i]);
+
+      if (raw[i] < 0.05) {
+        statusMap[i] = SignalStatus.disconnected;
+      } else if (raw[i] > 0.95) {
+        statusMap[i] = SignalStatus.saturated;
+      } else {
+        statusMap[i] = SignalStatus.clean;
+      }
+    }
+
+    _signalStatusController.add(statusMap);
+    _emgDataController.add(
+      EMGData(channels: List.from(_smoothedValues), timestamp: DateTime.now()),
+    );
+  }
 
   Timer? _mockTimer;
   void startMockData() {
     _mockTimer?.cancel();
     state = HardwareConnectionState.connected;
-    
+
     _mockTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       final t = DateTime.now().millisecondsSinceEpoch / 1000.0;
       final mockRaw = List.generate(10, (i) {
-        return (math.sin(t * 2 + i) + 1.0) / 2.0 * (0.5 + _random.nextDouble() * 0.5);
+        return (math.sin(t * 2 + i) + 1.0) /
+            2.0 *
+            (0.5 + _random.nextDouble() * 0.5);
       });
       _processRawData(mockRaw);
     });
@@ -169,8 +184,8 @@ class HardwareController extends Notifier<HardwareConnectionState> {
 
 final hardwareControllerProvider =
     NotifierProvider<HardwareController, HardwareConnectionState>(
-  HardwareController.new,
-);
+      HardwareController.new,
+    );
 
 final emgDataStreamProvider = StreamProvider<EMGData>((ref) {
   final controller = ref.watch(hardwareControllerProvider.notifier);
@@ -180,4 +195,12 @@ final emgDataStreamProvider = StreamProvider<EMGData>((ref) {
 final latestEMGDataProvider = Provider<EMGData>((ref) {
   final stream = ref.watch(emgDataStreamProvider);
   return stream.value ?? EMGData.empty();
+});
+
+final signalStatusStreamProvider = StreamProvider<Map<int, SignalStatus>>((ref) {
+  return ref.watch(hardwareControllerProvider.notifier).signalStatusStream;
+});
+
+final latestSignalStatusProvider = Provider<Map<int, SignalStatus>>((ref) {
+  return ref.watch(signalStatusStreamProvider).value ?? {};
 });
