@@ -171,6 +171,44 @@ final bioliminalClientProvider = Provider<BioliminalClient>((ref) {
 });
 
 // ---------------------------------------------------------------------------
+// Hardware Setup State
+// ---------------------------------------------------------------------------
+
+class UseHardwareModeNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  set value(bool v) => state = v;
+}
+
+final useHardwareModeProvider = NotifierProvider<UseHardwareModeNotifier, bool>(
+  UseHardwareModeNotifier.new,
+);
+
+enum HardwareSetupStep { scanning, placing, syncing, ready }
+
+class HardwareSetupStepNotifier extends Notifier<HardwareSetupStep> {
+  @override
+  HardwareSetupStep build() => HardwareSetupStep.scanning;
+  set value(HardwareSetupStep v) => state = v;
+}
+
+final hardwareSetupStepProvider =
+    NotifierProvider<HardwareSetupStepNotifier, HardwareSetupStep>(
+      HardwareSetupStepNotifier.new,
+    );
+
+class HardwareSyncOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  set value(int v) => state = v;
+}
+
+final hardwareSyncOffsetProvider =
+    NotifierProvider<HardwareSyncOffsetNotifier, int>(
+      HardwareSyncOffsetNotifier.new,
+    );
+
+// ---------------------------------------------------------------------------
 // Cloud-only providers — throw when cloud sync is disabled.
 // Only instantiated when the user explicitly opts into cloud backup.
 // ---------------------------------------------------------------------------

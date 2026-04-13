@@ -1,97 +1,64 @@
-# IMPLEMENTATION: Bioliminal Rebrand & Hardware Integration
+# IMPLEMENTATION: Bioliminal Sensor Placement & Sync
 
-This plan transforms the AuraLink app into Bioliminal and integrates the 10-channel sEMG hardware and premium features.
+This plan implements the hardware setup flow, ghost skeleton placement guide, signal verification LEDs, and the "Sync Stomp" timestamp alignment.
 
 ## Journal
-- Phase 1 Complete: Successfully rebranded the entire project to Bioliminal. This included updating `pubspec.yaml`, performing a global search and replace of all `package:auralink/` imports with `package:bioliminal/`, and renaming all UI strings, class names (e.g., `BioliminalApp`), and providers. Updated Android `applicationId` and iOS `bundleId` to `com.bioliminal.app`. Verified with zero static analysis errors and passing tests.
-- Phase 2 Complete: Integrated `flutter_blue_plus` for BLE communication. Implemented `HardwareController` with support for 10-channel sEMG data streaming, real-time EMA smoothing, and anatomical mapping (Gastroc, Soleus, VM, Glute Med, Erector Spinae). Added a mock data mode for demonstrations and a "Hardware Status" indicator to the `MainScaffold`. Resolved several BLE-related compilation issues and verified stability.
-- Phase 3 Complete: Implemented the `isPremiumProvider` and updated `SettingsView` with a "Premium Mode" toggle and "Hardware Simulation" switch. Built the `BiofeedbackEngine` to calculate real-time Gastrocnemius:Soleus ratios based on the clinical research (Uhlrich 2023). Established the foundation for physical corrective cues (Vibe/Squeeze) during screening. Verified stability with tests passing.
-- Phase 4 Complete: Developed the `MuscleActivationSidebar` for real-time 10-channel sEMG visualization. Refactored `SkeletonOverlay` to support premium "Anatomical Heatmapping," where individual limb segments glow based on corresponding muscle activation. Updated `ScreeningView` to integrate the sidebar and display live biofeedback ratios. Added an "EMG ACTIVATION" summary section to the `ReportView` for post-session analysis. Verified zero static analysis errors and all tests passing.
+- (Empty)
 
-## Phase 1: Full-Project Rebranding (Bioliminal)
-Goal: Rename the package and all UI references to Bioliminal.
+## Phase 1: Routing & Setup State
+Goal: Establish the navigation and state foundation for the hardware setup flow.
 
-- [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Update `pubspec.yaml` name to `bioliminal`.
-- [x] Perform a global search and replace of `package:auralink/` with `package:bioliminal/` in all `.dart` files.
-- [x] Rename `lib/auralink.dart` (if it exists) or any package-level entry points.
-- [x] Update `AuraLinkApp` to `BioliminalApp` and `AuraLinkTheme` to `BioliminalTheme`.
-- [x] Replace all "AuraLink" strings in UI text, disclaimers, and reports with "Bioliminal".
-- [x] Update Android `applicationId` and iOS `bundleId` to `com.bioliminal.app` (where safe).
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+- [ ] Run all tests to ensure the project is in a good state before starting modifications.
+- [ ] Add `HardwareSetupView` route to `lib/core/router.dart`.
+- [ ] Implement `HardwareSetupState` (e.g., `scanning`, `placing`, `syncing`, `ready`) in a new Riverpod provider.
+- [ ] Add `useHardwareModeProvider` to track if the user opted for sensors or camera-only mode.
+- [ ] **Validation & Commit:**
+    - [ ] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+    - [ ] Run the `dart_fix` tool to clean up the code.
+    - [ ] Run the `analyze_files` tool one more time and fix any issues.
+    - [ ] Run any tests to make sure they all pass.
+    - [ ] Run `dart_format` to make sure that the formatting is correct.
+    - [ ] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
+    - [ ] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
+    - [ ] Use `git diff` to verify changes and prepare a commit message.
+    - [ ] Wait for user approval before committing.
+    - [ ] After committing, use `hot_reload` if the app is running.
 
-## Phase 2: Hardware Core & BLE Integration
-Goal: Establish communication with the ESP32-S3 sensor hub.
+## Phase 2: Placement Guide & Signal LEDs
+Goal: Build the visual interface for electrode placement and lead verification.
 
-- [x] Add `flutter_blue_plus: ^1.34.5` to `pubspec.yaml`.
-- [x] Implement `HardwareController` in `lib/core/services/hardware_controller.dart`.
-- [x] Map the 10 sEMG channels based on the clinical priority list (Gastroc, Soleus, VM, Glute Med, Erector Spinae).
-- [x] Implement real-time data smoothing (EMA) for the EMG stream.
-- [x] Add a "Hardware Status" indicator to the Main Scaffold.
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+- [ ] Create `lib/features/camera/widgets/placement_ghost_skeleton.dart` using a semi-transparent `SkeletonPainter`.
+- [ ] Implement the `SignalLED` widget with 3 states: `disconnected` (Grey), `clean` (Aqua), `saturated` (Orange).
+- [ ] Update `HardwareController` to expose a `Map<int, SignalStatus>` based on voltage thresholds (0V-5V).
+- [ ] Build the layout for `HardwareSetupView` showing the Ghost Skeleton and LED stack.
+- [ ] **Validation & Commit:**
+    - [ ] (Include all standard validation/commit steps from Phase 1)
 
-## Phase 3: Premium Tier & Biofeedback Engine
-Goal: Implement the "Premium" logic and demo toggle.
+## Phase 3: The "Sync Stomp" Mechanism
+Goal: Precisely align BLE and Camera data streams.
 
-- [x] Add `isPremiumProvider` to `lib/core/providers.dart`.
-- [x] Add a "Premium Demo" toggle in `lib/features/settings/views/settings_view.dart`.
-- [x] Implement the `BiofeedbackEngine` to calculate the Gastrocnemius:Soleus ratio in real-time.
-- [x] Wire the "Corrective Cue" (Vibe/Squeeze) commands back to the `HardwareController`.
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+- [ ] Implement `VerticalAccelerationDetector` for vision (monitoring foot landmarks).
+- [ ] Implement `EMGSpikeDetector` for sensing (monitoring calf channels).
+- [ ] Create the `SyncCalibrationService` to calculate the time delta between vision/sensing peaks.
+- [ ] Add the "STOMP NOW" UI phase to `HardwareSetupView`.
+- [ ] **Validation & Commit:**
+    - [ ] (Include all standard validation/commit steps from Phase 1)
 
-## Phase 4: Data Visualization Overhaul
-Goal: Deliver high-fidelity muscle activation feedback.
+## Phase 4: Full Integration & Optionality
+Goal: Wire the setup flow into the app and handle "Camera-Only" mode.
 
-- [x] Implement the `MuscleActivationSidebar` (Free) for real-time 10-channel bar graphs.
-- [x] Refactor `SkeletonPainter` to support `AnatomicalHeatmapping` (Premium) using Aqua (`#00D4AA`) glows.
-- [x] Update the `ReportView` to include sEMG activation summaries.
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+- [ ] Update `DisclaimerView` to navigate to `/hardware-setup` instead of `/screening`.
+- [ ] Implement the "SKIP / CAMERA-ONLY" button in `HardwareSetupView`.
+- [ ] Refactor `ScreeningController` to apply the `sync_offset` to all captured `PoseFrame`s when in hardware mode.
+- [ ] Update `MuscleActivationSidebar` to only appear if `useHardwareMode` is true.
+- [ ] **Validation & Commit:**
+    - [ ] (Include all standard validation/commit steps from Phase 1)
 
-## Phase 5: Final Validation & Clinical Alignment
-Goal: Ensure the clinical research is fully reflected in the final Bioliminal product.
+## Phase 5: Final Validation & Documentation
+Goal: Verify the clinical sync precision and finalize docs.
 
-- [ ] Update `README.md` and `GEMINI.md` to reflect the Bioliminal name and Hardware architecture.
-- [ ] Perform a full smoke-test of the BLE connection and Biofeedback loop.
+- [ ] Update `README.md` and `GEMINI.md` with the new Hardware Setup & Sync protocols.
+- [ ] Perform a full smoke-test: Onboarding -> Setup -> Sync -> Screening.
 - [ ] Ask the user to inspect the package (and running app, if any) and say if they are satisfied with it.
 - [ ] **Final Commit:**
     - [ ] (Include all standard validation/commit steps from Phase 1)

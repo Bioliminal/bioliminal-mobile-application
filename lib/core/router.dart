@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
+import '../features/camera/views/hardware_setup_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/report/views/report_view.dart';
@@ -40,6 +41,11 @@ final goRouter = GoRouter(
       path: '/disclaimer',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const DisclaimerView(),
+    ),
+    GoRoute(
+      path: '/hardware-setup',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const HardwareSetupView(),
     ),
     GoRoute(
       path: '/screening',

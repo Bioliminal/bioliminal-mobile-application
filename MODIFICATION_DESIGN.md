@@ -1,65 +1,60 @@
-# DESIGN: Bioliminal Rebrand & Hardware Integration
+# DESIGN: Bioliminal Sensor Placement & Sync
 
 ## Overview
-This modification transitions the Bioliminal project to its final identity: **Bioliminal**. Beyond rebranding, it integrates 10-channel surface Electromyography (sEMG) data via Bluetooth Low Energy (BLE) from an ESP32-S3 hardware hub. It also introduces a "Premium" tier focused on real-time biofeedback and anatomical heatmapping.
+This modification introduces a mandatory (but skippable) hardware setup flow for Bioliminal. It ensures that the 10-channel sEMG sensors are correctly placed on the user's lower body and perfectly time-aligned with the BlazePose camera stream using a synchronized physical gesture.
 
 ## Detailed Analysis
 
-### 1. Project-Wide Rebranding (Bioliminal)
-- **Package Rename:** `package:bioliminal/` becomes `package:bioliminal/`. This involves a deep refactor of all import statements and the `pubspec.yaml` configuration.
-- **Visual Identity:** Transition from clinical blue to the Bioliminal palette:
-  - **Primary:** Deep Slate (`#0A0A0F`)
-  - **Secondary/sEMG:** Aqua (`#00D4AA`)
-  - **TSA Squeeze/Accent:** Orange (`#FF6B35`)
-- **Strings:** All "Bioliminal" references in the UI, disclaimers, and reports are updated to "Bioliminal".
+### 1. The Setup Flow (Onboarding Phase)
+- **Navigation:** Inserted after `DisclaimerView` and before the main Screening flow.
+- **Optionality:** Users without the ESP32-S3 hub can tap "Skip / Use Camera Only" to proceed to the legacy prototype mode.
+- **Persistence:** The choice (Hardware vs. Camera-Only) is persisted for the duration of the screening session.
 
-### 2. Hardware: 10-Channel sEMG Integration
-- **Source:** ESP32-S3 driving 10 AD8232 channels.
-- **Connection:** BLE via `flutter_blue_plus`.
-- **Data Mapping:**
-  - Ch 1-2: L-Gastrocnemius, L-Soleus
-  - Ch 3-4: R-Gastrocnemius, R-Soleus
-  - Ch 5-6: L/R-Vastus Medialis (Quads)
-  - Ch 7-8: L/R-Gluteus Medius
-  - Ch 9-10: L/R-Erector Spinae
-- **Protocol:** High-frequency integer stream (placeholder UUIDs: `0xFF01` service, `0xFF02` characteristic).
+### 2. Anatomical Placement (Ghost Skeleton)
+- **Visuals:** A semi-transparent `HeatmapSkeleton` stands in a neutral pose.
+- **Indicators:** 10 glowing target points pulse on the skeleton where electrodes should be attached (Gastroc, Soleus, VM, etc.).
+- **Signal LEDs:** A vertical stack of 10 "LED" widgets next to the skeleton.
+  - **Grey:** Lead disconnected (0V).
+  - **Orange:** Signal saturated/pinned (3.3V/5V).
+  - **Aqua:** Clean signal (Active range).
 
-### 3. Feature Tiers (Free vs. Premium)
-- **Free Tier:**
-  - **Real-time Activation Sidebar:** 10 vertical bars next to the camera feed showing live muscle firing levels.
-  - **Basic Summary:** Top-line score and primary movement finding.
-- **Premium Tier (Unlockable in Settings):**
-  - **Anatomical Heatmapping:** The live skeleton overlay segments (limbs/torso) glow in Aqua (`#00D4AA`) based on relative EMG intensity.
-  - **Biofeedback Loop:** Real-time calculation of the **Gastrocnemius:Soleus ratio**.
-  - **Physical Cues:** If sub-optimal ratio is detected, the app sends a "Squeeze" or "Vibrate" command back to the ESP32 to cue the user.
+### 3. Hardware-to-Vision Sync (The Stomp)
+- **Goal:** Align two disjoint data streams (BLE and Camera) to sub-10ms precision.
+- **Mechanism:** The "Sync Stomp."
+  - **Sensing:** The app watches for a sharp spike in the Calf sEMG channels.
+  - **Vision:** The app watches for a sharp vertical acceleration (peak) in the Ankle/Foot landmarks.
+  - **Fusion:** The time delta between these two peaks is used as the `sync_offset` for the remainder of the session.
 
 ## Detailed Design
 
-### Architecture: Hardware Fusion (Mermaid)
+### State Machine: Hardware Setup (Mermaid)
 ```mermaid
 graph TD
-    A["Camera (BlazePose)"] --> B["Data Fusion Controller"]
-    C["ESP32-S3 (sEMG)"] -- "BLE" --> B
-    B --> D{"Premium Mode?"}
-    D -- "No" --> E["Vertical Bar Sidebar"]
-    D -- "Yes" --> F["Skeleton Segment Heatmap"]
-    F --> G["Biofeedback Engine (G:S Ratio)"]
-    G -- "Corrective Cue" --> C
+    A["Entry (from Disclaimer)"] --> B{"Scan for Hub?"}
+    B -- "No / Skip" --> C["Set Mode: Camera-Only"]
+    B -- "Yes" --> D["BLE Scanning..."]
+    D --> E["Placement Guide (Ghost Skeleton)"]
+    E --> F["Signal Verification (LEDs)"]
+    F --> G["Sync Stomp Calibration"]
+    G --> H["Ready for Screening"]
+    C --> H
 ```
 
-### New Components
-- **`HardwareController`:** Manages BLE scanning, connection, and real-time data smoothing.
-- **`MuscleActivationSidebar`:** High-performance visualization using `CustomPainter` for zero-lag 10-channel feedback.
-- **`HeatmapSkeleton`:** Extends `SkeletonPainter` to accept a `Map<AnatomicalRegion, double>` for dynamic segment coloring.
+### Signal Quality Logic
+| Voltage Level | Status | Visual |
+| :--- | :--- | :--- |
+| `~0V` | Lead Disconnected | Dim Grey LED |
+| `0.5V - 3.0V` | Clean Signal | Bright Aqua LED |
+| `> 3.1V` | Saturation/Error | Pulsing Orange LED |
 
 ## Alternatives Considered
-- **Web Bluetooth:** (Rejected) Mobile native BLE is more stable for high-frequency 10-channel data.
-- **Static Assets for Rebrand:** (Rejected) A full package rename is necessary for clean long-term maintainability and CI/CD alignment.
+- **Automatic IMU Sync:** (Rejected) Requires additional hardware complexity on the ESP32 side. The physical stomp is more intuitive for wellness users.
+- **Manual Mapping:** (Rejected) Letting users map their own 10 channels is too high-friction. Standardized lower-body mapping is required for clinical integrity.
 
 ## Summary
-Bioliminal merges advanced computer vision with real-time biometric sensing. By decoupling the hardware data from the core AI pipeline, we allow for a modular experience where the "Biofeedback Loop" acts as the premium differentiator.
+The Sensor Placement & Sync module transforms Bioliminal from a "vision app" to a "multimodal clinical platform." It provides users with the confidence that their sensors are working and their data is accurately aligned, while maintaining a low-friction entry point for users without hardware.
 
 ## References
-- `research/hardware-configurations.html`
-- Uhlrich et al. 2023 (EMG Biofeedback & Knee Forces)
-- `flutter_blue_plus` API documentation
+- Uhlrich et al. 2023 (EMG Biofeedback)
+- `lib/core/services/hardware_controller.dart`
+- `lib/features/camera/widgets/skeleton_overlay.dart`

@@ -1,37 +1,39 @@
 # Bioliminal Project Documentation
 
-Bioliminal is a clinical-grade movement screening application that uses computer vision to detect biomechanical compensations and trace them to upstream fascial drivers.
+Bioliminal is a clinical-grade movement screening application that merges computer vision with real-time sEMG biopotential sensing to detect biomechanical compensations and provide immediate corrective biofeedback.
 
 ## Project Architecture
 
-The project follows a feature-first structure with a clear separation of concerns between on-device capture, data modeling, and server-side clinical analysis.
+The project follows a feature-first structure with a high-fidelity data pipeline bridging on-device sensing and server-side clinical analysis.
 
 ### Directory Structure
 
-- `lib/core/`: Global configurations, theme definitions, and Riverpod providers.
-  - `services/bioliminal_client.dart`: HTTP client for clinical server communication (Session upload/Report fetch).
-- `lib/domain/`: Core business logic and data models aligned with server schemas.
-  - `models.dart`: Server-Ready schemas including `PoseLandmark`, `PoseFrame`, and `SessionPayload`.
+- `lib/core/`: Global configurations and cross-cutting services.
+  - `services/hardware_controller.dart`: Manages BLE communication with the ESP32-S3 Hub.
+  - `services/biofeedback_engine.dart`: Real-time coordination ratio analysis (Premium).
+  - `services/bioliminal_client.dart`: HTTP client for clinical server uploads and report fetching.
+- `lib/domain/`: Core business logic and data models aligned with clinical schemas.
+  - `models.dart`: Includes `SessionPayload`, `PoseFrame`, and `EMGData`.
 - `lib/features/`: UI and state management grouped by feature.
-  - `camera/`: 33-landmark ML Kit integration and high-fidelity skeleton overlays.
-  - `screening/`: Clinical movement screening flow (Overhead Squat, Single-Leg Squat, Push-up, Rollup).
-  - `report/`: Server-processed analysis, body map visualization, and report polling.
+  - `camera/`: 33-landmark ML Kit integration and real-time sEMG sidebars.
+  - `screening/`: Clinical movement screening flow (Overhead Squat, SLS, Push-up, Rollup).
+  - `report/`: Post-session clinical kinetics and muscle activation summaries.
 
 ## Key Implementation Details
 
 ### High-Fidelity Capture Pipeline
-The `PoseDetector` interface abstracts the ML backend, currently implemented using **MediaPipe BlazePose Full** (via Google ML Kit).
-- Exactly 33 landmarks are captured per frame.
-- The `AppCameraController` uses a "busy flag" pattern to maintain 30+ FPS.
-- Captured frames are buffered and bundled into a `SessionPayload` for clinical analysis.
+The app uses a dual-stream data fusion model:
+1. **Vision:** MediaPipe BlazePose Full captures 33 landmarks at 30+ FPS via a "busy flag" pattern.
+2. **Sensing:** ESP32-S3 Hub streams 10 channels of sEMG data over BLE at high frequency.
+- **Fusion:** Landmarks and EMG biopotentials are time-synced and bundled into a `SessionPayload` for clinical analysis.
 
-### Performance & Memory
-To maintain UI responsiveness during heavy data processing:
-- `SessionPayload.serializeAsync` uses `compute` (Background Isolate) for JSON encoding of large multi-frame sessions.
-- UI components use Riverpod's `.select` to watch only specific fields (e.g., `repsCompleted`), preventing full-page rebuilds on every frame.
+### Premium Biofeedback Loop
+The "Premium" tier unlocks the immediate physical correction layer:
+- **Calculation:** The app monitors the **Gastrocnemius:Soleus** ratio in real-time during squats.
+- **Cues:** If coordination drift is detected (e.g., Gastroc dominance), the app sends corrective commands (vibrate/squeeze) back to the hardware hub.
+- **Visualization:** Anatomical Heatmapping allows the skeleton overlay limb segments to glow based on live muscle firing.
 
-### Server-Centric Analysis
-Clinical reasoning is offloaded to the Bioliminal server to leverage advanced kinetics (WHAM + OpenCap Monocular):
-- Joint moments and ground reaction forces (impossible on-device) are calculated server-side.
-- The app polls the `BioliminalClient` for report completion with an automated back-off/retry mechanism.
-- Local rule-based triage is maintained as a fallback for the prototype environment.
+### Privacy-First Persistence
+- **Local Video:** Raw camera frames are never transmitted. Inference happens entirely on-device.
+- **Anonymized Data:** Only landmark coordinates and relative activation levels are sent to the clinical server.
+- **Offline Fallback:** `LocalStorageService` uses an in-memory fallback for web demos and secure local JSON storage for mobile.
