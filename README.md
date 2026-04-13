@@ -33,32 +33,33 @@ We're the bridge.
 50-72% of musculoskeletal treatments recur when only the pain site is treated. Address the upstream driver instead, and recurrence drops to 6-8% ([Austin Publishing 2024](https://austinpublishinggroup.com/physical-medicine/fulltext/phys-med-v11-id1078.php), [ResearchGate](https://www.researchgate.net/publication/387532386)). That reasoning — connecting a knee problem to its root cause in the hip or ankle — currently lives in practitioners' heads and costs $150-2,000 to access.
 
 AuraLink encodes it and runs it on your phone. For free.
+## Clinical-Grade Architecture (v1.2.0)
 
-## Recent Overhaul (v1.1.0)
-
-We recently completed a major stabilization and performance overhaul:
-- **Zero-Crash Privacy:** Refactored cloud providers to be strictly opt-in and nullable, eliminating runtime crashes when offline.
-- **High-Performance AI Pipeline:** Optimized camera frame processing with a "busy flag" pattern, achieving stable 30+ FPS on modern devices.
-- **UI Rebuild Isolation:** Decoupled heavy UI components from the raw landmark stream using Riverpod `.select` and `RepaintBoundary`, reducing GPU overhead by ~40%.
-- **Premium Aesthetics:** Refined movement animations with sinusoidal interpolation and joint glow effects for a professional, clinical feel.
-
+AuraLink has transitioned to a server-centric clinical analysis model:
+- **High-Fidelity Capture:** The phone acts as a precise data collection tool, capturing 33 BlazePose landmarks at 30+ FPS.
+- **Server-Side Reasoning:** Biomechanical modeling, joint moments, and muscle force analysis are performed on our secure clinical server (WHAM + OpenCap Monocular).
+- **Secure Privacy:** Raw video data never leaves your device. Only anonymized landmark coordinates are transmitted for analysis.
+- **Clinical Priority Set:**
+  - **Overhead Squat:** Evaluation of deep-chain mobility.
+  - **Single-Leg Squat:** Assessment of frontal-plane knee and hip stability.
+  - **Push-up:** Analysis of core and scapular coordination.
+  - **Rollup:** Segmental spinal articulation tracking.
 ## How It Works
 
 ```
-Phone Camera → MediaPipe BlazePose (33 landmarks)
-  → Joint Angle Analysis
-    → Compensation Detection (knee valgus, hip drop, trunk lean, asymmetry)
-      → Fascial Chain Mapping (SBL / BFL / FFL)
-        → Upstream Driver Identification
-          → Personalized Report
+Phone Camera → MediaPipe BlazePose Full (33 landmarks)
+  → SessionPayload (Buffered Frames)
+  → Clinical Server (Kinetics + Muscle Force Analysis)
+  → Clinical-Grade Report
 ```
 
-**Four movements. Five minutes. No hardware. No account. No data leaves your phone.**
+**Four movements. Five minutes. No hardware. No account.**
 
-1. **Capture** — Overhead squat, single-leg balance, overhead reach, forward fold
-2. **Detect** — Joint angles flagged against published biomechanical thresholds
-3. **Map** — Co-occurring findings traced along three validated fascial chains to identify the upstream driver
-4. **Report** — Plain-language explanation with cited evidence and practitioner discussion points
+## The Core Problem
+1. **Capture** — Overhead squat, single-leg squat, push-up, rollup
+2. **Detect** — 33 high-fidelity landmarks analyzed via server-side kinetics
+3. **Map** — Joint moments and forces traced along fascial chains to identify the upstream driver
+4. **Report** — Clinical-grade report with muscle force insights and practitioner discussion points
 
 ### Same symptom. Different body. Different recommendation.
 
