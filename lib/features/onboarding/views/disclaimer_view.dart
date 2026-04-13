@@ -76,7 +76,7 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: _hasScrolledToBottom
-                          ? () => context.go('/screening')
+                          ? () => context.go('/hardware-setup')
                           : null,
                       child: Text(
                         _hasScrolledToBottom

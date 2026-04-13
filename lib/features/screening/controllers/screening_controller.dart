@@ -146,9 +146,17 @@ class ScreeningController extends Notifier<ScreeningState> {
     }
 
     // Capture the frame for the server payload.
-    final timestamp = _movementStartTime != null
+    final useHardware = ref.read(core_providers.useHardwareModeProvider);
+    final syncOffset = ref.read(core_providers.hardwareSyncOffsetProvider);
+    
+    var timestamp = _movementStartTime != null
         ? DateTime.now().difference(_movementStartTime!).inMilliseconds
         : 0;
+
+    // Apply calibration offset if in hardware mode
+    if (useHardware) {
+      timestamp += syncOffset;
+    }
     
     // BlazePose expects exactly 33 landmarks. 
     // Ensure we have exactly 33 before creating PoseFrame.

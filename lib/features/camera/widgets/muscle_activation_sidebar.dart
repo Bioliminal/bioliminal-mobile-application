@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bioliminal/core/providers.dart';
 import 'package:bioliminal/core/services/hardware_controller.dart';
 
 class MuscleActivationSidebar extends ConsumerWidget {
@@ -7,6 +8,9 @@ class MuscleActivationSidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final useHardware = ref.watch(useHardwareModeProvider);
+    if (!useHardware) return const SizedBox.shrink();
+
     final emgData = ref.watch(latestEMGDataProvider);
     final theme = Theme.of(context);
 
