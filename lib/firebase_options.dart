@@ -50,25 +50,25 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyB8q1jQLraMrG8_FJDQ-_aUtD1EJqGQ8_E',
     appId: '1:975155858919:web:ee95c3051f912179d30142',
     messagingSenderId: '975155858919',
-    projectId: 'auralink-capstone',
-    authDomain: 'auralink-capstone.firebaseapp.com',
-    storageBucket: 'auralink-capstone.firebasestorage.app',
+    projectId: 'bioliminal-capstone',
+    authDomain: 'bioliminal-capstone.firebaseapp.com',
+    storageBucket: 'bioliminal-capstone.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB4jqA9GEAGsaWyWf4KxVz-f7fzF2DGUWY',
     appId: '1:975155858919:android:0162cfd1f28bddf7d30142',
     messagingSenderId: '975155858919',
-    projectId: 'auralink-capstone',
-    storageBucket: 'auralink-capstone.firebasestorage.app',
+    projectId: 'bioliminal-capstone',
+    storageBucket: 'bioliminal-capstone.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyBcIdEbPXR5vZ-D6WEkFqpUiqt3mu8OSQ0',
     appId: '1:975155858919:ios:5aed60dcb7609310d30142',
     messagingSenderId: '975155858919',
-    projectId: 'auralink-capstone',
-    storageBucket: 'auralink-capstone.firebasestorage.app',
-    iosBundleId: 'com.auralink.auralink',
+    projectId: 'bioliminal-capstone',
+    storageBucket: 'bioliminal-capstone.firebasestorage.app',
+    iosBundleId: 'com.bioliminal.bioliminal',
   );
 }

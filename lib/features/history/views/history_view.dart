@@ -22,7 +22,7 @@ class HistoryView extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('PROGRESS'),
         backgroundColor: Colors.transparent,
@@ -34,7 +34,7 @@ class HistoryView extends ConsumerWidget {
         child: FloatingActionButton.extended(
           onPressed: () => context.go('/screening'),
           backgroundColor: theme.colorScheme.secondary,
-          foregroundColor: AuraLinkTheme.screenBackground,
+          foregroundColor: BioliminalTheme.screenBackground,
           label: const Text(
             'NEW SCAN',
             style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
@@ -98,7 +98,7 @@ class _ArchetypeHero extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
-      decoration: AuraLinkTheme.glassEffect.copyWith(
+      decoration: BioliminalTheme.glassEffect.copyWith(
         color: theme.colorScheme.primary.withValues(alpha: 0.1),
       ),
       child: Column(
@@ -165,7 +165,7 @@ class _TrendGrid extends StatelessWidget {
           child: _TrendCard(
             count: improving,
             label: 'IMPROVING',
-            color: AuraLinkTheme.confidenceHigh,
+            color: BioliminalTheme.confidenceHigh,
           ),
         ),
         const SizedBox(width: 12),
@@ -173,7 +173,7 @@ class _TrendGrid extends StatelessWidget {
           child: _TrendCard(
             count: stable,
             label: 'STABLE',
-            color: AuraLinkTheme.confidenceMedium,
+            color: BioliminalTheme.confidenceMedium,
           ),
         ),
         const SizedBox(width: 12),
@@ -181,7 +181,7 @@ class _TrendGrid extends StatelessWidget {
           child: _TrendCard(
             count: worsening,
             label: 'REGRESSING',
-            color: AuraLinkTheme.confidenceLow,
+            color: BioliminalTheme.confidenceLow,
           ),
         ),
       ],
@@ -204,7 +204,7 @@ class _TrendCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 20),
-      decoration: AuraLinkTheme.glassEffect,
+      decoration: BioliminalTheme.glassEffect,
       child: Column(
         children: [
           Text(

@@ -1,13 +1,13 @@
-# AuraLink
+# Bioliminal
 
 **AI movement screening that traces compensations to their upstream drivers using fascial chain reasoning.**
 
-> Your knee collapses during a squat. Every app tells you that. AuraLink tells you *why* — and it's probably not your knee.
+> Your knee collapses during a squat. Every app tells you that. Bioliminal tells you *why* — and it's probably not your knee.
 
 <!-- TODO: Replace with actual demo GIF once overhead squat + chain reasoning works -->
-<!-- ![AuraLink Demo](docs/assets/demo.gif) -->
+<!-- ![Bioliminal Demo](docs/assets/demo.gif) -->
 
-[Live Demo](https://auralink.app) | [How It Works](#how-it-works) | [Research](#the-science)
+[Live Demo](https://bioliminal.app) | [How It Works](#how-it-works) | [Research](#the-science)
 
 ---
 
@@ -22,7 +22,7 @@ A $4.4B digital MSK market where every major player stops at "what's wrong" and 
 | DARI Motion (FDA-cleared) | Yes | No | No | Enterprise |
 | PostureScreen Mobile | Yes | No | No | $249/yr |
 | Symmio | Yes | No | No | $49-99/mo |
-| **AuraLink** | **Yes** | **Yes** | **Yes** | **Free** |
+| **Bioliminal** | **Yes** | **Yes** | **Yes** | **Free** |
 
 A [2025 Frontiers systematic review](https://www.frontiersin.org/journals/sports-and-active-living/articles/10.3389/fspor.2025.1531050/full) of camera-based movement screening apps confirmed: **zero applications employ fascial chain reasoning.** A citation analysis of 4,071 papers found zero cross-citations between computer vision and fascial chain research — these fields have never talked to each other.
 
@@ -32,10 +32,10 @@ We're the bridge.
 
 50-72% of musculoskeletal treatments recur when only the pain site is treated. Address the upstream driver instead, and recurrence drops to 6-8% ([Austin Publishing 2024](https://austinpublishinggroup.com/physical-medicine/fulltext/phys-med-v11-id1078.php), [ResearchGate](https://www.researchgate.net/publication/387532386)). That reasoning — connecting a knee problem to its root cause in the hip or ankle — currently lives in practitioners' heads and costs $150-2,000 to access.
 
-AuraLink encodes it and runs it on your phone. For free.
+Bioliminal encodes it and runs it on your phone. For free.
 ## Clinical-Grade Architecture (v1.2.0)
 
-AuraLink has transitioned to a server-centric clinical analysis model:
+Bioliminal has transitioned to a server-centric clinical analysis model:
 - **High-Fidelity Capture:** The phone acts as a precise data collection tool, capturing 33 BlazePose landmarks at 30+ FPS.
 - **Server-Side Reasoning:** Biomechanical modeling, joint moments, and muscle force analysis are performed on our secure clinical server (WHAM + OpenCap Monocular).
 - **Secure Privacy:** Raw video data never leaves your device. Only anonymized landmark coordinates are transmitted for analysis.
@@ -96,13 +96,13 @@ Target findings are well above the noise floor for hip and knee. Ankle-dependent
 
 ### Try the web demo
 
-Visit [auralink.app](https://auralink.app) — works on any modern browser with a camera.
+Visit [bioliminal.app](https://bioliminal.app) — works on any modern browser with a camera.
 
 ### Run locally
 
 ```bash
-git clone https://github.com/YOUR_ORG/auralink.git
-cd auralink
+git clone https://github.com/YOUR_ORG/bioliminal.git
+cd bioliminal
 flutter pub get
 flutter run -d chrome    # web
 flutter run              # mobile (requires device/emulator)
@@ -168,12 +168,12 @@ MIT
 
 ## Citation
 
-If you use AuraLink in research:
+If you use Bioliminal in research:
 
 ```bibtex
-@software{auralink2026,
-  title={AuraLink: AI Movement Screening with Fascial Chain Intelligence},
+@software{bioliminal2026,
+  title={Bioliminal: AI Movement Screening with Fascial Chain Intelligence},
   year={2026},
-  url={https://github.com/YOUR_ORG/auralink}
+  url={https://github.com/YOUR_ORG/bioliminal}
 }
 ```

@@ -1,4 +1,4 @@
-// Abstract pose detection interface for the AuraLink Flutter app.
+// Abstract pose detection interface for the Bioliminal Flutter app.
 //
 // Why this file exists:
 // The app should not bind directly to MediaPipe at the UI layer. We ship

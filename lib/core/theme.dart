@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-class AuraLinkTheme {
-  AuraLinkTheme._();
+class BioliminalTheme {
+  BioliminalTheme._();
 
   static const Color _primary = Color(0xFF0D47A1); // Deep Indigo
   static const Color _secondary = Color(0xFF64B5F6); // Light Blue

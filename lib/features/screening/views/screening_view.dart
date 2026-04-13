@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:auralink/core/providers.dart' as core_providers;
-import 'package:auralink/core/theme.dart';
+import 'package:bioliminal/core/providers.dart' as core_providers;
+import 'package:bioliminal/core/theme.dart';
 import '../controllers/screening_controller.dart';
 import '../../camera/widgets/skeleton_overlay.dart';
 import '../widgets/preliminary_findings.dart';
@@ -138,7 +138,7 @@ class _SetupScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AuraLinkTheme.screenBackground, AuraLinkTheme.surface],
+            colors: [BioliminalTheme.screenBackground, BioliminalTheme.surface],
           ),
         ),
         child: Stack(
@@ -414,7 +414,7 @@ class _ActiveScreeningHeader extends ConsumerWidget {
           borderRadius: BorderRadius.circular(16),
           child: Container(
             // Use semi-transparent background to reduce BackdropFilter cost
-            decoration: AuraLinkTheme.glassEffect.copyWith(
+            decoration: BioliminalTheme.glassEffect.copyWith(
               color: Colors.black.withValues(alpha: 0.6),
             ),
             child: Column(
@@ -558,7 +558,7 @@ class _ActiveScreeningFooter extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               // Use semi-transparent background to reduce BackdropFilter cost
-              decoration: AuraLinkTheme.glassEffect.copyWith(
+              decoration: BioliminalTheme.glassEffect.copyWith(
                 color: Colors.black.withValues(alpha: 0.6),
               ),
               child: Row(
@@ -751,7 +751,7 @@ class _CompleteScreenState extends State<_CompleteScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

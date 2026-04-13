@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:auralink/core/theme.dart';
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/theme.dart';
+import 'package:bioliminal/core/providers.dart';
 
 class AIModelSettingsView extends ConsumerWidget {
   const AIModelSettingsView({super.key});
@@ -74,14 +74,14 @@ class AIModelSettingsView extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: isSelected
-            ? AuraLinkTheme.glassEffect.copyWith(
+            ? BioliminalTheme.glassEffect.copyWith(
                 color: theme.colorScheme.secondary.withValues(alpha: 0.1),
                 border: Border.all(
                   color: theme.colorScheme.secondary,
                   width: 1,
                 ),
               )
-            : AuraLinkTheme.glassEffect,
+            : BioliminalTheme.glassEffect,
         child: Row(
           children: [
             Expanded(

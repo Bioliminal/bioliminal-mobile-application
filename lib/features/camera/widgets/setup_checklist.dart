@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/domain/models.dart';
 
 // ---------------------------------------------------------------------------
 // AI validation thresholds

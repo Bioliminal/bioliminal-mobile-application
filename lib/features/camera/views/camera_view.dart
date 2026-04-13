@@ -213,7 +213,7 @@ class _PermissionDeniedView extends StatelessWidget {
             Text(
               permanent
                   ? 'Camera permission was permanently denied. Please enable it in your device settings.'
-                  : 'AuraLink needs camera access to perform the movement screening.',
+                  : 'Bioliminal needs camera access to perform the movement screening.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: Colors.white70,
               ),

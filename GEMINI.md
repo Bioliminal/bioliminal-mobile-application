@@ -1,6 +1,6 @@
-# AuraLink Project Documentation
+# Bioliminal Project Documentation
 
-AuraLink is a clinical-grade movement screening application that uses computer vision to detect biomechanical compensations and trace them to upstream fascial drivers.
+Bioliminal is a clinical-grade movement screening application that uses computer vision to detect biomechanical compensations and trace them to upstream fascial drivers.
 
 ## Project Architecture
 
@@ -9,7 +9,7 @@ The project follows a feature-first structure with a clear separation of concern
 ### Directory Structure
 
 - `lib/core/`: Global configurations, theme definitions, and Riverpod providers.
-  - `services/auralink_client.dart`: HTTP client for clinical server communication (Session upload/Report fetch).
+  - `services/bioliminal_client.dart`: HTTP client for clinical server communication (Session upload/Report fetch).
 - `lib/domain/`: Core business logic and data models aligned with server schemas.
   - `models.dart`: Server-Ready schemas including `PoseLandmark`, `PoseFrame`, and `SessionPayload`.
 - `lib/features/`: UI and state management grouped by feature.
@@ -31,7 +31,7 @@ To maintain UI responsiveness during heavy data processing:
 - UI components use Riverpod's `.select` to watch only specific fields (e.g., `repsCompleted`), preventing full-page rebuilds on every frame.
 
 ### Server-Centric Analysis
-Clinical reasoning is offloaded to the AuraLink server to leverage advanced kinetics (WHAM + OpenCap Monocular):
+Clinical reasoning is offloaded to the Bioliminal server to leverage advanced kinetics (WHAM + OpenCap Monocular):
 - Joint moments and ground reaction forces (impossible on-device) are calculated server-side.
-- The app polls the `AuraLinkClient` for report completion with an automated back-off/retry mechanism.
+- The app polls the `BioliminalClient` for report completion with an automated back-off/retry mechanism.
 - Local rule-based triage is maintained as a fallback for the prototype environment.

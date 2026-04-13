@@ -7,7 +7,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart' as
 
 import '../../../domain/models.dart' as domain;
 
-/// Abstract pose detection interface for the AuraLink Flutter app.
+/// Abstract pose detection interface for the Bioliminal Flutter app.
 ///
 /// The app should not bind directly to MediaPipe at the UI layer. We ship
 /// BlazePose at launch, but the pipeline plan allows for swapping models.

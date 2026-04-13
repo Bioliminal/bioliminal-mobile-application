@@ -374,7 +374,7 @@ class ScreeningController extends Notifier<ScreeningState> {
 
     // Async upload to server.
     try {
-      final client = ref.read(core_providers.auraLinkClientProvider);
+      final client = ref.read(core_providers.bioliminalClientProvider);
       await client.submitSession(payload);
     } catch (e) {
       developer.log('Auto-upload failed', error: e, name: 'ScreeningController');

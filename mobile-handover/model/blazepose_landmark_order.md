@@ -45,5 +45,5 @@ another), remap to this order before building the `PoseFrame`.
 
 Source: Google MediaPipe Pose Landmarker documentation. If Google changes
 this in a future model version, update this file AND
-`software/server/src/auralink/api/schemas.py` together — it's a breaking
+`software/server/src/bioliminal/api/schemas.py` together — it's a breaking
 contract change, not a config tweak.

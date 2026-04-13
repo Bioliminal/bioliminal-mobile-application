@@ -86,7 +86,7 @@ class ReportAssemblyService {
 
 // Consumed from story-1307 (not created here):
 extension ConfidenceLevelX on ConfidenceLevel {
-  Color get color;   // returns AuraLinkTheme.confidenceHigh/Medium/Low
+  Color get color;   // returns BioliminalTheme.confidenceHigh/Medium/Low
   String get label;  // returns 'High' / 'Medium' / 'Low'
   int get severity;  // high=0, medium=1, low=2 (for comparison)
 }
@@ -109,7 +109,7 @@ extension ConfidenceLevelX on ConfidenceLevel {
 - lib/domain/models.dart — ConfidenceLevel extension added by story-1307
 - lib/features/report/widgets/finding_card.dart — FindingCard widget (unchanged, consumed here)
 - lib/features/report/services/pdf_generator.dart — PdfGenerator (unchanged, consumed here)
-- lib/core/theme.dart — AuraLinkTheme confidence colors
+- lib/core/theme.dart — BioliminalTheme confidence colors
 - lib/core/router.dart — GoRouter route `/report/:id` passes `id` to ReportView
 
 ## Tasks
@@ -142,7 +142,7 @@ extension ConfidenceLevelX on ConfidenceLevel {
    - Add: `import '../../../core/providers.dart';` (for `localStorageServiceProvider`)
    - Add: `import '../services/report_assembly_service.dart';`
    - Keep: `import 'package:go_router/go_router.dart';` (still needed for `GoRouterState.of(context)`)
-   - Remove: `import '../../../core/theme.dart';` only if ConfidenceLevel extension fully replaces direct theme references (check if AuraLinkTheme is used elsewhere in this file — it is not after helpers are removed)
+   - Remove: `import '../../../core/theme.dart';` only if ConfidenceLevel extension fully replaces direct theme references (check if BioliminalTheme is used elsewhere in this file — it is not after helpers are removed)
 
 6. **Update build method for three states**
    - Loading: `if (_loading) return Scaffold(appBar: AppBar(title: const Text('Report')), body: const Center(child: CircularProgressIndicator()))`

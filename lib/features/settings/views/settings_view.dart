@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:auralink/core/theme.dart';
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/theme.dart';
+import 'package:bioliminal/core/providers.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -14,7 +14,7 @@ class SettingsView extends ConsumerWidget {
     final aiModel = ref.watch(selectedAIModelProvider);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('SETTINGS'),
         backgroundColor: Colors.transparent,
@@ -59,7 +59,7 @@ class SettingsView extends ConsumerWidget {
             _sectionHeader(theme, 'ABOUT'),
             _item(
               Icons.info_outline,
-              'AuraLink Version',
+              'Bioliminal Version',
               '1.0.0-premium',
               theme,
             ),
@@ -98,7 +98,7 @@ class SettingsView extends ConsumerWidget {
             'Your biometric data and screening recordings are processed locally on your device. '
             'If Cloud Backup is disabled, no skeletal data or video ever leaves your hardware. '
             'We use state-of-the-art pose estimation models to calculate joint angles in real-time. '
-            'By using AuraLink, you agree to local data processing for the purpose of mobility assessment.',
+            'By using Bioliminal, you agree to local data processing for the purpose of mobility assessment.',
             style: TextStyle(color: Colors.white70),
           ),
         ),
@@ -137,7 +137,7 @@ class SettingsView extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
-        decoration: AuraLinkTheme.glassEffect,
+        decoration: BioliminalTheme.glassEffect,
         child: Row(
           children: [
             Icon(icon, color: theme.colorScheme.secondary, size: 20),

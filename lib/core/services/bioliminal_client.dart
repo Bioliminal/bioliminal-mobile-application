@@ -3,10 +3,10 @@ import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
 import '../../../domain/models.dart';
 
-/// Client for the AuraLink clinical analysis server.
-class AuraLinkClient {
-  AuraLinkClient({
-    this.baseUrl = 'https://api.auralink.ai', // Placeholder
+/// Client for the Bioliminal clinical analysis server.
+class BioliminalClient {
+  BioliminalClient({
+    this.baseUrl = 'https://api.bioliminal.ai', // Placeholder
     http.Client? httpClient,
   }) : _client = httpClient ?? http.Client();
 
@@ -34,7 +34,7 @@ class AuraLinkClient {
         throw Exception('Failed to submit session: ${response.statusCode} ${response.body}');
       }
     } catch (e) {
-      developer.log('Server submission error', error: e, name: 'AuraLinkClient');
+      developer.log('Server submission error', error: e, name: 'BioliminalClient');
       rethrow;
     }
   }
@@ -56,7 +56,7 @@ class AuraLinkClient {
         throw Exception('Failed to fetch report: ${response.statusCode}');
       }
     } catch (e) {
-      developer.log('Report fetch error', error: e, name: 'AuraLinkClient');
+      developer.log('Report fetch error', error: e, name: 'BioliminalClient');
       rethrow;
     }
   }

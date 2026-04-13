@@ -1,11 +1,11 @@
-# AuraLink Project Audit Report
+# Bioliminal Project Audit Report
 
 **Date:** April 8, 2026
 **Auditor:** Gemini CLI
 **Status:** ⚠️ Critical Issues Found
 
 ## 1. Executive Summary
-The AuraLink project has a strong foundation in domain modeling and biomechanical logic, but it currently suffers from a fundamental architectural contradiction regarding user privacy. While the product positioning and in-app disclaimers promise an offline-only experience, the implementation includes a fully functional Firebase cloud-syncing layer. Additionally, there are several high-severity technical issues related to resource management and app stability.
+The Bioliminal project has a strong foundation in domain modeling and biomechanical logic, but it currently suffers from a fundamental architectural contradiction regarding user privacy. While the product positioning and in-app disclaimers promise an offline-only experience, the implementation includes a fully functional Firebase cloud-syncing layer. Additionally, there are several high-severity technical issues related to resource management and app stability.
 
 ## 2. Critical Findings
 

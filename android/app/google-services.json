@@ -1,15 +1,15 @@
 {
   "project_info": {
     "project_number": "975155858919",
-    "project_id": "auralink-capstone",
-    "storage_bucket": "auralink-capstone.firebasestorage.app"
+    "project_id": "bioliminal-capstone",
+    "storage_bucket": "bioliminal-capstone.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:975155858919:android:0162cfd1f28bddf7d30142",
         "android_client_info": {
-          "package_name": "com.auralink.auralink"
+          "package_name": "com.bioliminal.bioliminal"
         }
       },
       "oauth_client": [],

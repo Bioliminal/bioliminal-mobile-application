@@ -1,8 +1,8 @@
-# AuraLink — Product Spec
+# Bioliminal — Product Spec
 
 ## Objective
 
-AuraLink is a Flutter-based AI movement screening app that uses phone camera pose estimation to detect biomechanical compensation patterns, maps them along three validated fascial chains (SBL/BFL/FFL) to identify upstream root causes, and generates personalized triage reports with cited evidence — making clinical-grade movement reasoning accessible to anyone with a phone.
+Bioliminal is a Flutter-based AI movement screening app that uses phone camera pose estimation to detect biomechanical compensation patterns, maps them along three validated fascial chains (SBL/BFL/FFL) to identify upstream root causes, and generates personalized triage reports with cited evidence — making clinical-grade movement reasoning accessible to anyone with a phone.
 
 ## User Stories
 

@@ -51,9 +51,9 @@ Create `test/unit/chain_mapping_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/domain/services/rule_based_chain_mapper.dart` (post story-1301)
-- `package:auralink/domain/services/rule_based_angle_calculator.dart` (post story-1301)
-- `package:auralink/domain/models.dart`
+- `package:bioliminal/domain/services/rule_based_chain_mapper.dart` (post story-1301)
+- `package:bioliminal/domain/services/rule_based_angle_calculator.dart` (post story-1301)
+- `package:bioliminal/domain/models.dart`
 
 Setup: instantiate `RuleBasedChainMapper` once, reuse across groups. Build landmark lists (33 landmarks) with varying visibility.
 
@@ -131,11 +131,11 @@ Create `test/unit/screening_controller_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/features/screening/controllers/screening_controller.dart`
-- `package:auralink/domain/services/rule_based_angle_calculator.dart`
-- `package:auralink/domain/services/rule_based_chain_mapper.dart`
-- `package:auralink/domain/models.dart`
-- `package:auralink/features/screening/models/movement.dart`
+- `package:bioliminal/features/screening/controllers/screening_controller.dart`
+- `package:bioliminal/domain/services/rule_based_angle_calculator.dart`
+- `package:bioliminal/domain/services/rule_based_chain_mapper.dart`
+- `package:bioliminal/domain/models.dart`
+- `package:bioliminal/features/screening/models/movement.dart`
 
 Note: ScreeningController takes AngleCalculator and ChainMapper via constructor injection. Use RuleBasedAngleCalculator(profile: healthy) and RuleBasedChainMapper() directly -- no mocking framework needed.
 
@@ -186,8 +186,8 @@ Create `test/unit/report_assembly_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/features/report/services/report_assembly_service.dart` (created by story-1302)
-- `package:auralink/domain/models.dart`
+- `package:bioliminal/features/report/services/report_assembly_service.dart` (created by story-1302)
+- `package:bioliminal/domain/models.dart`
 
 Note: ReportAssemblyService has static methods (per story-1302 plan). All tests call `ReportAssemblyService.buildReport(assessment)` and `ReportAssemblyService.overallConfidence(findings)`.
 
@@ -265,8 +265,8 @@ Create `test/unit/serialization_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/core/services/local_storage_service.dart` (exports assessmentToJson, assessmentFromJson, reportToJson, reportFromJson)
-- `package:auralink/domain/models.dart`
+- `package:bioliminal/core/services/local_storage_service.dart` (exports assessmentToJson, assessmentFromJson, reportToJson, reportFromJson)
+- `package:bioliminal/domain/models.dart`
 
 **group('Assessment round-trip')**:
 - Build a full Assessment with: id, createdAt (DateTime.utc(2026, 4, 8, 12, 0)), 1 movement with 2 landmark frames and 3 keyframe angles, 2 compensations (one with chain, one without), report: null
@@ -314,7 +314,7 @@ Create `test/unit/routing_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/core/router.dart`
+- `package:bioliminal/core/router.dart`
 
 Note: GoRouter configuration testing. These are unit-level checks on the GoRouter instance's configuration properties, NOT widget/navigation tests. No pumpWidget needed.
 
@@ -340,10 +340,10 @@ Create `test/unit/privacy_test.dart`.
 
 Imports:
 - `package:flutter_test/flutter_test.dart`
-- `package:auralink/core/services/firestore_service.dart`
-- `package:auralink/core/services/local_storage_service.dart`
-- `package:auralink/core/providers.dart`
-- `package:auralink/domain/models.dart`
+- `package:bioliminal/core/services/firestore_service.dart`
+- `package:bioliminal/core/services/local_storage_service.dart`
+- `package:bioliminal/core/providers.dart`
+- `package:bioliminal/domain/models.dart`
 - `dart:io` (for temp directory in LocalStorageService tests)
 
 Note: After story-1299, FirestoreService constructor takes `cloudSyncEnabled` bool. When false, all public methods throw StateError. These tests verify that guard without needing Firebase SDK at all -- we test the guard in isolation.
@@ -447,4 +447,4 @@ test('localStorageService does not depend on auth', () {
 - `flutter test test/unit/routing_test.dart` -- all pass
 - `flutter test test/unit/privacy_test.dart` -- all pass
 - No production code modified
-- All test files import only from `package:auralink/` and `package:flutter_test/`
+- All test files import only from `package:bioliminal/` and `package:flutter_test/`

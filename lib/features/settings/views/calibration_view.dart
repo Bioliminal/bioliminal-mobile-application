@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:auralink/core/providers.dart' as core_providers;
+import 'package:bioliminal/core/providers.dart' as core_providers;
 
 class CalibrationView extends ConsumerStatefulWidget {
   const CalibrationView({super.key});

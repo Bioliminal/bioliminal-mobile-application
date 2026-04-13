@@ -13,7 +13,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/domain/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Minimum visibility for major joints in a clearly-visible pose.

@@ -1,25 +1,25 @@
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/domain/services/pose_estimation_service.dart'
+import 'package:bioliminal/domain/services/pose_estimation_service.dart'
     as pose_service;
-import 'package:auralink/domain/services/angle_calculator.dart'
+import 'package:bioliminal/domain/services/angle_calculator.dart'
     as angle_service;
-import 'package:auralink/domain/services/chain_mapper.dart' as chain_service;
-import 'package:auralink/domain/mocks/mock_pose_estimation.dart';
-import 'package:auralink/domain/services/mlkit_pose_estimation_service.dart';
-import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
-import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
-import 'package:auralink/core/services/auth_service.dart';
-import 'package:auralink/core/services/firestore_service.dart'
+import 'package:bioliminal/domain/services/chain_mapper.dart' as chain_service;
+import 'package:bioliminal/domain/mocks/mock_pose_estimation.dart';
+import 'package:bioliminal/domain/services/mlkit_pose_estimation_service.dart';
+import 'package:bioliminal/domain/services/rule_based_angle_calculator.dart';
+import 'package:bioliminal/domain/services/rule_based_chain_mapper.dart';
+import 'package:bioliminal/core/services/auth_service.dart';
+import 'package:bioliminal/core/services/firestore_service.dart'
     as firestore_impl;
-import 'package:auralink/core/services/local_storage_service.dart'
+import 'package:bioliminal/core/services/local_storage_service.dart'
     as local_impl;
-import 'package:auralink/core/services/auralink_client.dart';
-import 'package:auralink/features/camera/services/pose_detector.dart';
+import 'package:bioliminal/core/services/bioliminal_client.dart';
+import 'package:bioliminal/features/camera/services/pose_detector.dart';
 
 // Re-export camera providers so screening can import from one place.
-export 'package:auralink/features/camera/controllers/camera_controller.dart'
+export 'package:bioliminal/features/camera/controllers/camera_controller.dart'
     show
         currentLandmarksProvider,
         appCameraControllerProvider,
@@ -154,8 +154,8 @@ final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
   (ref) => local_impl.LocalStorageService(),
 );
 
-final auraLinkClientProvider = Provider<AuraLinkClient>((ref) {
-  final client = AuraLinkClient();
+final bioliminalClientProvider = Provider<BioliminalClient>((ref) {
+  final client = BioliminalClient();
   ref.onDispose(() => client.dispose());
   return client;
 });

@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:auralink/core/theme.dart';
+import 'package:bioliminal/core/theme.dart';
 
 class MainScaffold extends StatelessWidget {
   const MainScaffold({super.key, required this.navigationShell});
@@ -22,7 +22,7 @@ class MainScaffold extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-              decoration: AuraLinkTheme.glassEffect.copyWith(
+              decoration: BioliminalTheme.glassEffect.copyWith(
                 color: theme.colorScheme.surface.withValues(alpha: 0.8),
               ),
               child: BottomNavigationBar(

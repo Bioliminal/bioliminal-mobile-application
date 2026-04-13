@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
-import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/domain/services/rule_based_angle_calculator.dart';
+import 'package:bioliminal/domain/services/rule_based_chain_mapper.dart';
 
 void main() {
   late RuleBasedChainMapper mapper;

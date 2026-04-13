@@ -27,9 +27,9 @@ Files:
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md
+- presearch/bioliminal-product.md
 - lib/domain/models.dart (from story-1293)
-- presearch/.scout-auralink-product.json (thresholds, chain mappings, CC/CP logic)
+- presearch/.scout-bioliminal-product.json (thresholds, chain mappings, CC/CP logic)
 
 ## Tasks
 
@@ -185,7 +185,7 @@ abstract class ChainMapper {
 ## Verification
 - Confirm each task implemented correctly
 - No changes outside write scope
-- Interfaces match signatures documented in presearch/auralink-product.md (processFrame, calculateAngles, mapCompensations)
+- Interfaces match signatures documented in presearch/bioliminal-product.md (processFrame, calculateAngles, mapCompensations)
 - Mock data shapes match domain models from story-1293
 - Threshold values match scout data (knee valgus >10°, dorsiflexion <10°, trunk lean >5°, knee ER >45°, etc.)
 - Chain mapping rules match scout data (SBL = ankle+knee+hip, BFL = shoulder+thoracic+hip, FFL = plantarflexion+extension+flexion)

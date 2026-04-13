@@ -78,7 +78,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/auralink_report_${assessment.id}.pdf');
+    final file = File('${dir.path}/bioliminal_report_${assessment.id}.pdf');
     await file.writeAsBytes(bytes);
     _cachedPdfPath = file.path;
     return file.path;
@@ -90,7 +90,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     try {
       final path = await _generatePdf(report, assessment);
       await SharePlus.instance.share(
-        ShareParams(files: [XFile(path)], subject: 'AuraLink Movement Screen'),
+        ShareParams(files: [XFile(path)], subject: 'Bioliminal Movement Screen'),
       );
     } catch (e) {
       if (mounted) {
@@ -140,7 +140,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     setState(() => _polling = true);
 
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      final client = ref.read(auraLinkClientProvider);
+      final client = ref.read(bioliminalClientProvider);
       try {
         final report = await client.fetchReport(widget.id);
         if (report != null && mounted) {
@@ -236,7 +236,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     // Processing state: no local report and still polling
     if (report == null && _polling) {
       return Scaffold(
-        backgroundColor: AuraLinkTheme.screenBackground,
+        backgroundColor: BioliminalTheme.screenBackground,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -276,7 +276,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     // Empty state: no findings detected.
     if (activeReport.findings.isEmpty) {
       return Scaffold(
-        backgroundColor: AuraLinkTheme.screenBackground,
+        backgroundColor: BioliminalTheme.screenBackground,
         appBar: AppBar(
           title: const Text('ANALYSIS'),
           backgroundColor: Colors.transparent,
@@ -305,7 +305,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     }
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('ANALYSIS'),
         backgroundColor: Colors.transparent,
@@ -377,7 +377,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(16),
-                decoration: AuraLinkTheme.glassEffect,
+                decoration: BioliminalTheme.glassEffect,
                 child: BodyMap(
                   findings: activeReport.findings,
                   selectedFindingIndex: _selectedFindingIndex,

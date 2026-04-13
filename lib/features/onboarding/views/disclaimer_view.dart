@@ -30,7 +30,7 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                 icon: Icons.auto_awesome,
                 title: 'Clinical-Grade\nMotion Analysis',
                 body:
-                    'AuraLink uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
+                    'Bioliminal uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
               ),
               const _OnboardingSlide(
                 icon: Icons.shield_outlined,
@@ -182,7 +182,7 @@ class _DisclaimerSlide extends StatelessWidget {
                     children: [
                       _section(
                         'Educational Purpose',
-                        'AuraLink is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.',
+                        'Bioliminal is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.',
                         theme,
                       ),
                       _section(
@@ -202,7 +202,7 @@ class _DisclaimerSlide extends StatelessWidget {
                       ),
                       _section(
                         'Liability',
-                        'AuraLink and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.',
+                        'Bioliminal and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.',
                         theme,
                       ),
                       const SizedBox(height: 24),

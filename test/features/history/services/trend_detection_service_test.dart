@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/history/services/trend_detection_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/history/services/trend_detection_service.dart';
 
 const _testCitation = Citation(
   finding: 'test',

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
 
 void main() {
   group('Assessment round-trip', () {

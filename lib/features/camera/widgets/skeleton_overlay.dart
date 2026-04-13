@@ -100,7 +100,7 @@ class SkeletonPainter extends CustomPainter {
       final minVisibility = startLm.visibility < endLm.visibility
           ? startLm.visibility
           : endLm.visibility;
-      final segmentColor = AuraLinkTheme.confidenceColor(minVisibility);
+      final segmentColor = BioliminalTheme.confidenceColor(minVisibility);
 
       final paint = Paint()
         ..color = segmentColor
@@ -113,7 +113,7 @@ class SkeletonPainter extends CustomPainter {
     // Draw landmark circles on top.
     for (final lm in landmarks) {
       final pt = transformLandmark(lm, size, isFrontCamera);
-      final color = AuraLinkTheme.confidenceColor(lm.visibility);
+      final color = BioliminalTheme.confidenceColor(lm.visibility);
 
       final fill = Paint()
         ..color = color

@@ -15,7 +15,7 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:auralink/domain/models.dart' as models;
+import 'package:bioliminal/domain/models.dart' as models;
 
 /// Reference images bundled as assets.
 const _images = {

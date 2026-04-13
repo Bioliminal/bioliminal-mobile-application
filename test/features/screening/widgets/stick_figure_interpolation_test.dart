@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/features/screening/data/movement_keyframes.dart';
-import 'package:auralink/features/screening/widgets/stick_figure_animation.dart';
+import 'package:bioliminal/features/screening/data/movement_keyframes.dart';
+import 'package:bioliminal/features/screening/widgets/stick_figure_animation.dart';
 
 /// Helper: create a uniform AnimationPoseFrame with all joints at the same offset.
 AnimationPoseFrame _uniform(double x, double y) => AnimationPoseFrame(

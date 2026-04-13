@@ -1,4 +1,4 @@
-# AuraLink — Technical Briefing
+# Bioliminal — Technical Briefing
 
 ## Problem Statement
 **What problem?** Movement screening costs $150–2,000 and requires a trained professional. Current AI movement tools detect *what's* happening (knee collapses inward) but can't explain *why* (ankle restriction forcing compensation up the chain). Zero cross-citations exist between computer vision and fascial chain research across 4,071 papers — the fields needed to build this tool have never talked to each other.
@@ -11,18 +11,18 @@
 
 ## Overview
 
-AuraLink is a Flutter-based AI movement screening app. Users perform 4 movements in front of their phone camera (~60 sec each). MediaPipe BlazePose extracts 33 body landmarks, which feed into a logic engine that calculates joint angles, detects compensation patterns against published thresholds, and maps co-occurring findings along three validated fascial chains (SBL/BFL/FFL) to identify upstream root causes. The output is a personalized triage report with body-path language, per-finding confidence scoring, inline evidence citations, and specific practitioner discussion points.
+Bioliminal is a Flutter-based AI movement screening app. Users perform 4 movements in front of their phone camera (~60 sec each). MediaPipe BlazePose extracts 33 body landmarks, which feed into a logic engine that calculates joint angles, detects compensation patterns against published thresholds, and maps co-occurring findings along three validated fascial chains (SBL/BFL/FFL) to identify upstream root causes. The output is a personalized triage report with body-path language, per-finding confidence scoring, inline evidence citations, and specific practitioner discussion points.
 
 The app shell and ML pipeline are developed in parallel by separate team members. The Flutter app (Kelsi) defines clean service interfaces; the ML developer implements the pose estimation, angle calculation, and chain mapping logic behind those interfaces. Mock implementations allow app development to proceed independently.
 
 ## Summary
 
-AuraLink is a Flutter movement screening app that bridges computer vision and fascial chain science — two fields with zero academic cross-citation. Users perform 4 movements on their phone camera. MediaPipe BlazePose tracks 33 landmarks; a rule-based logic engine detects compensation patterns and maps them along 3 validated chains (SBL/BFL/FFL) to find upstream root causes. Output is a personalized triage report with confidence scoring, evidence citations, and practitioner discussion points. Architecture: feature-first Flutter with Riverpod, clean service interfaces for ML pipeline (separate developer), Firebase/Firestore for persistence. Mobile-first; web demo uses pre-recorded data. 3-week capstone, team of 4.
+Bioliminal is a Flutter movement screening app that bridges computer vision and fascial chain science — two fields with zero academic cross-citation. Users perform 4 movements on their phone camera. MediaPipe BlazePose tracks 33 landmarks; a rule-based logic engine detects compensation patterns and maps them along 3 validated chains (SBL/BFL/FFL) to find upstream root causes. Output is a personalized triage report with confidence scoring, evidence citations, and practitioner discussion points. Architecture: feature-first Flutter with Riverpod, clean service interfaces for ML pipeline (separate developer), Firebase/Firestore for persistence. Mobile-first; web demo uses pre-recorded data. 3-week capstone, team of 4.
 
 ## Features
 
 ### MVP
-0. **Bootstrap** — `flutter create --org com.auralink --platforms ios,android auralink` + Firebase setup + install all dependencies + create shared interfaces + `.env` config + `flutter_test` setup + `go_router` routing + Riverpod DI + theme
+0. **Bootstrap** — `flutter create --org com.bioliminal --platforms ios,android bioliminal` + Firebase setup + install all dependencies + create shared interfaces + `.env` config + `flutter_test` setup + `go_router` routing + Riverpod DI + theme
    - `lib/core/` (router, theme, DI)
    - `lib/domain/` (all shared interfaces + models)
    - `pubspec.yaml`, `firebase.json`, analysis_options.yaml
@@ -251,7 +251,7 @@ Primary cost driver: Firestore document reads at scale (each assessment = ~10 do
 - **Build (web)**: `flutter build web`
 - **Deploy (web)**: `firebase deploy --only hosting`
 - **Beta distribution**: TestFlight (iOS), Firebase App Distribution (Android)
-- **URL**: `auralink.web.app` (Firebase Hosting default) or custom domain
+- **URL**: `bioliminal.web.app` (Firebase Hosting default) or custom domain
 - **Config**: `firebase.json` (hosting config), `firestore.rules` (security rules), `storage.rules`
 - **Secrets**: Firebase config via `google-services.json` (Android) + `GoogleService-Info.plist` (iOS). No additional secrets — all Firebase, no third-party API keys.
 

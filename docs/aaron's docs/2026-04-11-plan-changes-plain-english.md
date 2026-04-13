@@ -1,7 +1,7 @@
 # Plan Changes — Plain English Summary
 
 **Date:** 2026-04-11
-**For:** AuraLink team + anyone catching up on the project.
+**For:** Bioliminal team + anyone catching up on the project.
 **Source documents (if you want the long versions):**
 - `docs/research/model-framework-recommendations-2026-04-10.md`
 - `docs/research/deep-read-sensing-2026-04-10.md`

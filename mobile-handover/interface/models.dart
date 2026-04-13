@@ -1,5 +1,5 @@
 // Dart data classes mirroring the server pydantic schema at
-// software/server/src/auralink/api/schemas.py
+// software/server/src/bioliminal/api/schemas.py
 //
 // These are the ONLY shapes the server accepts on POST /sessions.
 // Keep them in lockstep with schemas.py — if you see drift, re-export the JSON

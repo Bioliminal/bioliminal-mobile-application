@@ -1,7 +1,7 @@
-# AuraLink Mobile Hand-off Package
+# Bioliminal Mobile Hand-off Package
 
 Everything the Flutter teammate needs to ship the launch-candidate phone client.
-Matches the server contract at `software/server/src/auralink/api/schemas.py`.
+Matches the server contract at `software/server/src/bioliminal/api/schemas.py`.
 
 **Contents of this directory**
 
@@ -64,7 +64,7 @@ flutter:
 
 Copy all three files from `interface/` into your Flutter project:
 
-- `lib/models/auralink_session.dart`  ← from `models.dart`
+- `lib/models/bioliminal_session.dart`  ← from `models.dart`
 - `lib/pose/pose_detector.dart`       ← from `pose_detector.dart`
 - `lib/pose/mediapipe_pose_detector.dart` ← from `mediapipe_pose_detector.dart`
 
@@ -206,6 +206,6 @@ Commit the refreshed file. The Dart classes are hand-written — update
 
 ---
 
-*Maintained alongside `software/server/src/auralink/api/schemas.py`. If you
+*Maintained alongside `software/server/src/bioliminal/api/schemas.py`. If you
 see drift, the server schema wins — regenerate `session.schema.json` and
 update `models.dart` to match.*

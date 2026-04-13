@@ -1,5 +1,5 @@
-name: auralink
-description: "AI movement screening app — bridges computer vision and fascial chain science."
+name: bioliminal
+description: "Clinical-grade movement screening and real-time sEMG biofeedback."
 publish_to: 'none'
 version: 1.0.0+1
 

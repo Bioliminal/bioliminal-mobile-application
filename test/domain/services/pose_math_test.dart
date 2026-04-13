@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/services/pose_math.dart';
+import 'package:bioliminal/domain/services/pose_math.dart';
 
 void main() {
   group('rotationDegreesForSensor', () {

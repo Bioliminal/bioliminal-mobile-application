@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/camera/widgets/setup_checklist.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/camera/widgets/setup_checklist.dart';
 
 /// Builds 33 landmarks where every landmark has the given [visibility],
 /// and hip landmarks (23, 24) have the given [hipY].

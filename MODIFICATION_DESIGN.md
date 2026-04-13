@@ -1,56 +1,65 @@
-# DESIGN: AuraLink Mobile Hand-off Integration (Server-Centric)
+# DESIGN: Bioliminal Rebrand & Hardware Integration
 
 ## Overview
-This modification aligns the AuraLink mobile app with the clinical research and server-side mandates established by Aaron (2026-04-11). The phone's role is refocused as a **high-fidelity capture tool** using MediaPipe BlazePose Full. Core biomechanical reasoning and MSI classification are migrated to the server to ensure clinical audibility and leverage advanced kinetics models (OpenCap Monocular).
+This modification transitions the Bioliminal project to its final identity: **Bioliminal**. Beyond rebranding, it integrates 10-channel surface Electromyography (sEMG) data via Bluetooth Low Energy (BLE) from an ESP32-S3 hardware hub. It also introduces a "Premium" tier focused on real-time biofeedback and anatomical heatmapping.
 
 ## Detailed Analysis
 
-### 1. Architectural Shift (Phone as Capture Tool)
-- **Mandate:** "No chain reasoning on the phone. Everything else lives on the server."
-- **Action:** Deprecate the local `ChainMapper` and `AngleCalculator` for final report generation. Retain a "light" version only for real-time user feedback (live skeleton and rep counting).
-- **New Pipeline:** `Camera` → `PoseDetector` (MediaPipe BlazePose Full) → `SessionPayload` (33 landmarks) → `AuraLinkServer`.
+### 1. Project-Wide Rebranding (Bioliminal)
+- **Package Rename:** `package:bioliminal/` becomes `package:bioliminal/`. This involves a deep refactor of all import statements and the `pubspec.yaml` configuration.
+- **Visual Identity:** Transition from clinical blue to the Bioliminal palette:
+  - **Primary:** Deep Slate (`#0A0A0F`)
+  - **Secondary/sEMG:** Aqua (`#00D4AA`)
+  - **TSA Squeeze/Accent:** Orange (`#FF6B35`)
+- **Strings:** All "Bioliminal" references in the UI, disclaimers, and reports are updated to "Bioliminal".
 
-### 2. Clinical Movement Alignment
-- **Mandate:** Support the clinical priority list.
-- **New Movement Set:**
-  - `overhead_squat`
-  - `single_leg_squat` (replaces singleLegBalance)
-  - `push_up` (replaces overheadReach)
-  - `rollup` (replaces forwardFold)
+### 2. Hardware: 10-Channel sEMG Integration
+- **Source:** ESP32-S3 driving 10 AD8232 channels.
+- **Connection:** BLE via `flutter_blue_plus`.
+- **Data Mapping:**
+  - Ch 1-2: L-Gastrocnemius, L-Soleus
+  - Ch 3-4: R-Gastrocnemius, R-Soleus
+  - Ch 5-6: L/R-Vastus Medialis (Quads)
+  - Ch 7-8: L/R-Gluteus Medius
+  - Ch 9-10: L/R-Erector Spinae
+- **Protocol:** High-frequency integer stream (placeholder UUIDs: `0xFF01` service, `0xFF02` characteristic).
 
-### 3. Data Model Adherence
-- **Mandate:** Exact adherence to the server's Pydantic schema.
-- **New Models:** Integrate `PoseLandmark`, `PoseFrame`, and `SessionPayload` from the handover package. Ensure exactly 33 landmarks are captured per frame.
-
-### 4. Privacy & Disclaimer
-- **Privacy Policy:** Maintain the "Privacy-First" claim by keeping raw video on-device. Landmarks are transmitted to the cloud for analysis.
-- **Onboarding:** Retain the `DisclaimerView` as a legal shield and clinical context setter, but simplify the flow to reduce friction.
+### 3. Feature Tiers (Free vs. Premium)
+- **Free Tier:**
+  - **Real-time Activation Sidebar:** 10 vertical bars next to the camera feed showing live muscle firing levels.
+  - **Basic Summary:** Top-line score and primary movement finding.
+- **Premium Tier (Unlockable in Settings):**
+  - **Anatomical Heatmapping:** The live skeleton overlay segments (limbs/torso) glow in Aqua (`#00D4AA`) based on relative EMG intensity.
+  - **Biofeedback Loop:** Real-time calculation of the **Gastrocnemius:Soleus ratio**.
+  - **Physical Cues:** If sub-optimal ratio is detected, the app sends a "Squeeze" or "Vibrate" command back to the ESP32 to cue the user.
 
 ## Detailed Design
 
-### Model Integration
-- **`PoseDetector` (Interface):** Abstract class to decouple the UI from the ML backend.
-- **`MediaPipePoseDetector` (Implementation):** Uses `google_mlkit_pose_detection` to produce 33-landmark `PoseFrame`s.
-- **`AuraLinkClient` (Service):** New service to handle `POST /sessions` and `GET /reports`.
-
-### Session Capture Flow (Mermaid)
+### Architecture: Hardware Fusion (Mermaid)
 ```mermaid
 graph TD
-    A["Disclaimer & Onboarding"] --> B["Clinical Movement Selection"]
-    B --> C["Setup Validation (Progressive Lighting/Distance)"]
-    C --> D["Active Capture (33 landmarks, 25+ FPS)"]
-    D --> E["Bundle into SessionPayload (Isolate-based)"]
-    E --> F["POST to /sessions"]
-    F --> G["Wait for Server Analysis (Pending UI)"]
-    G --> H["Fetch & Render Clinical Report"]
+    A["Camera (BlazePose)"] --> B["Data Fusion Controller"]
+    C["ESP32-S3 (sEMG)"] -- "BLE" --> B
+    B --> D{"Premium Mode?"}
+    D -- "No" --> E["Vertical Bar Sidebar"]
+    D -- "Yes" --> F["Skeleton Segment Heatmap"]
+    F --> G["Biofeedback Engine (G:S Ratio)"]
+    G -- "Corrective Cue" --> C
 ```
 
+### New Components
+- **`HardwareController`:** Manages BLE scanning, connection, and real-time data smoothing.
+- **`MuscleActivationSidebar`:** High-performance visualization using `CustomPainter` for zero-lag 10-channel feedback.
+- **`HeatmapSkeleton`:** Extends `SkeletonPainter` to accept a `Map<AnatomicalRegion, double>` for dynamic segment coloring.
+
+## Alternatives Considered
+- **Web Bluetooth:** (Rejected) Mobile native BLE is more stable for high-frequency 10-channel data.
+- **Static Assets for Rebrand:** (Rejected) A full package rename is necessary for clean long-term maintainability and CI/CD alignment.
+
 ## Summary
-The integration transitions AuraLink from a "local prototype" to a "professional-grade clinical tool." By adopting the server-side logic backbone, we unlock joint moments, ground reaction forces, and MUSCLE force analysis that are impossible to calculate on-device today.
+Bioliminal merges advanced computer vision with real-time biometric sensing. By decoupling the hardware data from the core AI pipeline, we allow for a modular experience where the "Biofeedback Loop" acts as the premium differentiator.
 
 ## References
-- `docs/aaron's docs/2026-04-11-plan-changes-plain-english.md`
-- `software/mobile-handover/README.md`
-- `software/mobile-handover/interface/models.dart`
-- Van Dillen et al. 2016 (MSI RCT)
-- Harris-Hayes 2018 (Kinematic Correlation)
+- `research/hardware-configurations.html`
+- Uhlrich et al. 2023 (EMG Biofeedback & Knee Forces)
+- `flutter_blue_plus` API documentation

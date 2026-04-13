@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/history/services/archetype_classifier.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/history/services/archetype_classifier.dart';
 
 const _testCitation = Citation(
   finding: 'test',

@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/mocks/mock_pose_estimation.dart';
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/domain/mocks/mock_pose_estimation.dart';
+import 'package:bioliminal/domain/models.dart';
 
 void main() {
   late MockPoseEstimationService service;

@@ -1,11 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/features/camera/services/pose_detector.dart';
-import 'package:auralink/features/screening/controllers/screening_controller.dart';
-import 'package:auralink/features/screening/models/movement.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/features/camera/services/pose_detector.dart';
+import 'package:bioliminal/features/screening/controllers/screening_controller.dart';
+import 'package:bioliminal/features/screening/models/movement.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

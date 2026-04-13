@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/camera/controllers/camera_controller.dart';
-import 'package:auralink/features/camera/widgets/skeleton_overlay.dart';
-import 'package:auralink/features/screening/controllers/screening_controller.dart';
-import 'package:auralink/features/screening/models/movement.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/camera/controllers/camera_controller.dart';
+import 'package:bioliminal/features/camera/widgets/skeleton_overlay.dart';
+import 'package:bioliminal/features/screening/controllers/screening_controller.dart';
+import 'package:bioliminal/features/screening/models/movement.dart';
 
 void main() {
   // Helper: pump a ProviderScope with the screening view's active-movement

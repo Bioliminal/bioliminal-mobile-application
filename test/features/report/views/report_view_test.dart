@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/report/views/report_view.dart';
-import 'package:auralink/features/report/widgets/body_map.dart';
-import 'package:auralink/features/report/widgets/finding_card.dart';
-import 'package:auralink/features/report/widgets/drill_card.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/report/views/report_view.dart';
+import 'package:bioliminal/features/report/widgets/body_map.dart';
+import 'package:bioliminal/features/report/widgets/finding_card.dart';
+import 'package:bioliminal/features/report/widgets/drill_card.dart';
 
 // ---------------------------------------------------------------------------
 // Test data
