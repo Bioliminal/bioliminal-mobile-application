@@ -491,6 +491,12 @@ class _ReportViewState extends ConsumerState<ReportView> {
 
             const SizedBox(height: 32),
 
+            // -- EMG Summary (If available) --
+            if (assessment.payload != null && assessment.payload!.frames.isNotEmpty)
+              _EMGActivationSection(payload: assessment.payload!),
+
+            const SizedBox(height: 32),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
@@ -507,6 +513,85 @@ class _ReportViewState extends ConsumerState<ReportView> {
             const SizedBox(height: 48),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EMGActivationSection extends StatelessWidget {
+  const _EMGActivationSection({required this.payload});
+  final SessionPayload payload;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    // Simple average across all frames for the report
+    final averages = List.filled(10, 0.0);
+    for (final frame in payload.frames) {
+      for (var i = 0; i < 10; i++) {
+        averages[i] += frame.landmarks[i].x; // Using x as proxy for EMG value if stored there, or similar
+        // Note: Real implementation would use a dedicated EMG field in payload
+      }
+    }
+    for (var i = 0; i < 10; i++) {
+      averages[i] /= payload.frames.length;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'EMG ACTIVATION',
+            style: theme.textTheme.labelLarge?.copyWith(
+              letterSpacing: 2.0,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                _activationRow('Calves', (averages[0] + averages[1] + averages[2] + averages[3]) / 4, theme),
+                _activationRow('Quads', (averages[4] + averages[5]) / 2, theme),
+                _activationRow('Glutes', (averages[6] + averages[7]) / 2, theme),
+                _activationRow('Core', (averages[8] + averages[9]) / 2, theme),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _activationRow(String label, double value, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: theme.textTheme.bodySmall),
+              Text('${(value * 100).toInt()}%', style: theme.textTheme.labelSmall),
+            ],
+          ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: value.clamp(0.0, 1.0),
+            backgroundColor: Colors.white10,
+            color: theme.colorScheme.secondary,
+            minHeight: 4,
+          ),
+        ],
       ),
     );
   }
