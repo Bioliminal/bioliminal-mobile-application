@@ -45,6 +45,16 @@ final cloudSyncEnabledProvider = NotifierProvider<CloudSyncNotifier, bool>(
   CloudSyncNotifier.new,
 );
 
+class PremiumNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void toggle() => state = !state;
+}
+
+final isPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
+  PremiumNotifier.new,
+);
+
 // ---------------------------------------------------------------------------
 // AI Engine Selection — persist in-memory for this session (can extend to local storage).
 // ---------------------------------------------------------------------------
