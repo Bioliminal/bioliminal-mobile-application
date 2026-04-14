@@ -25,7 +25,12 @@ The project follows a feature-first structure with a high-fidelity data pipeline
 The app uses a dual-stream data fusion model:
 1. **Vision:** MediaPipe BlazePose Full captures 33 landmarks at 30+ FPS via a "busy flag" pattern.
 2. **Sensing:** ESP32-S3 Hub streams 10 channels of sEMG data over BLE at high frequency.
-- **Fusion:** Landmarks and EMG biopotentials are time-synced and bundled into a `SessionPayload` for clinical analysis.
+
+### Hardware Setup & Calibration
+To ensure clinical data integrity, the app includes a dedicated setup flow:
+- **Anatomical Placement:** The `PlacementGhostSkeleton` uses pulsing targets to guide the user to 10 specific lower-body electrode sites.
+- **Lead Verification:** `SignalLED` widgets monitor real-time voltage levels to detect "Leads Off" or signal saturation before screening begins.
+- **Time Synchronization:** The `SyncCalibrationService` identifies a "Sync Stomp" peak in both vision (ankle acceleration) and sensing (calf spike) to calculate a sub-10ms `sync_offset` applied to all captured frames.
 
 ### Premium Biofeedback Loop
 The "Premium" tier unlocks the immediate physical correction layer:

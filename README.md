@@ -24,6 +24,7 @@ Bioliminal merges advanced computer vision with real-time biometric sensing to b
 ```
 [Vision] Phone Camera → MediaPipe BlazePose Full (33 landmarks)
 [Sensing] ESP32-S3 Hub → 10-Channel sEMG (250Hz - 2kHz)
+  → Setup & Sync (Ghost Skeleton + Sync Stomp Calibration)
   → Data Fusion (Bioliminal Mobile App)
   → Clinical Server (Kinetics + Muscle Force Analysis)
   → Real-time Biofeedback & Clinical-Grade Report
@@ -33,9 +34,11 @@ Bioliminal merges advanced computer vision with real-time biometric sensing to b
 
 ## The Core Problem
 1. **Capture** — Computer vision landmarks + sEMG biopotentials.
-2. **Detect** — 33 high-fidelity landmarks analyzed via server-side kinetics.
-3. **Map** — Joint moments and muscle forces traced along fascial chains.
-4. **Correct** — Real-time physical cues to retrain movement patterns mid-rep.
+2. **Setup** — "Ghost Skeleton" placement guide and real-time lead verification.
+3. **Sync** — "Sync Stomp" calibration to time-align vision and sensing streams (<10ms).
+4. **Detect** — 33 high-fidelity landmarks analyzed via server-side kinetics.
+5. **Map** — Joint moments and muscle forces traced along fascial chains.
+6. **Correct** — Real-time physical cues to retrain movement patterns mid-rep.
 
 ### Clinical Validation
 
