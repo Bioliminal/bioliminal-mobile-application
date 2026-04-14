@@ -80,9 +80,9 @@ class AuthOptionsView extends StatelessWidget {
               const SizedBox(height: 32),
               TextButton(
                 onPressed: () => context.go('/history'),
-                child: Text(
+                child: const Text(
                   'CONTINUE WITHOUT ACCOUNT',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white30,
                     letterSpacing: 1.2,
                     fontSize: 12,

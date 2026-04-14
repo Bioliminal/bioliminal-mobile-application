@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:responsive_builder/responsive_builder.dart';
-import 'package:seo_renderer/seo_renderer.dart';
 import '../../../core/theme.dart';
 
 class LandingPageView extends StatelessWidget {
@@ -17,13 +16,13 @@ class LandingPageView extends StatelessWidget {
             const _StickyNavbar(),
             ResponsiveBuilder(
               builder: (context, sizingInformation) {
-                return Column(
+                return const Column(
                   children: [
-                    const _HeroSection(),
-                    const _VisionSection(),
-                    const _InsightSection(),
-                    const _TrustSection(),
-                    const _FinalCTA(),
+                    _HeroSection(),
+                    _VisionSection(),
+                    _InsightSection(),
+                    _TrustSection(),
+                    _FinalCTA(),
                   ],
                 );
               },
@@ -48,7 +47,8 @@ class _StickyNavbar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          TextRenderer(
+          Semantics(
+            label: 'BIOLIMINAL',
             child: Text(
               'BIOLIMINAL',
               style: GoogleFonts.oswald(
@@ -114,12 +114,8 @@ class _HeroSection extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextRenderer(
-                element: const TextStyle(
-                  fontSize: 72,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
+              Semantics(
+                label: 'REDEFINE MOVEMENT.',
                 child: Text(
                   'REDEFINE MOVEMENT.',
                   textAlign: TextAlign.center,
@@ -132,7 +128,9 @@ class _HeroSection extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              TextRenderer(
+              Semantics(
+                label:
+                    'AI-powered biomechanics tracing compensations to their fascial root cause. Clinical-grade screening in your pocket.',
                 child: Container(
                   constraints: const BoxConstraints(maxWidth: 700),
                   child: const Text(
@@ -185,7 +183,8 @@ class _VisionSection extends StatelessWidget {
       width: double.infinity,
       child: Column(
         children: [
-          TextRenderer(
+          Semantics(
+            label: 'THE VISION',
             child: Text(
               'THE VISION',
               style: GoogleFonts.oswald(
@@ -206,11 +205,11 @@ class _VisionSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 64),
-          Wrap(
+          const Wrap(
             spacing: 40,
             runSpacing: 40,
             alignment: WrapAlignment.center,
-            children: const [
+            children: [
               _FeatureCard(
                 title: 'Real-Time Pose',
                 description: 'MediaPipe BlazePose Full captures clinical-grade data at 30+ FPS.',
@@ -244,7 +243,8 @@ class _InsightSection extends StatelessWidget {
       width: double.infinity,
       child: Column(
         children: [
-          TextRenderer(
+          Semantics(
+            label: 'THE INSIGHT',
             child: Text(
               'THE INSIGHT',
               style: GoogleFonts.oswald(
@@ -331,7 +331,7 @@ class _ChainPoint extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Text(title, style: TextStyle(color: BioliminalTheme.accent, fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(color: BioliminalTheme.accent, fontWeight: FontWeight.bold)),
         Text(value, style: const TextStyle(color: Colors.white70, fontSize: 18)),
       ],
     );
@@ -388,16 +388,16 @@ class _TrustSection extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
       color: BioliminalTheme.surface,
       width: double.infinity,
-      child: Column(
+      child: const Column(
         children: [
-          const Icon(Icons.verified_user, size: 64, color: Colors.white10),
-          const SizedBox(height: 32),
-          const Text(
+          Icon(Icons.verified_user, size: 64, color: Colors.white10),
+          SizedBox(height: 32),
+          Text(
             'Clinical-Grade Logic',
             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
           ),
-          const SizedBox(height: 16),
-          const Text(
+          SizedBox(height: 16),
+          Text(
             'Built on established clinical protocols and validated against gold-standard biomechanics data.',
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white60),
@@ -432,11 +432,11 @@ class _FinalCTA extends StatelessWidget {
             style: TextStyle(fontSize: 18, color: Colors.white70),
           ),
           const SizedBox(height: 48),
-          Row(
+          const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _StoreButton(icon: Icons.apple, label: 'App Store'),
-              const SizedBox(width: 24),
+              SizedBox(width: 24),
               _StoreButton(icon: Icons.android, label: 'Play Store'),
             ],
           ),
