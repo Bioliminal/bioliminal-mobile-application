@@ -2,7 +2,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 
 /// Supported movement types. Must match the server's MovementType literal.
+///
+/// `bicepCurl` is the M1–M6 demo target. The four screening movements below
+/// (overhead squat / single-leg squat / push-up / rollup) are dormant until
+/// post-demo and are not reachable from the current user flow. See
+/// bioliminal-mobile-application#30.
 enum MovementType {
+  bicepCurl('bicep_curl'),
   overheadSquat('overhead_squat'),
   singleLegSquat('single_leg_squat'),
   pushUp('push_up'),

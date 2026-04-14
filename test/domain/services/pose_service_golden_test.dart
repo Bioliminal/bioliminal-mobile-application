@@ -28,7 +28,10 @@ const _majorJointIndices = [11, 12, 23, 24, 25, 26, 27, 28];
 /// Joints prone to occlusion (ankles).
 const _occlusionProneIndices = {27, 28};
 
-const _movements = ['overhead_squat', 'single_leg_squat', 'rollup', 'push_up'];
+// Screening movements (overhead_squat, single_leg_squat, rollup, push_up) are
+// dormant until post-demo. When screening is revived, add them back here and
+// capture goldens via integration_test/mlkit_golden_capture_test.dart. See #30.
+const _movements = <String>[];
 
 List<PoseLandmark>? _loadGolden(String movementName) {
   final file = File('test/fixtures/golden_landmarks/$movementName.json');

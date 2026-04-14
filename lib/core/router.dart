@@ -9,6 +9,7 @@ import '../features/history/views/history_view.dart';
 import '../features/landing/views/landing_page_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
+import '../features/rep_capture/views/rep_capture_view.dart';
 import '../features/report/views/report_view.dart';
 import '../features/screening/views/screening_view.dart';
 import '../features/settings/views/login_view.dart';
@@ -61,6 +62,12 @@ final goRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const HardwareSetupView(),
     ),
+    GoRoute(
+      path: '/capture',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const RepCaptureView(),
+    ),
+    // Dormant until post-demo — no user-reachable entrypoint. See #30.
     GoRoute(
       path: '/screening',
       parentNavigatorKey: _rootNavigatorKey,

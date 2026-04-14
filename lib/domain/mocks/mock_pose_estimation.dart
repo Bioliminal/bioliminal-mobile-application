@@ -64,6 +64,10 @@ class MockPoseEstimationService implements PoseEstimationService {
         return _pushUpFrames();
       case MovementType.rollup:
         return _rollupFrames();
+      case MovementType.bicepCurl:
+        throw UnsupportedError(
+          'bicepCurl uses the rep_capture pipeline, not screening mocks.',
+        );
     }
   }
 

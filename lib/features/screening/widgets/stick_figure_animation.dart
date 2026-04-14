@@ -10,6 +10,9 @@ List<AnimationPoseFrame> keyframesFor(MovementType type) {
     MovementType.singleLegSquat => singleLegSquatKeyframes,
     MovementType.pushUp => pushUpKeyframes,
     MovementType.rollup => rollupKeyframes,
+    MovementType.bicepCurl => throw UnsupportedError(
+      'bicepCurl uses the rep_capture pipeline, not screening keyframes.',
+    ),
   };
 }
 

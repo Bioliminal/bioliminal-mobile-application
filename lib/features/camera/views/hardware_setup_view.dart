@@ -62,7 +62,7 @@ class _HardwareSetupViewState extends ConsumerState<HardwareSetupView> {
           TextButton(
             onPressed: () {
               ref.read(useHardwareModeProvider.notifier).value = false;
-              context.go('/screening');
+              context.go('/capture');
             },
             child: Text(
               'CONTINUE WITHOUT SENSORS',
@@ -287,9 +287,9 @@ class _ActionButtons extends ConsumerWidget {
       child: FilledButton(
         onPressed: () {
           ref.read(useHardwareModeProvider.notifier).value = true;
-          context.go('/screening');
+          context.go('/capture');
         },
-        child: const Text('BEGIN SCREENING'),
+        child: const Text('BEGIN CAPTURE'),
       ),
     );
   }

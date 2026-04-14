@@ -67,8 +67,11 @@ void main() {
     await sub.cancel();
   });
 
-  test('each movement type produces 30 frames with 33 landmarks', () async {
-    for (final movement in MovementType.values) {
+  test('each screening movement type produces 30 frames with 33 landmarks', () async {
+    // bicepCurl flows through rep_capture, not the screening mock. See #30.
+    final screeningMovements = MovementType.values
+        .where((m) => m != MovementType.bicepCurl);
+    for (final movement in screeningMovements) {
       final s = MockPoseEstimationService(movementType: movement);
       final frames = await s.processFrame(null).toList();
       expect(
@@ -85,5 +88,11 @@ void main() {
       }
       s.dispose();
     }
+  });
+
+  test('bicepCurl is not supported by the screening mock', () {
+    final s = MockPoseEstimationService(movementType: MovementType.bicepCurl);
+    expect(() => s.processFrame(null), throwsA(isA<UnsupportedError>()));
+    s.dispose();
   });
 }

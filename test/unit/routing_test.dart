@@ -11,6 +11,7 @@ void main() {
 
       expect(paths, contains('/'));
       expect(paths, contains('/disclaimer'));
+      expect(paths, contains('/capture'));
       expect(paths, contains('/screening'));
       expect(paths, contains('/report/:id'));
       expect(paths, contains('/login'));
@@ -18,8 +19,8 @@ void main() {
     });
 
     test('expected number of top-level routes exist', () {
-      // 10 GoRoutes + 1 StatefulShellRoute = 11
-      expect(goRouter.configuration.routes.length, 11);
+      // 11 GoRoutes + 1 StatefulShellRoute = 12
+      expect(goRouter.configuration.routes.length, 12);
     });
   });
 }
