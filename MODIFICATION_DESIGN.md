@@ -1,70 +1,80 @@
-# Modification Design: Initial Flow Realignment & Hardware Discovery
+# Modification Design: Bioliminal Landing Page
 
 ## Overview
-This document outlines the realignment of the Bioliminal application flow to integrate a modern authentication experience and an optional, low-friction hardware discovery process. The goal is to minimize cognitive load while ensuring that high-fidelity sEMG sensors are discoverable by all users without being a mandatory roadblock.
+This document outlines the design for a high-fidelity, interactive landing page for Bioliminal. The landing page will serve as the primary "digital front door" for the brand, showcasing its AI-powered movement screening capabilities, fascial chain mapping, and clinical-grade reporting—all while maintaining the "premium, tactile" aesthetic established in the mobile application.
 
 ## Detailed Analysis
-### Current Flow
-1. **Disclaimer**: Educational slides that lead directly to Hardware Setup.
-2. **Hardware Setup**: A multi-step flow that assumes hardware usage is the default path.
-3. **Login**: Tucked away in Settings as "Enable Cloud Sync", not part of the initial onboarding.
+The goal is to create a showcase that demonstrates the value of Bioliminal without requiring the user to perform an actual screening in the browser (avoiding the complexity of ML Kit/Camera on web for now). The page must be visually stunning, performant, and optimized for search engines (SEO).
 
-### Desired Flow
-1. **Disclaimer**: Retain the FDA-mandated educational/legal context.
-2. **Auth Options**: A new screen providing three clear paths:
-   - **Create Account**: Full cloud-sync registration.
-   - **Login**: For returning users.
-   - **Continue without account**: Low-friction "Guest Mode" (Local-only).
-3. **Main App (History)**: The landing zone for all users.
-4. **Hardware Discovery (Pre-flight)**:
-   - Triggered when starting a "New Scan".
-   - Automatically searches for Bioliminal sensors in the background.
-   - Provides a "CONTINUE WITHOUT SENSORS" option immediately to prevent stalling.
+### Key Objectives:
+1.  **Brand Identity:** Establish "Bioliminal" as a leader in biomechanical analysis.
+2.  **Feature Showcase:** High-fidelity demonstrations of the "Vision" (Skeletal Overlay) and "Insights" (Body Map/Fascial Chains).
+3.  **Tiered Experience:** Clear paths for new users to explore features, while providing a clear call-to-action (CTA) to download the mobile app.
+4.  **SEO & Performance:** Ensure the page is indexable by search engines despite being built in Flutter Web.
 
 ## Alternatives Considered
-- **Mandatory Hardware Selection**: Asking the user "What sensors do you have?" during onboarding. *Rejected* as it increases cognitive load for users who just want to try the vision-only feature.
-- **Always-on Background Scanning**: Scanning for sensors globally throughout the app. *Rejected* due to battery drain and privacy concerns; scanning should only occur when intent to screen is established.
+-   **Separate React/Next.js Project:** Considered for superior SEO and initial load times. *Rejected* to avoid code duplication and maintain stylistic parity with the existing Flutter codebase.
+-   **Static Image Showcase:** Using only images to show features. *Rejected* in favor of interactive Flutter widgets (like the `BodyMap`) to provide a more engaging "app-like" experience.
 
 ## Detailed Design
 
-### 1. Navigation Realignment
-The `GoRouter` configuration in `lib/core/router.dart` will be updated:
-- `/disclaimer` -> `/auth-options`
-- `/auth-options` -> `/history` (if Guest) or `/login`
-- `/history` -> `/hardware-setup` -> `/screening`
+### 1. Visual Aesthetic: "Tactile Futurism"
+Following the 2026 design trend identified in research:
+-   **Background:** `BioliminalTheme.screenBackground` (Slate 900) with a subtle noise texture.
+-   **Depth:** Multi-layered drop shadows on cards to create a "lifted" feel.
+-   **Glassmorphism:** Extensive use of `BioliminalTheme.glassEffect` for navigation bars and feature overlays.
+-   **Color Palette:** Deep Indigo (#0D47A1), Sky Blue (#38BDF8), and Emerald (#10B981) for confidence indicators.
 
-### 2. New Views
-- **AuthOptionsView**: A high-impact branding screen with three buttons.
-  - "CREATE ACCOUNT" (Primary)
-  - "LOG IN" (Secondary)
-  - "CONTINUE WITHOUT ACCOUNT" (Tertiary/Link style)
+### 2. Page Structure (Sections)
+1.  **Sticky Navbar:** Logo (Bioliminal), Features, Research, and "Get the App" CTA.
+2.  **Hero Section:**
+    -   Large, bold typography: "REDEFINE MOVEMENT."
+    -   Sub-headline: "AI-powered biomechanics tracing compensations to their fascial root cause."
+    -   Background: A stylized, slow-panning animation of a skeletal overlay on a reference movement (e.g., Overhead Squat).
+3.  **The Vision (Interactive):**
+    -   A side-by-side comparison. Left: Raw video. Right: Bioliminal's 33-landmark high-fidelity skeleton.
+    -   Users can toggle "Fascial Chain View" to see the "upstream drivers" highlighted in real-time.
+4.  **The Insight (Body Map):**
+    -   A high-fidelity rendering of the `BodyMap` widget.
+    -   Interactive hotspots that reveal "Finding Cards" (e.g., "Left Ankle Restriction → Lateral Line Tension").
+5.  **Clinical Trust:**
+    -   "Rule-Based Engine" explanation: Not just a "black box" AI, but a clinical logic layer.
+    -   Link to `research/yijinjing-fascial-chain-remodeling.md`.
+6.  **Final CTA:** "Transform your movement practice today." (App Store / Play Store links).
 
-### 3. Hardware Discovery Refactor
-The `HardwareSetupView` will be modified to act as an automated discovery hub:
-- **Auto-Scan**: `onInit` equivalent in Riverpod will trigger the BLE scan immediately.
-- **Simplified UI**: A "Searching for Bioliminal Sensors..." pulse animation.
-- **Phrasing**: All "SKIP" text will be replaced with "CONTINUE WITHOUT SENSORS".
-- **Conditional Steps**: If no sensors are found within ~5 seconds, the "CONTINUE WITHOUT SENSORS" button will be highlighted to guide the user forward.
+### 3. Technical Implementation
+-   **Web Renderer:** Build using the HTML renderer (`--web-renderer html`) to ensure that `Semantics` widgets are translated into a readable DOM for search engines.
+-   **SEO Optimization:**
+    -   Use the `seo_renderer` package to wrap all headers and descriptive text.
+    -   Inject dynamic meta tags (Open Graph, Twitter Cards) in `web/index.html`.
+-   **Responsiveness:** Use `LayoutBuilder` and `MediaQuery` to ensure the landing page transitions seamlessly from a multi-column desktop layout to a focused single-column mobile view.
+-   **Asset Management:** Leverage existing high-res reference images in `assets/reference_images/` for the feature demonstrations.
 
 ### Diagrams
 
 ```mermaid
 graph TD
-    A[App Launch] --> B[Disclaimer View]
-    B --> C{Auth Options}
-    C -->|Create/Login| D[Login/Account View]
-    C -->|Guest| E[History View]
-    D --> E
-    E -->|New Scan| F[Hardware Discovery]
-    F -->|Auto-Detect| G{Sensors Found?}
-    G -->|Yes| H[Placement & Sync]
-    G -->|No / Continue| I[Screening View]
-    H --> I
+    A[User Arrives] --> B[Hero Section: The "Wow" Factor]
+    B --> C[Interactive Demo: Vision & Landmarks]
+    C --> D[Insight Section: Body Map & Fascial Chains]
+    D --> E[Trust Section: Research & Clinical Logic]
+    E --> F[Conversion: App Store / Play Store]
+    
+    subgraph "Technical Layer"
+        G[Flutter Web - HTML Renderer]
+        H["seo_renderer: Indexable Content"]
+        I["BioliminalTheme: Unified Styling"]
+    end
+    
+    A -.-> G
+    G --- H
+    G --- I
 ```
 
 ## Summary
-The realignment transforms Bioliminal from a hardware-first utility into an accessible, tiered movement platform. By deferring hardware checks until the moment of screening and providing a clear "Continue without sensors" path, we maintain the professional utility of the app while drastically lowering the entry barrier for new users.
+The Bioliminal landing page will be a high-performance, visually immersive experience that bridges the gap between marketing and utility. By reusing existing UI components and theme definitions, we ensure absolute brand consistency while leveraging modern Flutter Web capabilities to provide an interactive showcase that builds immediate user trust.
 
 ## References
-- [Google Material Design: Progressive Disclosure](https://m3.material.io/foundations/progressive-disclosure)
-- [Bioliminal Architecture (GEMINI.md)](./GEMINI.md)
+- [Google Material Design: Depth & Elevation](https://m3.material.io/foundations/elevation)
+- [Flutter Web: SEO & Indexability Best Practices (2026)](https://docs.flutter.dev/platform-guides/web/seo)
+- [Bioliminal Project Documentation (GEMINI.md)](./GEMINI.md)

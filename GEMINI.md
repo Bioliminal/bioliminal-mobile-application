@@ -20,6 +20,7 @@ The project follows a feature-first structure with a clear separation of concern
   - `history/`: Longitudinal progress tracking, archetype classification, and trend detection.
   - `settings/`: User profile and privacy/cloud-sync controls.
   - `onboarding/`: Educational disclaimer and authentication options.
+  - `landing/`: High-fidelity Flutter Web landing page for showcasing Bioliminal.
 
 ## Key Implementation Details
 

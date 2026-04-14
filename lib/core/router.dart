@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../core/providers.dart';
 import '../features/camera/views/hardware_setup_view.dart';
 import '../features/history/views/history_view.dart';
+import '../features/landing/views/landing_page_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
 import '../features/report/views/report_view.dart';
@@ -21,24 +23,29 @@ final _shellNavigatorHistoryKey = GlobalKey<NavigatorState>();
 final _shellNavigatorSettingsKey = GlobalKey<NavigatorState>();
 
 final goRouter = GoRouter(
-  initialLocation: '/disclaimer',
+  initialLocation: kIsWeb ? '/' : '/disclaimer',
   navigatorKey: _rootNavigatorKey,
   redirect: (context, state) async {
-    // Only redirect on initial launch.
-    if (state.uri.path != '/disclaimer') return null;
+    // Only redirect on initial launch for mobile.
+    if (!kIsWeb && state.uri.path == '/disclaimer') {
+      final container = ProviderScope.containerOf(context);
+      final storage = container.read(localStorageServiceProvider);
+      final assessments = await storage.listAssessments();
 
-    final container = ProviderScope.containerOf(context);
-    final storage = container.read(localStorageServiceProvider);
-    final assessments = await storage.listAssessments();
-
-    // If they have assessments, they have already completed onboarding.
-    if (assessments.isNotEmpty) {
-      return '/history';
+      // If they have assessments, they have already completed onboarding.
+      if (assessments.isNotEmpty) {
+        return '/history';
+      }
     }
     return null;
   },
   routes: [
     // Full-screen routes
+    GoRoute(
+      path: '/',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const LandingPageView(),
+    ),
     GoRoute(
       path: '/disclaimer',
       parentNavigatorKey: _rootNavigatorKey,
