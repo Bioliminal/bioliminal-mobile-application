@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 enum SignalStatus { disconnected, clean, saturated }
 
 class SignalLED extends StatelessWidget {
-  const SignalLED({
-    super.key,
-    required this.status,
-    required this.label,
-  });
+  const SignalLED({super.key, required this.status, required this.label});
 
   final SignalStatus status;
   final String label;

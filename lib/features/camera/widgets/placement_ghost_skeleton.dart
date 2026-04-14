@@ -32,9 +32,7 @@ class _PlacementGhostSkeletonState extends State<PlacementGhostSkeleton>
       animation: _pulseController,
       builder: (context, _) {
         return CustomPaint(
-          painter: _GhostSkeletonPainter(
-            pulseValue: _pulseController.value,
-          ),
+          painter: _GhostSkeletonPainter(pulseValue: _pulseController.value),
           size: Size.infinite,
         );
       },
@@ -49,7 +47,14 @@ class _GhostSkeletonPainter extends CustomPainter {
 
   // Specific connections for our simplified ghost
   static const List<(int, int)> _ghostConnections = [
-    (1, 2), (1, 3), (2, 4), (3, 4), (3, 5), (4, 6), (5, 7), (6, 8)
+    (1, 2),
+    (1, 3),
+    (2, 4),
+    (3, 4),
+    (3, 5),
+    (4, 6),
+    (5, 7),
+    (6, 8),
   ];
 
   // Anatomical target indices into relative offsets
@@ -98,11 +103,15 @@ class _GhostSkeletonPainter extends CustomPainter {
 
     // Draw pulsing target indicators
     final targetPaint = Paint()
-      ..color = const Color(0xFF00D4AA).withValues(alpha: 0.3 + (pulseValue * 0.4))
+      ..color = const Color(
+        0xFF00D4AA,
+      ).withValues(alpha: 0.3 + (pulseValue * 0.4))
       ..style = PaintingStyle.fill;
 
     final glowPaint = Paint()
-      ..color = const Color(0xFF00D4AA).withValues(alpha: (1.0 - pulseValue) * 0.2)
+      ..color = const Color(
+        0xFF00D4AA,
+      ).withValues(alpha: (1.0 - pulseValue) * 0.2)
       ..style = PaintingStyle.fill
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0);
 

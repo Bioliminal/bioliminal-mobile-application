@@ -28,12 +28,7 @@ const _majorJointIndices = [11, 12, 23, 24, 25, 26, 27, 28];
 /// Joints prone to occlusion (ankles).
 const _occlusionProneIndices = {27, 28};
 
-const _movements = [
-  'overhead_squat',
-  'single_leg_squat',
-  'rollup',
-  'push_up',
-];
+const _movements = ['overhead_squat', 'single_leg_squat', 'rollup', 'push_up'];
 
 List<PoseLandmark>? _loadGolden(String movementName) {
   final file = File('test/fixtures/golden_landmarks/$movementName.json');

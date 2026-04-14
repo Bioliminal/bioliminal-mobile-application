@@ -40,7 +40,8 @@ const screeningMovements = <MovementConfig>[
   MovementConfig(
     type: MovementType.pushUp,
     name: 'Push-up',
-    instruction: 'Maintain a plank position. Lower your chest to the floor and push back up.',
+    instruction:
+        'Maintain a plank position. Lower your chest to the floor and push back up.',
     targetReps: 5,
     primaryJoint: 'leftShoulder',
     peakIsMinimum: true,

@@ -5,20 +5,20 @@ import 'package:bioliminal/features/screening/widgets/stick_figure_animation.dar
 
 /// Helper: create a uniform AnimationPoseFrame with all joints at the same offset.
 AnimationPoseFrame _uniform(double x, double y) => AnimationPoseFrame(
-      head: Offset(x, y),
-      leftShoulder: Offset(x, y),
-      rightShoulder: Offset(x, y),
-      leftElbow: Offset(x, y),
-      rightElbow: Offset(x, y),
-      leftWrist: Offset(x, y),
-      rightWrist: Offset(x, y),
-      leftHip: Offset(x, y),
-      rightHip: Offset(x, y),
-      leftKnee: Offset(x, y),
-      rightKnee: Offset(x, y),
-      leftAnkle: Offset(x, y),
-      rightAnkle: Offset(x, y),
-    );
+  head: Offset(x, y),
+  leftShoulder: Offset(x, y),
+  rightShoulder: Offset(x, y),
+  leftElbow: Offset(x, y),
+  rightElbow: Offset(x, y),
+  leftWrist: Offset(x, y),
+  rightWrist: Offset(x, y),
+  leftHip: Offset(x, y),
+  rightHip: Offset(x, y),
+  leftKnee: Offset(x, y),
+  rightKnee: Offset(x, y),
+  leftAnkle: Offset(x, y),
+  rightAnkle: Offset(x, y),
+);
 
 void main() {
   group('AnimationPoseFrame.lerp', () {

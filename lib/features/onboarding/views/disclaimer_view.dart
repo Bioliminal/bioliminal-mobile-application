@@ -212,9 +212,7 @@ class _DisclaimerSlide extends StatelessWidget {
                           color: Colors.white38,
                         ),
                       ),
-                      const SizedBox(
-                        height: 40,
-                      ),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),

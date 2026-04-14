@@ -1,60 +1,53 @@
-# DESIGN: Bioliminal Sensor Placement & Sync
+# Modification Design: Rename AuraLink to Bioliminal
 
 ## Overview
-This modification introduces a mandatory (but skippable) hardware setup flow for Bioliminal. It ensures that the 10-channel sEMG sensors are correctly placed on the user's lower body and perfectly time-aligned with the BlazePose camera stream using a synchronized physical gesture.
+This modification aims to complete the rebranding of the project from "AuraLink" to "Bioliminal". While some parts of the codebase (like `pubspec.yaml` and `lib/main.dart`) have already been updated, several lingering references remain in platform-specific configurations, internal scripts, and documentation.
 
 ## Detailed Analysis
+The project transition requires a surgical replacement of the old product name "AuraLink" with the new name "Bioliminal". This is not just a cosmetic change but also affects how the app is identified on mobile platforms (iOS Display Name) and how internal tools reference backend services.
 
-### 1. The Setup Flow (Onboarding Phase)
-- **Navigation:** Inserted after `DisclaimerView` and before the main Screening flow.
-- **Optionality:** Users without the ESP32-S3 hub can tap "Skip / Use Camera Only" to proceed to the legacy prototype mode.
-- **Persistence:** The choice (Hardware vs. Camera-Only) is persisted for the duration of the screening session.
-
-### 2. Anatomical Placement (Ghost Skeleton)
-- **Visuals:** A semi-transparent `HeatmapSkeleton` stands in a neutral pose.
-- **Indicators:** 10 glowing target points pulse on the skeleton where electrodes should be attached (Gastroc, Soleus, VM, etc.).
-- **Signal LEDs:** A vertical stack of 10 "LED" widgets next to the skeleton.
-  - **Grey:** Lead disconnected (0V).
-  - **Orange:** Signal saturated/pinned (3.3V/5V).
-  - **Aqua:** Clean signal (Active range).
-
-### 3. Hardware-to-Vision Sync (The Stomp)
-- **Goal:** Align two disjoint data streams (BLE and Camera) to sub-10ms precision.
-- **Mechanism:** The "Sync Stomp."
-  - **Sensing:** The app watches for a sharp spike in the Calf sEMG channels.
-  - **Vision:** The app watches for a sharp vertical acceleration (peak) in the Ankle/Foot landmarks.
-  - **Fusion:** The time delta between these two peaks is used as the `sync_offset` for the remainder of the session.
-
-## Detailed Design
-
-### State Machine: Hardware Setup (Mermaid)
-```mermaid
-graph TD
-    A["Entry (from Disclaimer)"] --> B{"Scan for Hub?"}
-    B -- "No / Skip" --> C["Set Mode: Camera-Only"]
-    B -- "Yes" --> D["BLE Scanning..."]
-    D --> E["Placement Guide (Ghost Skeleton)"]
-    E --> F["Signal Verification (LEDs)"]
-    F --> G["Sync Stomp Calibration"]
-    G --> H["Ready for Screening"]
-    C --> H
-```
-
-### Signal Quality Logic
-| Voltage Level | Status | Visual |
-| :--- | :--- | :--- |
-| `~0V` | Lead Disconnected | Dim Grey LED |
-| `0.5V - 3.0V` | Clean Signal | Bright Aqua LED |
-| `> 3.1V` | Saturation/Error | Pulsing Orange LED |
+### Identified Instances:
+1.  **iOS `Info.plist`**: `CFBundleDisplayName` is still set to "Auralink".
+2.  **Internal Scripts**: `mobile-handover/tools/export_schemas.py` and `mobile-handover/tools/post_sample.sh` reference `auralink` in comments and Python imports.
+3.  **Documentation**: Several documents in `docs/` still use "AuraLink" in titles and headers.
 
 ## Alternatives Considered
-- **Automatic IMU Sync:** (Rejected) Requires additional hardware complexity on the ESP32 side. The physical stomp is more intuitive for wellness users.
-- **Manual Mapping:** (Rejected) Letting users map their own 10 channels is too high-friction. Standardized lower-body mapping is required for clinical integrity.
+-   **Manual Search and Replace**: Selected as the primary method due to the relatively low number of occurrences and the need for case-sensitive replacements.
+-   **Automated Batch Script**: Considered but rejected to avoid unintended side effects in binary files or unrelated strings.
+
+## Detailed Design
+The replacement will follow these rules:
+-   `auralink` -> `bioliminal`
+-   `AuraLink` -> `Bioliminal`
+-   `Auralink` -> `Bioliminal`
+
+### Affected Files and Actions:
+
+#### 1. iOS Configuration (`ios/Runner/Info.plist`)
+-   Update `CFBundleDisplayName` from `<string>Auralink</string>` to `<string>Bioliminal</string>`.
+
+#### 2. Mobile Handover Tools
+-   `mobile-handover/tools/export_schemas.py`: Update documentation comments and the `from auralink.api.schemas import Session` import.
+-   `mobile-handover/tools/post_sample.sh`: Update the smoke-test comment.
+
+#### 3. Documentation
+-   `docs/rajat's docs/wave1-lean-final.html`: Update `<title>` and `<h1>` tags.
+-   `docs/rajat's docs/final-buy-list-with-local.md`: Update the main header.
+
+## Diagrams
+```mermaid
+graph TD
+    A["Old Name: AuraLink"] --> B{Replacement Process}
+    B --> C["ios/Runner/Info.plist"]
+    B --> D["mobile-handover/tools/"]
+    B --> E["docs/"]
+    C --> F["CFBundleDisplayName: Bioliminal"]
+    D --> G["Python Imports & Comments"]
+    E --> H["Headers & Titles"]
+```
 
 ## Summary
-The Sensor Placement & Sync module transforms Bioliminal from a "vision app" to a "multimodal clinical platform." It provides users with the confidence that their sensors are working and their data is accurately aligned, while maintaining a low-friction entry point for users without hardware.
+The renaming process will ensure consistency across the entire project repository, aligning all platform configurations, scripts, and documentation with the "Bioliminal" brand identity.
 
 ## References
-- Uhlrich et al. 2023 (EMG Biofeedback)
-- `lib/core/services/hardware_controller.dart`
-- `lib/features/camera/widgets/skeleton_overlay.dart`
+No external research was required as this is a project-specific renaming task based on user directive.

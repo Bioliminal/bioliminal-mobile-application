@@ -90,7 +90,10 @@ class _ReportViewState extends ConsumerState<ReportView> {
     try {
       final path = await _generatePdf(report, assessment);
       await SharePlus.instance.share(
-        ShareParams(files: [XFile(path)], subject: 'Bioliminal Movement Screen'),
+        ShareParams(
+          files: [XFile(path)],
+          subject: 'Bioliminal Movement Screen',
+        ),
       );
     } catch (e) {
       if (mounted) {
@@ -218,9 +221,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     final theme = Theme.of(context);
 
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final assessment = _assessment;
@@ -266,7 +267,8 @@ class _ReportViewState extends ConsumerState<ReportView> {
     }
 
     // Fallback: build a local report if server fails or for prototype fallback
-    final activeReport = report ??
+    final activeReport =
+        report ??
         ReportAssemblyService.buildReport(
           assessment,
           trendReport: _trendReport,
@@ -318,8 +320,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.share_outlined),
-            onPressed:
-                _generating ? null : () => _onShare(activeReport, assessment),
+            onPressed: _generating
+                ? null
+                : () => _onShare(activeReport, assessment),
           ),
         ],
       ),
@@ -429,10 +432,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                       finding: finding,
                       selected: isSelected,
                       onTap: () => setState(() => _selectedFindingIndex = i),
-                      archetypePreferredType:
-                          _archetype != null
-                              ? _archetypePreferredType[_archetype!]
-                              : null,
+                      archetypePreferredType: _archetype != null
+                          ? _archetypePreferredType[_archetype!]
+                          : null,
                     ),
                   );
                 },
@@ -492,7 +494,8 @@ class _ReportViewState extends ConsumerState<ReportView> {
             const SizedBox(height: 32),
 
             // -- EMG Summary (If available) --
-            if (assessment.payload != null && assessment.payload!.frames.isNotEmpty)
+            if (assessment.payload != null &&
+                assessment.payload!.frames.isNotEmpty)
               _EMGActivationSection(payload: assessment.payload!),
 
             const SizedBox(height: 32),
@@ -502,8 +505,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed:
-                      () => _onShare(activeReport, assessment),
+                  onPressed: () => _onShare(activeReport, assessment),
                   icon: const Icon(Icons.picture_as_pdf_outlined),
                   label: const Text('EXPORT CLINICAL PDF'),
                 ),
@@ -525,12 +527,14 @@ class _EMGActivationSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     // Simple average across all frames for the report
     final averages = List.filled(10, 0.0);
     for (final frame in payload.frames) {
       for (var i = 0; i < 10; i++) {
-        averages[i] += frame.landmarks[i].x; // Using x as proxy for EMG value if stored there, or similar
+        averages[i] += frame
+            .landmarks[i]
+            .x; // Using x as proxy for EMG value if stored there, or similar
         // Note: Real implementation would use a dedicated EMG field in payload
       }
     }
@@ -559,9 +563,17 @@ class _EMGActivationSection extends StatelessWidget {
             ),
             child: Column(
               children: [
-                _activationRow('Calves', (averages[0] + averages[1] + averages[2] + averages[3]) / 4, theme),
+                _activationRow(
+                  'Calves',
+                  (averages[0] + averages[1] + averages[2] + averages[3]) / 4,
+                  theme,
+                ),
                 _activationRow('Quads', (averages[4] + averages[5]) / 2, theme),
-                _activationRow('Glutes', (averages[6] + averages[7]) / 2, theme),
+                _activationRow(
+                  'Glutes',
+                  (averages[6] + averages[7]) / 2,
+                  theme,
+                ),
                 _activationRow('Core', (averages[8] + averages[9]) / 2, theme),
               ],
             ),
@@ -581,7 +593,10 @@ class _EMGActivationSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(label, style: theme.textTheme.bodySmall),
-              Text('${(value * 100).toInt()}%', style: theme.textTheme.labelSmall),
+              Text(
+                '${(value * 100).toInt()}%',
+                style: theme.textTheme.labelSmall,
+              ),
             ],
           ),
           const SizedBox(height: 4),

@@ -70,7 +70,9 @@ class FindingCard extends StatelessWidget {
                   ),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: BioliminalTheme.confidenceHigh.withValues(alpha: 0.2),
+                    color: BioliminalTheme.confidenceHigh.withValues(
+                      alpha: 0.2,
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(

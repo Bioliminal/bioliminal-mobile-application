@@ -157,7 +157,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     final poseDetector = ref.read(poseDetectorProvider);
     final description = ref.read(cameraDescriptionProvider);
     final sensorOrientation = description?.sensorOrientation ?? 0;
-    final lensDirection = description?.lensDirection ?? CameraLensDirection.back;
+    final lensDirection =
+        description?.lensDirection ?? CameraLensDirection.back;
 
     // Calculate rotation based on sensor orientation and lens.
     final rotationDegrees = (lensDirection == CameraLensDirection.front)

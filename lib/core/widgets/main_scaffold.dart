@@ -93,7 +93,7 @@ class _HardwareStatusIndicator extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     final Color color;
     final IconData icon;
     final String label;

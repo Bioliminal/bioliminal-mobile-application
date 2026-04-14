@@ -13,9 +13,7 @@ void main() {
 
   setUp(() {
     container = ProviderContainer(
-      overrides: [
-        poseDetectorProvider.overrideWithValue(MockPoseDetector()),
-      ],
+      overrides: [poseDetectorProvider.overrideWithValue(MockPoseDetector())],
     );
   });
 
@@ -41,7 +39,7 @@ void main() {
     getController().startScreening();
     getController().completeEnvironmentSetup();
     expect(getState(), isA<MovementPreparation>());
-    
+
     getController().startMovement();
     expect(getState(), isA<ActiveMovement>());
     final s = getState() as ActiveMovement;

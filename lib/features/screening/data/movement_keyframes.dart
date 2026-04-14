@@ -52,23 +52,27 @@ class AnimationPoseFrame {
   final Offset rightAnkle;
 
   List<Offset> get all => [
-        head,
-        leftShoulder,
-        rightShoulder,
-        leftElbow,
-        rightElbow,
-        leftWrist,
-        rightWrist,
-        leftHip,
-        rightHip,
-        leftKnee,
-        rightKnee,
-        leftAnkle,
-        rightAnkle,
-      ];
+    head,
+    leftShoulder,
+    rightShoulder,
+    leftElbow,
+    rightElbow,
+    leftWrist,
+    rightWrist,
+    leftHip,
+    rightHip,
+    leftKnee,
+    rightKnee,
+    leftAnkle,
+    rightAnkle,
+  ];
 
   /// Linearly interpolate between two poses.
-  static AnimationPoseFrame lerp(AnimationPoseFrame a, AnimationPoseFrame b, double t) {
+  static AnimationPoseFrame lerp(
+    AnimationPoseFrame a,
+    AnimationPoseFrame b,
+    double t,
+  ) {
     return AnimationPoseFrame(
       head: Offset.lerp(a.head, b.head, t)!,
       leftShoulder: Offset.lerp(a.leftShoulder, b.leftShoulder, t)!,
@@ -223,11 +227,7 @@ const _pushUpDown = AnimationPoseFrame(
   rightAnkle: Offset(0.55, 0.90),
 );
 
-const pushUpKeyframes = <AnimationPoseFrame>[
-  _standing,
-  _pushUpDown,
-  _standing,
-];
+const pushUpKeyframes = <AnimationPoseFrame>[_standing, _pushUpDown, _standing];
 
 // ---------------------------------------------------------------------------
 // Rollup (Mapped from Fold for now)
@@ -249,8 +249,4 @@ const _rollupDown = AnimationPoseFrame(
   rightAnkle: Offset(0.55, 0.88),
 );
 
-const rollupKeyframes = <AnimationPoseFrame>[
-  _standing,
-  _rollupDown,
-  _standing,
-];
+const rollupKeyframes = <AnimationPoseFrame>[_standing, _rollupDown, _standing];

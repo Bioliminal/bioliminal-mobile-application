@@ -16,10 +16,10 @@ class BiofeedbackState {
   final String message;
 
   static BiofeedbackState empty() => const BiofeedbackState(
-        gsRatio: 1.0,
-        activeCue: BiofeedbackCue.none,
-        message: 'Normal activation',
-      );
+    gsRatio: 1.0,
+    activeCue: BiofeedbackCue.none,
+    message: 'Normal activation',
+  );
 }
 
 class BiofeedbackEngine extends Notifier<BiofeedbackState> {
@@ -41,14 +41,14 @@ class BiofeedbackEngine extends Notifier<BiofeedbackState> {
     // Gastrocnemius : Soleus Ratio (based on Uhlrich 2023)
     // Target: We want higher soleus activation relative to gastroc during squats
     // to reduce knee contact forces.
-    
+
     final gastroc = (data.lGastroc + data.rGastroc) / 2.0;
     final soleus = (data.lSoleus + data.rSoleus) / 2.0;
-    
+
     if (soleus < 0.05) return; // Ignore low signal
 
     final ratio = gastroc / soleus;
-    
+
     BiofeedbackCue cue = BiofeedbackCue.none;
     String message = 'Optimal G:S Ratio';
 
@@ -62,11 +62,7 @@ class BiofeedbackEngine extends Notifier<BiofeedbackState> {
       message = 'High knee stress detected';
     }
 
-    state = BiofeedbackState(
-      gsRatio: ratio,
-      activeCue: cue,
-      message: message,
-    );
+    state = BiofeedbackState(gsRatio: ratio, activeCue: cue, message: message);
 
     // TODO: Send command back to ESP32 via HardwareController
   }
@@ -74,5 +70,5 @@ class BiofeedbackEngine extends Notifier<BiofeedbackState> {
 
 final biofeedbackEngineProvider =
     NotifierProvider<BiofeedbackEngine, BiofeedbackState>(
-  BiofeedbackEngine.new,
-);
+      BiofeedbackEngine.new,
+    );

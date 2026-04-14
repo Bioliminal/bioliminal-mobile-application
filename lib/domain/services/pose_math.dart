@@ -56,7 +56,10 @@ PoseLandmark normalizeLandmark({
 /// Normalize a list of raw landmark tuples into [PoseLandmark] objects.
 /// Each tuple is (x, y, z, visibility, presence) — null entries produce zero landmarks.
 List<PoseLandmark> normalizeRawLandmarks({
-  required List<({double? x, double? y, double? z, double? visibility, double? presence})> raw,
+  required List<
+    ({double? x, double? y, double? z, double? visibility, double? presence})
+  >
+  raw,
   required double imageWidth,
   required double imageHeight,
 }) {

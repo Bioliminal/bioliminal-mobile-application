@@ -11,110 +11,113 @@ import '../../domain/models.dart';
 // ---------------------------------------------------------------------------
 
 Map<String, dynamic> _landmarkToJson(PoseLandmark l) => {
-      'x': l.x,
-      'y': l.y,
-      'z': l.z,
-      'visibility': l.visibility,
-      'presence': l.presence,
-    };
+  'x': l.x,
+  'y': l.y,
+  'z': l.z,
+  'visibility': l.visibility,
+  'presence': l.presence,
+};
 
 PoseLandmark _landmarkFromJson(Map<String, dynamic> m) => PoseLandmark(
-      x: (m['x'] as num).toDouble(),
-      y: (m['y'] as num).toDouble(),
-      z: (m['z'] as num).toDouble(),
-      visibility: (m['visibility'] as num).toDouble(),
-      presence: (m['presence'] as num?)?.toDouble() ?? (m['visibility'] as num).toDouble(),
-    );
+  x: (m['x'] as num).toDouble(),
+  y: (m['y'] as num).toDouble(),
+  z: (m['z'] as num).toDouble(),
+  visibility: (m['visibility'] as num).toDouble(),
+  presence:
+      (m['presence'] as num?)?.toDouble() ??
+      (m['visibility'] as num).toDouble(),
+);
 
 Map<String, dynamic> _poseFrameToJson(PoseFrame f) => {
-      'timestamp_ms': f.timestampMs,
-      'landmarks': f.landmarks.map(_landmarkToJson).toList(),
-    };
+  'timestamp_ms': f.timestampMs,
+  'landmarks': f.landmarks.map(_landmarkToJson).toList(),
+};
 
 PoseFrame _poseFrameFromJson(Map<String, dynamic> m) => PoseFrame(
-      timestampMs: m['timestamp_ms'] as int,
-      landmarks: (m['landmarks'] as List)
-          .map((l) => _landmarkFromJson(l as Map<String, dynamic>))
-          .toList(),
-    );
+  timestampMs: m['timestamp_ms'] as int,
+  landmarks: (m['landmarks'] as List)
+      .map((l) => _landmarkFromJson(l as Map<String, dynamic>))
+      .toList(),
+);
 
 Map<String, dynamic> _jointAngleToJson(JointAngle j) => {
-      'joint': j.joint,
-      'angleDegrees': j.angleDegrees,
-      'confidence': j.confidence.name,
-    };
+  'joint': j.joint,
+  'angleDegrees': j.angleDegrees,
+  'confidence': j.confidence.name,
+};
 
 JointAngle _jointAngleFromJson(Map<String, dynamic> m) => JointAngle(
-      joint: m['joint'] as String,
-      angleDegrees: (m['angleDegrees'] as num).toDouble(),
-      confidence: ConfidenceLevel.values.byName(m['confidence'] as String),
-    );
+  joint: m['joint'] as String,
+  angleDegrees: (m['angleDegrees'] as num).toDouble(),
+  confidence: ConfidenceLevel.values.byName(m['confidence'] as String),
+);
 
 Map<String, dynamic> _citationToJson(Citation c) => {
-      'finding': c.finding,
-      'source': c.source,
-      'url': c.url,
-      'type': c.type.name,
-      'appUsage': c.appUsage,
-    };
+  'finding': c.finding,
+  'source': c.source,
+  'url': c.url,
+  'type': c.type.name,
+  'appUsage': c.appUsage,
+};
 
 Citation _citationFromJson(Map<String, dynamic> m) => Citation(
-      finding: m['finding'] as String,
-      source: m['source'] as String,
-      url: m['url'] as String,
-      type: CitationType.values.byName(m['type'] as String),
-      appUsage: m['appUsage'] as String,
-    );
+  finding: m['finding'] as String,
+  source: m['source'] as String,
+  url: m['url'] as String,
+  type: CitationType.values.byName(m['type'] as String),
+  appUsage: m['appUsage'] as String,
+);
 
 Map<String, dynamic> _compensationToJson(Compensation c) => {
-      'type': c.type.name,
-      'joint': c.joint,
-      'chain': c.chain?.name,
-      'confidence': c.confidence.name,
-      'value': c.value,
-      'threshold': c.threshold,
-      'citation': _citationToJson(c.citation),
-    };
+  'type': c.type.name,
+  'joint': c.joint,
+  'chain': c.chain?.name,
+  'confidence': c.confidence.name,
+  'value': c.value,
+  'threshold': c.threshold,
+  'citation': _citationToJson(c.citation),
+};
 
 Compensation _compensationFromJson(Map<String, dynamic> m) => Compensation(
-      type: CompensationType.values.byName(m['type'] as String),
-      joint: m['joint'] as String,
-      chain: m['chain'] != null
-          ? ChainType.values.byName(m['chain'] as String)
-          : null,
-      confidence: ConfidenceLevel.values.byName(m['confidence'] as String),
-      value: (m['value'] as num).toDouble(),
-      threshold: (m['threshold'] as num).toDouble(),
-      citation: _citationFromJson(m['citation'] as Map<String, dynamic>),
-    );
+  type: CompensationType.values.byName(m['type'] as String),
+  joint: m['joint'] as String,
+  chain: m['chain'] != null
+      ? ChainType.values.byName(m['chain'] as String)
+      : null,
+  confidence: ConfidenceLevel.values.byName(m['confidence'] as String),
+  value: (m['value'] as num).toDouble(),
+  threshold: (m['threshold'] as num).toDouble(),
+  citation: _citationFromJson(m['citation'] as Map<String, dynamic>),
+);
 
 Map<String, dynamic> _movementToJson(Movement m) => {
-      'type': m.type.wire,
-      'frames': m.frames.map(_poseFrameToJson).toList(),
-      'keyframeAngles': m.keyframeAngles.map(_jointAngleToJson).toList(),
-      'durationMs': m.duration.inMilliseconds,
-    };
+  'type': m.type.wire,
+  'frames': m.frames.map(_poseFrameToJson).toList(),
+  'keyframeAngles': m.keyframeAngles.map(_jointAngleToJson).toList(),
+  'durationMs': m.duration.inMilliseconds,
+};
 
 Movement _movementFromJson(Map<String, dynamic> m) => Movement(
-      type: MovementType.fromWire(m['type'] as String),
-      frames: (m['frames'] as List)
-          .map((f) => _poseFrameFromJson(f as Map<String, dynamic>))
-          .toList(),
-      keyframeAngles: (m['keyframeAngles'] as List)
-          .map((j) => _jointAngleFromJson(j as Map<String, dynamic>))
-          .toList(),
-      duration: Duration(milliseconds: m['durationMs'] as int),
-    );
+  type: MovementType.fromWire(m['type'] as String),
+  frames: (m['frames'] as List)
+      .map((f) => _poseFrameFromJson(f as Map<String, dynamic>))
+      .toList(),
+  keyframeAngles: (m['keyframeAngles'] as List)
+      .map((j) => _jointAngleFromJson(j as Map<String, dynamic>))
+      .toList(),
+  duration: Duration(milliseconds: m['durationMs'] as int),
+);
 
 Map<String, dynamic> _sessionMetadataToJson(SessionMetadata m) => {
-      'movement': m.movement.wire,
-      'device': m.device,
-      'model': m.model,
-      'frame_rate': m.frameRate,
-      'captured_at': m.capturedAt.toUtc().toIso8601String(),
-    };
+  'movement': m.movement.wire,
+  'device': m.device,
+  'model': m.model,
+  'frame_rate': m.frameRate,
+  'captured_at': m.capturedAt.toUtc().toIso8601String(),
+};
 
-SessionMetadata _sessionMetadataFromJson(Map<String, dynamic> m) => SessionMetadata(
+SessionMetadata _sessionMetadataFromJson(Map<String, dynamic> m) =>
+    SessionMetadata(
       movement: MovementType.fromWire(m['movement'] as String),
       device: m['device'] as String,
       model: m['model'] as String,
@@ -123,11 +126,12 @@ SessionMetadata _sessionMetadataFromJson(Map<String, dynamic> m) => SessionMetad
     );
 
 Map<String, dynamic> _sessionPayloadToJson(SessionPayload p) => {
-      'metadata': _sessionMetadataToJson(p.metadata),
-      'frames': p.frames.map(_poseFrameToJson).toList(),
-    };
+  'metadata': _sessionMetadataToJson(p.metadata),
+  'frames': p.frames.map(_poseFrameToJson).toList(),
+};
 
-SessionPayload _sessionPayloadFromJson(Map<String, dynamic> m) => SessionPayload(
+SessionPayload _sessionPayloadFromJson(Map<String, dynamic> m) =>
+    SessionPayload(
       metadata: _sessionMetadataFromJson(m['metadata'] as Map<String, dynamic>),
       frames: (m['frames'] as List)
           .map((f) => _poseFrameFromJson(f as Map<String, dynamic>))
@@ -135,88 +139,88 @@ SessionPayload _sessionPayloadFromJson(Map<String, dynamic> m) => SessionPayload
     );
 
 Map<String, dynamic> _mobilityDrillToJson(MobilityDrill d) => {
-      'name': d.name,
-      'targetArea': d.targetArea,
-      'durationSeconds': d.durationSeconds,
-      'steps': d.steps,
-      'compensationType': d.compensationType.name,
-    };
+  'name': d.name,
+  'targetArea': d.targetArea,
+  'durationSeconds': d.durationSeconds,
+  'steps': d.steps,
+  'compensationType': d.compensationType.name,
+};
 
 MobilityDrill _mobilityDrillFromJson(Map<String, dynamic> m) => MobilityDrill(
-      name: m['name'] as String,
-      targetArea: m['targetArea'] as String,
-      durationSeconds: m['durationSeconds'] as int,
-      steps: (m['steps'] as List).cast<String>(),
-      compensationType: CompensationType.values.byName(
-        m['compensationType'] as String,
-      ),
-    );
+  name: m['name'] as String,
+  targetArea: m['targetArea'] as String,
+  durationSeconds: m['durationSeconds'] as int,
+  steps: (m['steps'] as List).cast<String>(),
+  compensationType: CompensationType.values.byName(
+    m['compensationType'] as String,
+  ),
+);
 
 Map<String, dynamic> _findingToJson(Finding f) => {
-      'bodyPathDescription': f.bodyPathDescription,
-      'compensations': f.compensations.map(_compensationToJson).toList(),
-      'upstreamDriver': f.upstreamDriver,
-      'recommendation': f.recommendation,
-      'citations': f.citations.map(_citationToJson).toList(),
-      'drills': f.drills.map(_mobilityDrillToJson).toList(),
-    };
+  'bodyPathDescription': f.bodyPathDescription,
+  'compensations': f.compensations.map(_compensationToJson).toList(),
+  'upstreamDriver': f.upstreamDriver,
+  'recommendation': f.recommendation,
+  'citations': f.citations.map(_citationToJson).toList(),
+  'drills': f.drills.map(_mobilityDrillToJson).toList(),
+};
 
 Finding _findingFromJson(Map<String, dynamic> m) => Finding(
-      bodyPathDescription: m['bodyPathDescription'] as String,
-      compensations: (m['compensations'] as List)
-          .map((c) => _compensationFromJson(c as Map<String, dynamic>))
-          .toList(),
-      upstreamDriver: m['upstreamDriver'] as String?,
-      recommendation: m['recommendation'] as String,
-      citations: (m['citations'] as List)
-          .map((c) => _citationFromJson(c as Map<String, dynamic>))
-          .toList(),
-      drills: m.containsKey('drills')
-          ? (m['drills'] as List)
-              .map((d) => _mobilityDrillFromJson(d as Map<String, dynamic>))
-              .toList()
-          : const [],
-    );
+  bodyPathDescription: m['bodyPathDescription'] as String,
+  compensations: (m['compensations'] as List)
+      .map((c) => _compensationFromJson(c as Map<String, dynamic>))
+      .toList(),
+  upstreamDriver: m['upstreamDriver'] as String?,
+  recommendation: m['recommendation'] as String,
+  citations: (m['citations'] as List)
+      .map((c) => _citationFromJson(c as Map<String, dynamic>))
+      .toList(),
+  drills: m.containsKey('drills')
+      ? (m['drills'] as List)
+            .map((d) => _mobilityDrillFromJson(d as Map<String, dynamic>))
+            .toList()
+      : const [],
+);
 
 Map<String, dynamic> reportToJson(Report r) => {
-      'findings': r.findings.map(_findingToJson).toList(),
-      'practitionerPoints': r.practitionerPoints,
-      'pdfUrl': r.pdfUrl,
-    };
+  'findings': r.findings.map(_findingToJson).toList(),
+  'practitionerPoints': r.practitionerPoints,
+  'pdfUrl': r.pdfUrl,
+};
 
 Report reportFromJson(Map<String, dynamic> m) => Report(
-      findings: (m['findings'] as List)
-          .map((f) => _findingFromJson(f as Map<String, dynamic>))
-          .toList(),
-      practitionerPoints: (m['practitionerPoints'] as List).cast<String>(),
-      pdfUrl: m['pdfUrl'] as String?,
-    );
+  findings: (m['findings'] as List)
+      .map((f) => _findingFromJson(f as Map<String, dynamic>))
+      .toList(),
+  practitionerPoints: (m['practitionerPoints'] as List).cast<String>(),
+  pdfUrl: m['pdfUrl'] as String?,
+);
 
 Map<String, dynamic> assessmentToJson(Assessment a) => {
-      'id': a.id,
-      'createdAt': a.createdAt.toIso8601String(),
-      'movements': a.movements.map(_movementToJson).toList(),
-      'compensations': a.compensations.map(_compensationToJson).toList(),
-      'report': a.report != null ? reportToJson(a.report!) : null,
-      'payload': a.payload != null ? _sessionPayloadToJson(a.payload!) : null,
-    };
+  'id': a.id,
+  'createdAt': a.createdAt.toIso8601String(),
+  'movements': a.movements.map(_movementToJson).toList(),
+  'compensations': a.compensations.map(_compensationToJson).toList(),
+  'report': a.report != null ? reportToJson(a.report!) : null,
+  'payload': a.payload != null ? _sessionPayloadToJson(a.payload!) : null,
+};
 
 Assessment assessmentFromJson(Map<String, dynamic> m) => Assessment(
-      id: m['id'] as String,
-      createdAt: DateTime.parse(m['createdAt'] as String),
-      movements: (m['movements'] as List)
-          .map((mv) => _movementFromJson(mv as Map<String, dynamic>))
-          .toList(),
-      compensations: (m['compensations'] as List)
-          .map((c) => _compensationFromJson(c as Map<String, dynamic>))
-          .toList(),
-      report: m['report'] != null
-          ? reportFromJson(m['report'] as Map<String, dynamic>)
-          : null,
-      payload: m['payload'] != null
-          ? _sessionPayloadFromJson(m['payload'] as Map<String, dynamic>)
-          : null,
-    );
+  id: m['id'] as String,
+  createdAt: DateTime.parse(m['createdAt'] as String),
+  movements: (m['movements'] as List)
+      .map((mv) => _movementFromJson(mv as Map<String, dynamic>))
+      .toList(),
+  compensations: (m['compensations'] as List)
+      .map((c) => _compensationFromJson(c as Map<String, dynamic>))
+      .toList(),
+  report: m['report'] != null
+      ? reportFromJson(m['report'] as Map<String, dynamic>)
+      : null,
+  payload: m['payload'] != null
+      ? _sessionPayloadFromJson(m['payload'] as Map<String, dynamic>)
+      : null,
+);
 
 // ---------------------------------------------------------------------------
 // LocalStorageService
@@ -281,8 +285,8 @@ class LocalStorageService {
     }
     final dir = await _getDir('assessments') as Directory;
     final files = dir.listSync().whereType<File>().where(
-          (f) => f.path.endsWith('.json'),
-        );
+      (f) => f.path.endsWith('.json'),
+    );
     final assessments = <Assessment>[];
     for (final file in files) {
       final json =

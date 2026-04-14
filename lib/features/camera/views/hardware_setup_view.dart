@@ -12,11 +12,16 @@ class HardwareSetupView extends ConsumerWidget {
   const HardwareSetupView({super.key});
 
   static const List<String> _muscleLabels = [
-    'L-Gastrocnemius', 'L-Soleus',
-    'R-Gastrocnemius', 'R-Soleus',
-    'L-Vastus Medialis', 'R-Vastus Medialis',
-    'L-Gluteus Medius', 'R-Gluteus Medius',
-    'L-Erector Spinae', 'R-Erector Spinae'
+    'L-Gastrocnemius',
+    'L-Soleus',
+    'R-Gastrocnemius',
+    'R-Soleus',
+    'L-Vastus Medialis',
+    'R-Vastus Medialis',
+    'L-Gluteus Medius',
+    'R-Gluteus Medius',
+    'L-Erector Spinae',
+    'R-Erector Spinae',
   ];
 
   @override
@@ -63,37 +68,39 @@ class HardwareSetupView extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
               Expanded(
-                child: setupStep == HardwareSetupStep.syncing 
-                  ? _SyncStompUI(syncResult: syncResult)
-                  : Row(
-                  children: [
-                    const Expanded(
-                      flex: 2,
-                      child: PlacementGhostSkeleton(),
-                    ),
-                    const SizedBox(width: 24),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.02),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.white10),
-                        ),
-                        child: ListView.builder(
-                          itemCount: 10,
-                          itemBuilder: (context, i) {
-                            return SignalLED(
-                              status: signalStatus[i] ?? SignalStatus.disconnected,
-                              label: _muscleLabels[i],
-                            );
-                          },
-                        ),
+                child: setupStep == HardwareSetupStep.syncing
+                    ? _SyncStompUI(syncResult: syncResult)
+                    : Row(
+                        children: [
+                          const Expanded(
+                            flex: 2,
+                            child: PlacementGhostSkeleton(),
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(
+                            flex: 1,
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.02),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white10),
+                              ),
+                              child: ListView.builder(
+                                itemCount: 10,
+                                itemBuilder: (context, i) {
+                                  return SignalLED(
+                                    status:
+                                        signalStatus[i] ??
+                                        SignalStatus.disconnected,
+                                    label: _muscleLabels[i],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 32),
               _ActionButtons(
@@ -120,10 +127,14 @@ class HardwareSetupView extends ConsumerWidget {
 
   String _stepDescription(HardwareSetupStep step) {
     return switch (step) {
-      HardwareSetupStep.scanning => 'Searching for your Bioliminal ESP32-S3 sensor hub...',
-      HardwareSetupStep.placing => 'Attach the 10 sEMG electrodes to the pulsing target areas.',
-      HardwareSetupStep.syncing => 'Stand still, then perform one sharp foot stomp when the indicator appears.',
-      HardwareSetupStep.ready => 'Sensors connected and time-aligned. You are ready to begin.',
+      HardwareSetupStep.scanning =>
+        'Searching for your Bioliminal ESP32-S3 sensor hub...',
+      HardwareSetupStep.placing =>
+        'Attach the 10 sEMG electrodes to the pulsing target areas.',
+      HardwareSetupStep.syncing =>
+        'Stand still, then perform one sharp foot stomp when the indicator appears.',
+      HardwareSetupStep.ready =>
+        'Sensors connected and time-aligned. You are ready to begin.',
     };
   }
 }
@@ -199,7 +210,8 @@ class _ActionButtons extends ConsumerWidget {
         return SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: () => ref.read(hardwareControllerProvider.notifier).startScan(),
+            onPressed: () =>
+                ref.read(hardwareControllerProvider.notifier).startScan(),
             icon: const Icon(Icons.bluetooth_searching),
             label: const Text('SCAN FOR SENSOR HUB'),
           ),
@@ -208,7 +220,9 @@ class _ActionButtons extends ConsumerWidget {
         return SizedBox(
           width: double.infinity,
           child: FilledButton(
-            onPressed: () => ref.read(hardwareSetupStepProvider.notifier).value = HardwareSetupStep.placing,
+            onPressed: () =>
+                ref.read(hardwareSetupStepProvider.notifier).value =
+                    HardwareSetupStep.placing,
             child: const Text('CONTINUE TO PLACEMENT'),
           ),
         );
@@ -220,7 +234,8 @@ class _ActionButtons extends ConsumerWidget {
       return SizedBox(
         width: double.infinity,
         child: FilledButton(
-          onPressed: () => ref.read(hardwareSetupStepProvider.notifier).value = HardwareSetupStep.syncing,
+          onPressed: () => ref.read(hardwareSetupStepProvider.notifier).value =
+              HardwareSetupStep.syncing,
           child: const Text('PROCEED TO SYNC'),
         ),
       );
@@ -231,7 +246,8 @@ class _ActionButtons extends ConsumerWidget {
         width: double.infinity,
         child: FilledButton(
           onPressed: syncResult != null
-              ? () => ref.read(hardwareSetupStepProvider.notifier).value = HardwareSetupStep.ready
+              ? () => ref.read(hardwareSetupStepProvider.notifier).value =
+                    HardwareSetupStep.ready
               : null,
           child: const Text('FINALIZE CALIBRATION'),
         ),

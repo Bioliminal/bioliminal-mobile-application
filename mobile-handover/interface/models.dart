@@ -33,30 +33,27 @@ class PoseLandmark {
   final double presence;
 
   Map<String, dynamic> toJson() => {
-        'x': x,
-        'y': y,
-        'z': z,
-        'visibility': visibility,
-        'presence': presence,
-      };
+    'x': x,
+    'y': y,
+    'z': z,
+    'visibility': visibility,
+    'presence': presence,
+  };
 
   factory PoseLandmark.fromJson(Map<String, dynamic> json) => PoseLandmark(
-        x: (json['x'] as num).toDouble(),
-        y: (json['y'] as num).toDouble(),
-        z: (json['z'] as num).toDouble(),
-        visibility: (json['visibility'] as num).toDouble(),
-        presence: (json['presence'] as num).toDouble(),
-      );
+    x: (json['x'] as num).toDouble(),
+    y: (json['y'] as num).toDouble(),
+    z: (json['z'] as num).toDouble(),
+    visibility: (json['visibility'] as num).toDouble(),
+    presence: (json['presence'] as num).toDouble(),
+  );
 }
 
 /// A single captured frame with exactly 33 BlazePose landmarks in canonical
 /// order. See `blazepose_landmark_order.md` in the handover package for the
 /// index → joint name mapping.
 class PoseFrame {
-  PoseFrame({
-    required this.timestampMs,
-    required this.landmarks,
-  }) {
+  PoseFrame({required this.timestampMs, required this.landmarks}) {
     if (landmarks.length != 33) {
       throw ArgumentError(
         'PoseFrame requires exactly 33 BlazePose landmarks, got ${landmarks.length}.',
@@ -71,16 +68,16 @@ class PoseFrame {
   final List<PoseLandmark> landmarks;
 
   Map<String, dynamic> toJson() => {
-        'timestamp_ms': timestampMs,
-        'landmarks': landmarks.map((l) => l.toJson()).toList(),
-      };
+    'timestamp_ms': timestampMs,
+    'landmarks': landmarks.map((l) => l.toJson()).toList(),
+  };
 
   factory PoseFrame.fromJson(Map<String, dynamic> json) => PoseFrame(
-        timestampMs: json['timestamp_ms'] as int,
-        landmarks: (json['landmarks'] as List<dynamic>)
-            .map((e) => PoseLandmark.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    timestampMs: json['timestamp_ms'] as int,
+    landmarks: (json['landmarks'] as List<dynamic>)
+        .map((e) => PoseLandmark.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 /// Supported movement types. Must match the server's MovementType literal.
@@ -105,7 +102,7 @@ class SessionMetadata {
     required this.model,
     required this.frameRate,
     DateTime? capturedAt,
-  })  : capturedAt = capturedAt ?? DateTime.now().toUtc() {
+  }) : capturedAt = capturedAt ?? DateTime.now().toUtc() {
     if (frameRate <= 0) {
       throw ArgumentError('frameRate must be > 0, got $frameRate.');
     }
@@ -126,28 +123,25 @@ class SessionMetadata {
   final DateTime capturedAt;
 
   Map<String, dynamic> toJson() => {
-        'movement': movement.wire,
-        'device': device,
-        'model': model,
-        'frame_rate': frameRate,
-        'captured_at': capturedAt.toUtc().toIso8601String(),
-      };
+    'movement': movement.wire,
+    'device': device,
+    'model': model,
+    'frame_rate': frameRate,
+    'captured_at': capturedAt.toUtc().toIso8601String(),
+  };
 }
 
 /// Full session payload. Matches the pydantic Session model exactly.
 class SessionPayload {
-  const SessionPayload({
-    required this.metadata,
-    required this.frames,
-  });
+  const SessionPayload({required this.metadata, required this.frames});
 
   final SessionMetadata metadata;
   final List<PoseFrame> frames;
 
   Map<String, dynamic> toJson() => {
-        'metadata': metadata.toJson(),
-        'frames': frames.map((f) => f.toJson()).toList(),
-      };
+    'metadata': metadata.toJson(),
+    'frames': frames.map((f) => f.toJson()).toList(),
+  };
 }
 
 /// Response body returned by POST /sessions.

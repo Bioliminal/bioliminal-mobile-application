@@ -29,10 +29,8 @@ class EMGData {
   double get lErectorSpinae => channels[8];
   double get rErectorSpinae => channels[9];
 
-  static EMGData empty() => EMGData(
-        channels: List.filled(10, 0.0),
-        timestamp: DateTime.now(),
-      );
+  static EMGData empty() =>
+      EMGData(channels: List.filled(10, 0.0), timestamp: DateTime.now());
 }
 
 // ---------------------------------------------------------------------------
@@ -197,7 +195,9 @@ final latestEMGDataProvider = Provider<EMGData>((ref) {
   return stream.value ?? EMGData.empty();
 });
 
-final signalStatusStreamProvider = StreamProvider<Map<int, SignalStatus>>((ref) {
+final signalStatusStreamProvider = StreamProvider<Map<int, SignalStatus>>((
+  ref,
+) {
   return ref.watch(hardwareControllerProvider.notifier).signalStatusStream;
 });
 

@@ -13,7 +13,7 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
   static const int _windowSize = 30; // ~1 second @ 30fps
   final List<double> _visionVelocity = [];
   final List<double> _emgVelocity = [];
-  
+
   DateTime? _visionPeakTime;
   DateTime? _emgPeakTime;
 
@@ -46,8 +46,12 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
     if (_visionVelocity.length < 3) return;
 
     // Detect sharp downward "impact" (peak in Y coordinate)
-    final v1 = _visionVelocity[_visionVelocity.length - 2] - _visionVelocity[_visionVelocity.length - 3];
-    final v2 = _visionVelocity[_visionVelocity.length - 1] - _visionVelocity[_visionVelocity.length - 2];
+    final v1 =
+        _visionVelocity[_visionVelocity.length - 2] -
+        _visionVelocity[_visionVelocity.length - 3];
+    final v2 =
+        _visionVelocity[_visionVelocity.length - 1] -
+        _visionVelocity[_visionVelocity.length - 2];
 
     if (v1 > 0.05 && v2 < -0.05) {
       _visionPeakTime = DateTime.now();
@@ -59,7 +63,8 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
     if (state != null) return;
 
     // Monitor calf activation (Gastroc/Soleus)
-    final activation = (data.lGastroc + data.rGastroc + data.lSoleus + data.rSoleus) / 4.0;
+    final activation =
+        (data.lGastroc + data.rGastroc + data.lSoleus + data.rSoleus) / 4.0;
 
     _emgVelocity.add(activation);
     if (_emgVelocity.length > _windowSize) _emgVelocity.removeAt(0);
@@ -67,9 +72,12 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
     if (_emgVelocity.length < 3) return;
 
     // Detect sharp spike in activation
-    final d1 = _emgVelocity[_emgVelocity.length - 1] - _emgVelocity[_emgVelocity.length - 2];
-    
-    if (d1 > 0.4) { // Huge jump in muscle firing
+    final d1 =
+        _emgVelocity[_emgVelocity.length - 1] -
+        _emgVelocity[_emgVelocity.length - 2];
+
+    if (d1 > 0.4) {
+      // Huge jump in muscle firing
       _emgPeakTime = DateTime.now();
       _tryCalculateOffset();
     }
@@ -78,7 +86,7 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
   void _tryCalculateOffset() {
     if (_visionPeakTime != null && _emgPeakTime != null) {
       final delta = _visionPeakTime!.difference(_emgPeakTime!).inMilliseconds;
-      
+
       // If peaks are within 500ms, accept the sync
       if (delta.abs() < 500) {
         state = SyncResult(offsetMs: delta, confidence: 0.95);
@@ -98,5 +106,5 @@ class SyncCalibrationService extends Notifier<SyncResult?> {
 
 final syncCalibrationServiceProvider =
     NotifierProvider<SyncCalibrationService, SyncResult?>(
-  SyncCalibrationService.new,
-);
+      SyncCalibrationService.new,
+    );

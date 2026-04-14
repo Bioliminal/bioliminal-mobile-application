@@ -136,15 +136,15 @@ final cameraDescriptionProvider =
 
 final poseEstimationServiceProvider =
     Provider<pose_service.PoseEstimationService>((ref) {
-  if (ref.watch(useMockPoseServiceProvider)) {
-    return MockPoseEstimationService();
-  }
-  final cam = ref.watch(cameraDescriptionProvider);
-  return MlKitPoseEstimationService(
-    sensorOrientation: cam?.sensorOrientation ?? 0,
-    lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
-  );
-});
+      if (ref.watch(useMockPoseServiceProvider)) {
+        return MockPoseEstimationService();
+      }
+      final cam = ref.watch(cameraDescriptionProvider);
+      return MlKitPoseEstimationService(
+        sensorOrientation: cam?.sensorOrientation ?? 0,
+        lensDirection: cam?.lensDirection ?? CameraLensDirection.back,
+      );
+    });
 
 final poseDetectorProvider = Provider<PoseDetector>((ref) {
   final detector = MediaPipePoseDetector();

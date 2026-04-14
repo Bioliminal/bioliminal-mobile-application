@@ -16,7 +16,7 @@ class BioliminalClient {
   /// Submit a captured session for clinical analysis.
   Future<String> submitSession(SessionPayload payload) async {
     final url = Uri.parse('$baseUrl/sessions');
-    
+
     // Background serialization to avoid UI jank for large payloads.
     final body = await SessionPayload.serializeAsync(payload);
 
@@ -31,10 +31,16 @@ class BioliminalClient {
         final data = jsonDecode(response.body);
         return data['session_id'] as String;
       } else {
-        throw Exception('Failed to submit session: ${response.statusCode} ${response.body}');
+        throw Exception(
+          'Failed to submit session: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
-      developer.log('Server submission error', error: e, name: 'BioliminalClient');
+      developer.log(
+        'Server submission error',
+        error: e,
+        name: 'BioliminalClient',
+      );
       rethrow;
     }
   }

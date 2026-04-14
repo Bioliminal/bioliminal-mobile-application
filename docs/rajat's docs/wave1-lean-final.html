@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AuraLink Wave 1 — Lean Build</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0f14; --surface: #151920; --surface-2: #1c2129; --border: #2a3040;
+    --text: #e2e6ed; --text-dim: #8892a4; --accent: #4af0c0; --accent-dim: #2a9070;
+    --warn: #f0a04a; --danger: #f04a5e; --blue: #4a8ef0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; line-height:1.6; padding:2rem 1.5rem; max-width:1100px; margin:0 auto; }
+  header { border-bottom:2px solid var(--accent); padding-bottom:1.5rem; margin-bottom:2rem; }
+  h1 { font-family:'JetBrains Mono',monospace; font-size:1.5rem; font-weight:700; color:var(--accent); }
+  .subtitle { font-size:0.88rem; color:var(--text-dim); margin-top:0.3rem; }
+  .meta-row { display:flex; gap:1.5rem; margin-top:0.8rem; flex-wrap:wrap; }
+  .meta-tag { font-family:'JetBrains Mono',monospace; font-size:0.72rem; background:var(--surface-2); border:1px solid var(--border); padding:0.25rem 0.6rem; border-radius:4px; color:var(--text-dim); }
+  .meta-tag strong { color:var(--text); }
+
+  .info-box { border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:6px; padding:1rem 1.2rem; margin-bottom:2rem; font-size:0.85rem; background:rgba(74,240,192,0.04); }
+  .info-box .title { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--accent); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:0.4rem; }
+
+  section { margin-bottom:2.5rem; }
+  h2 { font-family:'JetBrains Mono',monospace; font-size:1rem; font-weight:700; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.5rem; }
+  .tag { font-size:0.6rem; font-weight:600; padding:0.15rem 0.45rem; border-radius:3px; text-transform:uppercase; letter-spacing:0.05em; }
+  .tag.green { background:rgba(74,240,192,0.15); color:var(--accent); }
+  .tag.blue { background:rgba(74,142,240,0.15); color:var(--blue); }
+  .tag.gray { background:rgba(136,146,164,0.15); color:var(--text-dim); }
+  .section-desc { font-size:0.82rem; color:var(--text-dim); margin-bottom:1rem; max-width:800px; }
+
+  table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  thead th { font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:600; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; text-align:left; padding:0.6rem 0.7rem; border-bottom:2px solid var(--border); white-space:nowrap; }
+  tbody td { padding:0.7rem; border-bottom:1px solid var(--border); vertical-align:top; }
+  tbody tr:hover { background:var(--surface); }
+  .name { font-weight:700; color:var(--text); }
+  .spec { font-family:'JetBrains Mono',monospace; font-size:0.7rem; color:var(--text-dim); margin-top:0.15rem; }
+  .purpose { font-size:0.8rem; line-height:1.45; }
+  .price { font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--accent); white-space:nowrap; }
+  .qty { font-family:'JetBrains Mono',monospace; font-weight:600; text-align:center; }
+  a.link { color:var(--blue); text-decoration:none; font-weight:600; font-size:0.8rem; }
+  a.link:hover { text-decoration:underline; }
+  .ship { font-family:'JetBrains Mono',monospace; font-size:0.68rem; display:inline-block; padding:0.12rem 0.35rem; border-radius:3px; margin-top:0.25rem; }
+  .ship.fast { background:rgba(74,240,192,0.1); color:var(--accent); }
+  .ship.med { background:rgba(74,142,240,0.1); color:var(--blue); }
+  .verified { font-family:'JetBrains Mono',monospace; font-size:0.66rem; margin-top:0.2rem; }
+  .verified.yes { color:var(--accent); }
+  .verified.warn { color:var(--warn); }
+  .card { font-family:'JetBrains Mono',monospace; font-size:0.68rem; font-weight:700; padding:0.12rem 0.4rem; border-radius:3px; display:inline-block; }
+  .c-rajat { background:rgba(240,74,94,0.15); color:#f06a7a; }
+  .c-rajiv { background:rgba(74,142,240,0.15); color:var(--blue); }
+  .c-kelsi { background:rgba(200,120,240,0.15); color:#c888f0; }
+  .c-aaron { background:rgba(240,200,74,0.15); color:#e0c040; }
+  .c-leo { background:rgba(74,240,192,0.15); color:var(--accent); }
+
+  .subtotal td { font-family:'JetBrains Mono',monospace; font-weight:700; border-bottom:2px solid var(--border); padding-top:0.8rem; }
+  .deferred td { opacity:0.4; }
+  .deferred td .name { text-decoration:line-through; }
+
+  .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:0.8rem; margin-top:1.2rem; }
+  .summary-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:1rem; text-align:center; }
+  .summary-card .label { font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.04em; font-family:'JetBrains Mono',monospace; }
+  .summary-card .value { font-family:'JetBrains Mono',monospace; font-size:1.4rem; font-weight:700; color:var(--accent); margin-top:0.2rem; }
+  .summary-card .value.warn { color:var(--warn); }
+
+  .note { font-size:0.8rem; color:var(--text-dim); background:var(--surface); border-left:3px solid var(--border); padding:0.7rem 0.9rem; margin-top:0.7rem; border-radius:0 4px 4px 0; }
+  .note strong { color:var(--text); }
+
+  footer { border-top:1px solid var(--border); padding-top:1.2rem; margin-top:2.5rem; font-size:0.75rem; color:var(--text-dim); }
+
+  @media(max-width:700px) { table{font-size:0.75rem;} thead th{font-size:0.62rem;padding:0.4rem;} tbody td{padding:0.5rem;} }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>AuraLink Wave 1 — Lean Build</h1>
+  <p class="subtitle">Goal: "Do things function at all?" — 4 channels, ESP32 ADC, overnight where possible.</p>
+  <div class="meta-row">
+    <span class="meta-tag"><strong>Budget:</strong> $745</span>
+    <span class="meta-tag"><strong>Wave 1 target:</strong> ~$260</span>
+    <span class="meta-tag"><strong>Reserve for Wave 2:</strong> ~$485</span>
+    <span class="meta-tag"><strong>Ship to:</strong> Austin, TX</span>
+  </div>
+</header>
+
+<div class="info-box">
+  <div class="title">Wave 1 strategy</div>
+  <strong>Only buy what you need to answer Day 1–3 questions:</strong> Can we see muscle activation through these electrodes? Does L/R asymmetry show up? Can we localize a vibe on the torso? Everything else (ADS1292R, Cerelog, textile prototype, TSA) moves to Wave 2 after you have data. This cuts spending from ~$638 to ~$260 and preserves budget for the right sensor upgrade.
+</div>
+
+<!-- SENSORS -->
+<section>
+  <h2>Sensor Signal Chain <span class="tag green">4 channels</span></h2>
+  <p class="section-desc">INA128 amplifies the sEMG signal at the electrode. ESP32's 12-bit ADC digitizes it — garbage for spectral analysis, but enough to see "muscle on/off" and validate placements. Wave 2 adds the ADS1292R or Cerelog for real resolution.</p>
+  <table>
+    <thead><tr><th>Component</th><th>Purpose</th><th>Qty</th><th>Unit $</th><th>Total</th><th>Source</th><th>Card</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="name">INA128PA (DIP-8)</div>
+          <div class="spec">120 dB CMRR · G=1–10k · 200 kHz BW</div>
+          <div class="verified yes">✓ VERIFIED — 4,506 in stock, genuine TI</div>
+        </td>
+        <td class="purpose">Preamp at electrode site. Amplifies 10 µV sEMG before wire noise corrupts it. 4 channels + 1 spare.</td>
+        <td class="qty">5</td>
+        <td class="price">$8.22</td>
+        <td class="price">$41.10</td>
+        <td>
+          <a class="link" href="https://www.digikey.com/en/products/detail/texas-instruments/INA128PA/300996" target="_blank">DigiKey INA128PA-ND</a>
+          <div class="ship fast">2-day ground from MN</div>
+        </td>
+        <td><span class="card c-rajat">Rajat</span></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="name">ESP32-S3 DevKitC-1 (N16R8)</div>
+          <div class="spec">240 MHz dual-core · BLE 5.0 · WiFi</div>
+          <div class="verified yes">✓ VERIFIED — commodity, multiple sellers</div>
+        </td>
+        <td class="purpose">MCU + BLE radio. Reads INA128 analog output via 12-bit ADC for Wave 1 (gross activation only). Streams to phone.</td>
+        <td class="qty">2</td>
+        <td class="price">~$10</td>
+        <td class="price">~$20</td>
+        <td>
+          <a class="link" href="https://www.amazon.com/s?k=ESP32-S3+DevKitC+N16R8" target="_blank">Amazon — ESP32-S3</a>
+          <div class="ship fast">Next-day Prime</div>
+        </td>
+        <td><span class="card c-rajiv">Rajiv</span></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="name">1% Resistor + Capacitor Kits</div>
+          <div class="spec">Metal film resistors + ceramic caps, assorted</div>
+        </td>
+        <td class="purpose">Gain-setting resistor for INA128 (Rg ≈ 100Ω → G≈500). Caps for 20–500 Hz bandpass filter on each channel output.</td>
+        <td class="qty">1 each</td>
+        <td class="price">~$8+$10</td>
+        <td class="price">~$18</td>
+        <td>
+          <a class="link" href="https://www.amazon.com/s?k=1%25+metal+film+resistor+assortment" target="_blank">Amazon — resistor kit</a><br>
+          <a class="link" href="https://www.amazon.com/s?k=ceramic+capacitor+assortment+kit" target="_blank">Amazon — cap kit</a>
+          <div class="ship fast">Next-day Prime</div>
+        </td>
+        <td><span class="card c-rajiv">Rajiv</span></td>
+      </tr>
+      <tr class="subtotal"><td colspan="4" style="text-align:right;color:var(--text-dim);">SENSORS</td><td class="price">~$79</td><td colspan="2"></td></tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>Why only 5 INA128s?</strong> You need 4 channels (erector spinae L/R + upper trap L/R) plus 1 spare. Once the circuit works, order 7 more from DigiKey — arrives in 2 days. Saves $58 vs buying all 12 now.</div>
+</section>
+
+<!-- ELECTRODES -->
+<section>
+  <h2>Electrodes & Skin Prep <span class="tag blue">consumables</span></h2>
+  <p class="section-desc">Needed for any sensor architecture. Check CVS/HEB for tape, razors, and alcohol before ordering Amazon — saves a day and a few dollars.</p>
+  <table>
+    <thead><tr><th>Component</th><th>Purpose</th><th>Qty</th><th>Total</th><th>Source</th><th>Card</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><div class="name">Ag/AgCl Snap Electrodes (100-pack)</div></td>
+        <td class="purpose">Gold-standard skin-to-sensor interface. ~30/day burn rate during placement testing.</td>
+        <td class="qty">3</td>
+        <td class="price">~$24</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=Ag+AgCl+snap+electrodes+100+pack+ECG" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-kelsi">Kelsi</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">Ten20 Conductive Paste (4 oz)</div></td>
+        <td class="purpose">Lowers electrode-skin impedance. Critical for signal quality.</td>
+        <td class="qty">1</td>
+        <td class="price">~$12</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=Ten20+conductive+paste" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-kelsi">Kelsi</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">NuPrep Skin Prep Gel (4 oz)</div></td>
+        <td class="purpose">Abrasive prep. Drops impedance from ~50 kΩ to ~5 kΩ.</td>
+        <td class="qty">1</td>
+        <td class="price">~$8</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=NuPrep+skin+prep+gel" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-kelsi">Kelsi</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">Tape, Coban Wrap, Razors, Alcohol, Skin Markers</div></td>
+        <td class="purpose">Wire management, electrode site prep, position marking.</td>
+        <td class="qty">—</td>
+        <td class="price">~$25</td>
+        <td><strong>CVS / HEB</strong> (same-day) or <a class="link" href="https://www.amazon.com/s?k=3M+Transpore+tape" target="_blank">Amazon</a></td>
+        <td><span class="card c-kelsi">Kelsi</span></td>
+      </tr>
+      <tr class="subtotal"><td colspan="3" style="text-align:right;color:var(--text-dim);">CONSUMABLES</td><td class="price">~$69</td><td colspan="2"></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CUEING + POWER + WIRING + HARNESS -->
+<section>
+  <h2>Cueing, Power, Wiring & Harness <span class="tag blue">support</span></h2>
+  <table>
+    <thead><tr><th>Component</th><th>Purpose</th><th>Qty</th><th>Total</th><th>Source</th><th>Card</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><div class="name">ERM Coin Vibe Motors 10mm (10-pack)</div></td>
+        <td class="purpose">Haptic cueing. Buzz tells user which muscle to engage. Also tests TPD localization on torso.</td>
+        <td class="qty">2 packs</td>
+        <td class="price">~$14</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=coin+vibration+motor+10mm+10+pack" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-rajiv">Rajiv</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">1200mAh LiPo × 3 + TP4056 Charger × 3</div></td>
+        <td class="purpose">Powers vest. ~2–3 hr runtime. Extras for hot-swap.</td>
+        <td class="qty">3+3</td>
+        <td class="price">~$20</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=1200mAh+LiPo+3.7V+JST+PH" target="_blank">Amazon LiPo</a> · <a class="link" href="https://www.amazon.com/s?k=TP4056+USB-C+charger" target="_blank">TP4056</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-aaron">Aaron</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">30AWG Wire Kit + Shielded Cable 4-conductor (5m)</div></td>
+        <td class="purpose">General wiring + shielded analog runs from INA128 to ESP32.</td>
+        <td class="qty">1+1</td>
+        <td class="price">~$16</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=30AWG+silicone+wire+kit" target="_blank">Amazon wire</a> · <a class="link" href="https://www.amazon.com/s?k=shielded+cable+4+conductor+30AWG" target="_blank">shielded</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-rajiv">Rajiv</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">Breadboards × 4 + Jumper Wires</div></td>
+        <td class="purpose">Rapid circuit iteration without soldering.</td>
+        <td class="qty">4+1</td>
+        <td class="price">~$17</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=mini+breadboard+400+point" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-aaron">Aaron</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">Elastic + Buckles, Velcro, Neoprene, Snaps</div></td>
+        <td class="purpose">Physical harness: straps, pod mounts, padding, electrode connectors.</td>
+        <td class="qty">—</td>
+        <td class="price">~$32</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=elastic+webbing+1+inch+buckles" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-rajiv">Rajiv</span> <span class="card c-aaron">Aaron</span> <span class="card c-leo">Leo</span></td>
+      </tr>
+      <tr>
+        <td><div class="name">Compression Shirts (M+L)</div></td>
+        <td class="purpose">Base garment for eventual textile prototype + testing MediaPipe visibility with harness on.</td>
+        <td class="qty">2</td>
+        <td class="price">~$20</td>
+        <td><a class="link" href="https://www.amazon.com/s?k=mens+compression+shirt+athletic" target="_blank">Amazon</a> <span class="ship fast">Next-day</span></td>
+        <td><span class="card c-aaron">Aaron</span></td>
+      </tr>
+      <tr class="subtotal"><td colspan="3" style="text-align:right;color:var(--text-dim);">SUPPORT SUBTOTAL</td><td class="price">~$119</td><td colspan="2"></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- DEFERRED TO WAVE 2 -->
+<section>
+  <h2>Deferred to Wave 2 <span class="tag gray">not ordering tonight</span></h2>
+  <p class="section-desc">These items are important but not needed until Day 4+. Deferring saves ~$170+ and lets you pick the right sensor upgrade based on data.</p>
+  <table>
+    <thead><tr><th>Component</th><th>Why Deferred</th><th>Est. Cost</th><th>When to Order</th></tr></thead>
+    <tbody>
+      <tr class="deferred">
+        <td><div class="name">ADS1292R breakout × 5</div><div class="spec">or Cerelog ESP-EEG</div></td>
+        <td>Need placement data first. If ProtoCentral = $30/ea → $150. If Cerelog → $362. Decision after Day 3.</td>
+        <td class="price" style="color:var(--warn);">$150–362</td>
+        <td>Day 3–4</td>
+      </tr>
+      <tr class="deferred">
+        <td><div class="name">INA128PA × 7 more</div></td>
+        <td>Only need 5 for Wave 1. Order the rest once circuit is confirmed working.</td>
+        <td class="price" style="color:var(--warn);">~$58</td>
+        <td>Day 2–3</td>
+      </tr>
+      <tr class="deferred">
+        <td><div class="name">Conductive Fabric, Snap Connectors, Conductive Thread</div></td>
+        <td>Textile garment prototype. Can't sew until electrode positions are confirmed.</td>
+        <td class="price" style="color:var(--warn);">~$32</td>
+        <td>Day 5+</td>
+      </tr>
+      <tr class="deferred">
+        <td><div class="name">TSA Components (DRV8833, N20 motors, Dyneema, etc.)</div></td>
+        <td>Squeeze cueing is secondary to signal validation. Vibrotactile-only for Wave 1.</td>
+        <td class="price" style="color:var(--warn);">~$37</td>
+        <td>Day 5+</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- BUDGET SUMMARY -->
+<section>
+  <h2>Budget Summary</h2>
+  <div class="summary-grid">
+    <div class="summary-card"><div class="label">Wave 1 Spend</div><div class="value">~$267</div></div>
+    <div class="summary-card"><div class="label">Total Budget</div><div class="value" style="color:var(--text);">$745</div></div>
+    <div class="summary-card"><div class="label">Reserve for Wave 2</div><div class="value">~$478</div></div>
+    <div class="summary-card"><div class="label">Sensors (Wave 1)</div><div class="value" style="color:var(--text);">$79</div></div>
+  </div>
+</section>
+
+<!-- CARD SPLIT -->
+<section>
+  <h2>Card Split — Wave 1</h2>
+  <table>
+    <thead><tr><th>Card</th><th>Limit</th><th>Wave 1 Items</th><th>Spend</th><th>Remaining</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="card c-rajat">Rajat</span></td><td>$200</td>
+        <td>INA128PA × 5 ($41)</td>
+        <td class="price">~$41</td><td class="price">~$159</td>
+      </tr>
+      <tr>
+        <td><span class="card c-rajiv">Rajiv</span></td><td>$215</td>
+        <td>ESP32 × 2, resistor kit, cap kit, vibes, wire, shielded cable, elastic, velcro</td>
+        <td class="price">~$80</td><td class="price">~$135</td>
+      </tr>
+      <tr>
+        <td><span class="card c-kelsi">Kelsi</span></td><td>$80</td>
+        <td>All electrodes & skin prep</td>
+        <td class="price">~$69</td><td class="price">~$11</td>
+      </tr>
+      <tr>
+        <td><span class="card c-aaron">Aaron</span></td><td>$100</td>
+        <td>LiPo, TP4056, breadboards, jumpers, snaps, compression shirts</td>
+        <td class="price">~$57</td><td class="price">~$43</td>
+      </tr>
+      <tr>
+        <td><span class="card c-leo">Leo</span></td><td>$150</td>
+        <td>Neoprene ($8), harness share ($12)</td>
+        <td class="price">~$20</td><td class="price">~$130</td>
+      </tr>
+      <tr class="subtotal">
+        <td colspan="2"></td><td style="text-align:right;color:var(--text-dim);">TOTAL</td>
+        <td class="price">~$267</td><td class="price">~$478</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="note"><strong>$478 reserve</strong> is enough for Cerelog ($362) OR ADS1292R + 7 more INA128s + textile + TSA. The data from Days 1–3 tells you which path to take.</div>
+</section>
+
+<!-- ACTIONS -->
+<section>
+  <h2>Order Tonight</h2>
+  <table>
+    <thead><tr><th>Step</th><th>Who</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td class="qty">1</td><td><span class="card c-rajat">Rajat</span></td><td>Order <a class="link" href="https://www.digikey.com/en/products/detail/texas-instruments/INA128PA/300996" target="_blank">5× INA128PA from DigiKey</a> — $41.10 + shipping. Select fastest ground (arrives Thu/Fri) or overnight if &lt;$15.</td></tr>
+      <tr><td class="qty">2</td><td><span class="card c-rajiv">Rajiv</span></td><td>Amazon cart: ESP32-S3 × 2, resistor kit, cap kit, coin vibes × 2, wire kit, shielded cable, elastic webbing, velcro. ~$80 total, next-day Prime.</td></tr>
+      <tr><td class="qty">3</td><td><span class="card c-kelsi">Kelsi</span></td><td>Amazon cart: Ag/AgCl electrodes × 3, Ten20, NuPrep. Then hit CVS/HEB tomorrow for tape, razors, alcohol, markers. ~$69 total.</td></tr>
+      <tr><td class="qty">4</td><td><span class="card c-aaron">Aaron</span></td><td>Amazon cart: LiPo × 3, TP4056 × 3, breadboards × 4, jumper wires, snap buttons, compression shirts × 2. ~$57 total.</td></tr>
+      <tr><td class="qty">5</td><td><span class="card c-leo">Leo</span></td><td>Amazon cart: Neoprene fabric, harness buckle share. ~$20. Save rest for Wave 2 — Leo's $130 remaining is the biggest Wave 2 contributor.</td></tr>
+      <tr><td class="qty">6</td><td>Anyone</td><td>Check <a class="link" href="https://protocentral.com/product/ads1292r-ecg-respiration-breakout-kit/" target="_blank">ProtoCentral ADS1292R</a> price in USD + <a class="link" href="https://www.cerelog.com/" target="_blank">Cerelog ESP-EEG</a> stock. Report to group chat. This is Wave 2 intel, not an order tonight.</td></tr>
+      <tr><td class="qty">7</td><td>Anyone</td><td>Tomorrow AM: Send cold emails to UT KHE Neuromuscular Lab, ReNeu Lab, Neptune Lab for Delsys EMG bench time.</td></tr>
+      <tr><td class="qty">8</td><td>Anyone</td><td>Tomorrow AM: Complete <a class="link" href="https://inventionworks.engr.utexas.edu/" target="_blank">Texas Inventionworks</a> 3D printer + soldering training (online quiz + in-person demo).</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<footer>
+  All links verified April 8, 2026 via web search. INA128PA price ($8.22) and stock (4,506 units) confirmed at DigiKey. Amazon links are search queries — pick the listing with Prime next-day delivery to Austin. Prices are approximate and should be confirmed at checkout.
+</footer>
+
+</body>
+</html>

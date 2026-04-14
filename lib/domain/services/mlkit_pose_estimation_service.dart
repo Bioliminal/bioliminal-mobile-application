@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart' as mlkit;
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
+    as mlkit;
 
 import '../models.dart' as domain;
 import 'pose_estimation_service.dart';

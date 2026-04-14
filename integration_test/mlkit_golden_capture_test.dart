@@ -110,7 +110,8 @@ void main() {
           y: lm.y / imgHeight,
           z: lm.z,
           visibility: lm.likelihood,
-          presence: lm.likelihood, // MLKit likelihood maps to visibility/presence
+          presence:
+              lm.likelihood, // MLKit likelihood maps to visibility/presence
         );
       }).toList();
 

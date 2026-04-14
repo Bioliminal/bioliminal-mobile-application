@@ -148,7 +148,7 @@ class ScreeningController extends Notifier<ScreeningState> {
     // Capture the frame for the server payload.
     final useHardware = ref.read(core_providers.useHardwareModeProvider);
     final syncOffset = ref.read(core_providers.hardwareSyncOffsetProvider);
-    
+
     var timestamp = _movementStartTime != null
         ? DateTime.now().difference(_movementStartTime!).inMilliseconds
         : 0;
@@ -157,8 +157,8 @@ class ScreeningController extends Notifier<ScreeningState> {
     if (useHardware) {
       timestamp += syncOffset;
     }
-    
-    // BlazePose expects exactly 33 landmarks. 
+
+    // BlazePose expects exactly 33 landmarks.
     // Ensure we have exactly 33 before creating PoseFrame.
     if (landmarks.length == 33) {
       _currentMovementFrames.add(
@@ -321,7 +321,9 @@ class ScreeningController extends Notifier<ScreeningState> {
     // Use the frames captured during this movement.
     final allAngles = <JointAngle>[];
     if (_currentMovementFrames.isNotEmpty) {
-      allAngles.addAll(_angleCalculator.calculateAngles(_currentMovementFrames.last.landmarks));
+      allAngles.addAll(
+        _angleCalculator.calculateAngles(_currentMovementFrames.last.landmarks),
+      );
     }
 
     final duration = _movementStartTime != null
@@ -358,10 +360,11 @@ class ScreeningController extends Notifier<ScreeningState> {
 
   void _finishScreening() async {
     final now = DateTime.now();
-    
+
     final payload = SessionPayload(
       metadata: SessionMetadata(
-        movement: _completedMovements.firstOrNull?.type ?? MovementType.overheadSquat,
+        movement:
+            _completedMovements.firstOrNull?.type ?? MovementType.overheadSquat,
         device: 'iPhone 11', // TODO: use real device info
         model: 'mediapipe_blazepose_full',
         frameRate: 30.0, // TODO: measure real FPS
@@ -385,7 +388,11 @@ class ScreeningController extends Notifier<ScreeningState> {
       final client = ref.read(core_providers.bioliminalClientProvider);
       await client.submitSession(payload);
     } catch (e) {
-      developer.log('Auto-upload failed', error: e, name: 'ScreeningController');
+      developer.log(
+        'Auto-upload failed',
+        error: e,
+        name: 'ScreeningController',
+      );
     }
   }
 

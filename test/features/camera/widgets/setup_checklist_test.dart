@@ -7,7 +7,10 @@ import 'package:bioliminal/features/camera/widgets/setup_checklist.dart';
 
 /// Builds 33 landmarks where every landmark has the given [visibility],
 /// and hip landmarks (23, 24) have the given [hipY].
-List<PoseLandmark> _buildLandmarks({double visibility = 0.9, double hipY = 0.5}) {
+List<PoseLandmark> _buildLandmarks({
+  double visibility = 0.9,
+  double hipY = 0.5,
+}) {
   return List.generate(33, (idx) {
     final y = (idx == kLeftHipIndex || idx == kRightHipIndex) ? hipY : 0.5;
     return PoseLandmark(

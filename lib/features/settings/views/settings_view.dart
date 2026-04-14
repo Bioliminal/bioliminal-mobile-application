@@ -59,7 +59,9 @@ class SettingsView extends ConsumerWidget {
               hardwareState == HardwareConnectionState.connected,
               theme,
               onChanged: (val) {
-                final controller = ref.read(hardwareControllerProvider.notifier);
+                final controller = ref.read(
+                  hardwareControllerProvider.notifier,
+                );
                 if (val) {
                   controller.startMockData();
                 } else {

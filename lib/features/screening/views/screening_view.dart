@@ -345,9 +345,11 @@ class _ActiveMovementScreen extends ConsumerWidget {
                   Positioned.fill(
                     child: RepaintBoundary(
                       child: _CameraPreviewWrapper(
-                        controller: cameraState is core_providers.CameraStreaming
+                        controller:
+                            cameraState is core_providers.CameraStreaming
                             ? cameraState.controller
-                            : (cameraState as core_providers.CameraReady).controller,
+                            : (cameraState as core_providers.CameraReady)
+                                  .controller,
                       ),
                     ),
                   )

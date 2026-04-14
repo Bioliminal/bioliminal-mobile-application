@@ -91,7 +91,10 @@ class _StickFigureAnimationState extends State<StickFigureAnimation>
 
 /// Given a list of keyframes and a normalized [t] in [0,1], returns the
 /// interpolated pose. Distributes time evenly across keyframe segments.
-AnimationPoseFrame interpolateKeyframes(List<AnimationPoseFrame> keyframes, double t) {
+AnimationPoseFrame interpolateKeyframes(
+  List<AnimationPoseFrame> keyframes,
+  double t,
+) {
   if (keyframes.isEmpty) return AnimationPoseFrame.empty;
   if (keyframes.length == 1) return keyframes.first;
 

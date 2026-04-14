@@ -91,7 +91,9 @@ class SkeletonPainter extends CustomPainter {
     // Draw segments first
     for (var i = 0; i < blazePoseConnections.length; i++) {
       final connection = blazePoseConnections[i];
-      if (connection.$1 >= landmarks.length || connection.$2 >= landmarks.length) continue;
+      if (connection.$1 >= landmarks.length ||
+          connection.$2 >= landmarks.length)
+        continue;
 
       final startLm = landmarks[connection.$1];
       final endLm = landmarks[connection.$2];
@@ -118,10 +120,12 @@ class SkeletonPainter extends CustomPainter {
               intensity,
             )!;
             strokeWidth += (intensity * 4.0); // Thicker glow for active muscles
-            
+
             // Draw an outer glow
             final glowPaint = Paint()
-              ..color = const Color(0xFF00D4AA).withValues(alpha: intensity * 0.3)
+              ..color = const Color(
+                0xFF00D4AA,
+              ).withValues(alpha: intensity * 0.3)
               ..strokeWidth = strokeWidth + 6.0
               ..style = PaintingStyle.stroke
               ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);

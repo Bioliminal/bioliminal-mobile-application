@@ -3,7 +3,8 @@ import 'dart:io';
 import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart' as mlkit;
+import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
+    as mlkit;
 
 import '../../../domain/models.dart' as domain;
 
@@ -14,7 +15,8 @@ import '../../../domain/models.dart' as domain;
 abstract class PoseDetector {
   /// Process a single camera frame.
   /// Implementation must return exactly 33 BlazePose landmarks.
-  Future<List<domain.PoseLandmark>> processFrame(CameraImage image, {
+  Future<List<domain.PoseLandmark>> processFrame(
+    CameraImage image, {
     required int rotationDegrees,
   });
 
@@ -25,12 +27,12 @@ abstract class PoseDetector {
 /// Implementation of PoseDetector using Google ML Kit (BlazePose).
 class MediaPipePoseDetector implements PoseDetector {
   MediaPipePoseDetector()
-      : _poseDetector = mlkit.PoseDetector(
-          options: mlkit.PoseDetectorOptions(
-            mode: mlkit.PoseDetectionMode.stream,
-            model: mlkit.PoseDetectionModel.base,
-          ),
-        );
+    : _poseDetector = mlkit.PoseDetector(
+        options: mlkit.PoseDetectorOptions(
+          mode: mlkit.PoseDetectionMode.stream,
+          model: mlkit.PoseDetectionModel.base,
+        ),
+      );
 
   final mlkit.PoseDetector _poseDetector;
 
@@ -78,7 +80,10 @@ class MediaPipePoseDetector implements PoseDetector {
     await _poseDetector.close();
   }
 
-  mlkit.InputImage? _convertCameraImage(CameraImage image, int rotationDegrees) {
+  mlkit.InputImage? _convertCameraImage(
+    CameraImage image,
+    int rotationDegrees,
+  ) {
     final planes = image.planes;
     if (planes.isEmpty) return null;
 

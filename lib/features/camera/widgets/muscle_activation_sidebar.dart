@@ -19,7 +19,9 @@ class MuscleActivationSidebar extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.4),
-        border: Border(left: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+        border: Border(
+          left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+        ),
       ),
       child: Column(
         children: [
@@ -58,7 +60,16 @@ class _EMGBarPainter extends CustomPainter {
   final Color color;
 
   static const List<String> _labels = [
-    'LG', 'LS', 'RG', 'RS', 'LVM', 'RVM', 'LGM', 'RGM', 'LES', 'RES'
+    'LG',
+    'LS',
+    'RG',
+    'RS',
+    'LVM',
+    'RVM',
+    'LGM',
+    'RGM',
+    'LES',
+    'RES',
   ];
 
   @override
@@ -68,12 +79,12 @@ class _EMGBarPainter extends CustomPainter {
     for (var i = 0; i < 10; i++) {
       final y = i * spacing + (spacing / 2);
       final value = data.channels[i].clamp(0.0, 1.0);
-      
+
       // Draw background track
       final bgPaint = Paint()
         ..color = Colors.white.withValues(alpha: 0.05)
         ..style = PaintingStyle.fill;
-      
+
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromLTWH(0, y - 4, size.width, 8),
@@ -103,7 +114,7 @@ class _EMGBarPainter extends CustomPainter {
         ),
         textDirection: TextDirection.ltr,
       )..layout();
-      
+
       textPainter.paint(canvas, Offset(0, y - 14));
     }
   }
