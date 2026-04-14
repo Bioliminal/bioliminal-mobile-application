@@ -15,13 +15,17 @@ The project follows a feature-first structure with a high-fidelity data pipeline
 - `lib/domain/`: Core business logic and data models aligned with clinical schemas.
   - `models.dart`: Includes `SessionPayload`, `PoseFrame`, and `EMGData`.
 - `lib/features/`: UI and state management grouped by feature.
-  - `camera/`: 33-landmark ML Kit integration and real-time sEMG sidebars.
+  - `onboarding/`: Educational disclaimer and new `AuthOptionsView` providing paths for Login, Create Account, or Guest (Local-only) access.
+  - `camera/`: 33-landmark ML Kit integration, auto-detecting `HardwareSetupView`, and real-time sEMG sidebars.
   - `screening/`: Clinical movement screening flow (Overhead Squat, SLS, Push-up, Rollup).
   - `report/`: Post-session clinical kinetics and muscle activation summaries.
 
 ## Key Implementation Details
 
-### High-Fidelity Capture Pipeline
+### Low-Friction Entry & Authentication
+The application employs a "progressive disclosure" model for account creation and hardware setup:
+- **Guest-First:** Users can "Continue without account" to use the app in a purely local, offline-first mode. Cloud sync via Firebase is an opt-in "Premium" feature.
+- **Auto-Discovery:** Hardware (sEMG sensors) is no longer a mandatory onboarding step. The app automatically scans for sensors when a new screening starts, offering a "Continue without sensors" path if none are detected.
 The app uses a dual-stream data fusion model:
 1. **Vision:** MediaPipe BlazePose Full captures 33 landmarks at 30+ FPS via a "busy flag" pattern.
 2. **Sensing:** ESP32-S3 Hub streams 10 channels of sEMG data over BLE at high frequency.

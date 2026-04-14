@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "975155858919",
-    "project_id": "bioliminal-capstone",
-    "storage_bucket": "bioliminal-capstone.firebasestorage.app"
+    "project_number": "567938947764",
+    "project_id": "bioliminal",
+    "storage_bucket": "bioliminal.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:975155858919:android:0162cfd1f28bddf7d30142",
+        "mobilesdk_app_id": "1:567938947764:android:ba6fb50e2357c63e5315e1",
         "android_client_info": {
-          "package_name": "com.bioliminal.bioliminal"
+          "package_name": "com.bioliminal.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB4jqA9GEAGsaWyWf4KxVz-f7fzF2DGUWY"
+          "current_key": "AIzaSyCsL7KLw1MwEopNG3R2sZEjvbsdrktYeiM"
         }
       ],
       "services": {

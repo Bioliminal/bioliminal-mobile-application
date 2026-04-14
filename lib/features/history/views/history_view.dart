@@ -32,7 +32,7 @@ class HistoryView extends ConsumerWidget {
           bottom: 90,
         ), // Offset for floating bottom nav
         child: FloatingActionButton.extended(
-          onPressed: () => context.go('/screening'),
+          onPressed: () => context.go('/hardware-setup'),
           backgroundColor: theme.colorScheme.secondary,
           foregroundColor: BioliminalTheme.screenBackground,
           label: const Text(
@@ -253,7 +253,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             FilledButton(
-              onPressed: () => context.go('/screening'),
+              onPressed: () => context.go('/hardware-setup'),
               child: const Text('Start Screening'),
             ),
           ],

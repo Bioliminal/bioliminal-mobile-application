@@ -30,15 +30,17 @@ Bioliminal merges advanced computer vision with real-time biometric sensing to b
   → Real-time Biofeedback & Clinical-Grade Report
 ```
 
-**Four movements. Five minutes. No account.**
+**Four movements. Five minutes. No account required.**
 
-## The Core Problem
-1. **Capture** — Computer vision landmarks + sEMG biopotentials.
-2. **Setup** — "Ghost Skeleton" placement guide and real-time lead verification.
-3. **Sync** — "Sync Stomp" calibration to time-align vision and sensing streams (<10ms).
-4. **Detect** — 33 high-fidelity landmarks analyzed via server-side kinetics.
-5. **Map** — Joint moments and muscle forces traced along fascial chains.
-6. **Correct** — Real-time physical cues to retrain movement patterns mid-rep.
+## The Core Features
+1. **Disclaimer** — Educational and legal context before you begin.
+2. **Flexible Auth** — Create an account, login, or continue as a guest for a purely local, offline-first experience.
+3. **Capture** — Computer vision landmarks + sEMG biopotentials.
+4. **Setup** — Optional hardware auto-discovery. "Ghost Skeleton" placement guide and real-time lead verification.
+5. **Sync** — "Sync Stomp" calibration to time-align vision and sensing streams (<10ms).
+6. **Detect** — 33 high-fidelity landmarks analyzed via server-side kinetics.
+7. **Map** — Joint moments and muscle forces traced along fascial chains.
+8. **Correct** — Real-time physical cues to retrain movement patterns mid-rep.
 
 ### Clinical Validation
 

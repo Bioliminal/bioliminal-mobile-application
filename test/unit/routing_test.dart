@@ -28,8 +28,8 @@ void main() {
     });
 
     test('expected number of top-level routes exist', () {
-      // 8 GoRoutes + 1 StatefulShellRoute = 9
-      expect(goRouter.configuration.routes.length, 9);
+      // 9 GoRoutes + 1 StatefulShellRoute = 10
+      expect(goRouter.configuration.routes.length, 10);
     });
   });
 }

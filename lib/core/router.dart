@@ -6,6 +6,7 @@ import '../core/providers.dart';
 import '../features/camera/views/hardware_setup_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
+import '../features/onboarding/views/auth_options_view.dart';
 import '../features/report/views/report_view.dart';
 import '../features/screening/views/screening_view.dart';
 import '../features/settings/views/login_view.dart';
@@ -30,6 +31,7 @@ final goRouter = GoRouter(
     final storage = container.read(localStorageServiceProvider);
     final assessments = await storage.listAssessments();
 
+    // If they have assessments, they have already completed onboarding.
     if (assessments.isNotEmpty) {
       return '/history';
     }
@@ -41,6 +43,11 @@ final goRouter = GoRouter(
       path: '/disclaimer',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const DisclaimerView(),
+    ),
+    GoRoute(
+      path: '/auth-options',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const AuthOptionsView(),
     ),
     GoRoute(
       path: '/hardware-setup',

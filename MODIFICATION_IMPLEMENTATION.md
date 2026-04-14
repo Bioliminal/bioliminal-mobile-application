@@ -1,28 +1,13 @@
-# Implementation Plan: Rename AuraLink to Bioliminal
+# Implementation Plan: Initial Flow Realignment & Hardware Discovery
 
-This plan outlines the steps to replace all remaining occurrences of "AuraLink" with "Bioliminal" across the project's configuration, scripts, and documentation.
+This plan outlines the steps to realign the Bioliminal application flow, focusing on a new authentication options screen and a low-friction, auto-detecting hardware setup process.
 
-## Journal
-- Phase 1: Pre-implementation Validation completed. All tests passed (+190 ~4). `analyze_files` returned no errors. `dart_format` formatted 34 files.
-- Phase 2: Platform Configuration Updates completed. Updated `ios/Runner/Info.plist` to change `CFBundleDisplayName` to "Bioliminal". Fixed a unrelated lint issue in `lib/features/camera/widgets/skeleton_overlay.dart` found during validation. All tests pass and analysis is clean.
-- Phase 3: Script and Tooling Updates completed. Updated `mobile-handover/tools/export_schemas.py` and `mobile-handover/tools/post_sample.sh` to replace `auralink` with `bioliminal` in comments and imports.
-- Phase 4: Documentation Updates completed. Updated `docs/rajat's docs/wave1-lean-final.html` and `docs/rajat's docs/final-buy-list-with-local.md` to replace `AuraLink` with `Bioliminal`.
-- Phase 5: Project Finalization completed. Verified `README.md` and `GEMINI.md` are correctly branded. Performed final project-wide grep to ensure all "AuraLink" instances (outside of change history) are removed.
-
-## Phase 1: Pre-implementation Validation
+## Phase 1: Preparation & Baseline
 - [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-- [x] Run the `dart_fix` tool to clean up the code.
-- [x] Run the `analyze_files` tool one more time and fix any issues.
-- [x] Run any tests to make sure they all pass.
-- [x] Run `dart_format` to make sure that the formatting is correct.
-- [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
-- [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
-- [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
+- [x] Perform a project-wide search for any remaining "AuraLink" strings (case-insensitive) in comments, strings, or configs and update to "Bioliminal".
+- [x] Ensure all existing tests pass on the current branch.
 
-## Phase 2: Platform Configuration Updates
-- [x] Update `ios/Runner/Info.plist`: Change `<string>Auralink</string>` to `<string>Bioliminal</string>`.
+### Phase 1 Completion Checklist
 - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
 - [x] Run the `dart_fix` tool to clean up the code.
 - [x] Run the `analyze_files` tool one more time and fix any issues.
@@ -30,13 +15,21 @@ This plan outlines the steps to replace all remaining occurrences of "AuraLink" 
 - [x] Run `dart_format` to make sure that the formatting is correct.
 - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
 - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
+- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes, following any guidelines you have about commit messages. Be sure to properly escape dollar signs and backticks, and present the change message to the user for approval.
 - [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
 - [x] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
 
-## Phase 3: Script and Tooling Updates
-- [x] Update `mobile-handover/tools/export_schemas.py`: Replace `auralink` with `bioliminal` in comments and imports.
-- [x] Update `mobile-handover/tools/post_sample.sh`: Replace `auralink` with `bioliminal` in comments.
+## Phase 2: Authentication Options & Navigation
+- [x] Create `lib/features/onboarding/views/auth_options_view.dart`.
+  - [x] Implement UI with "CREATE ACCOUNT", "LOG IN", and "CONTINUE WITHOUT ACCOUNT".
+  - [x] Link "CONTINUE WITHOUT ACCOUNT" to navigate to `/history`.
+- [x] Update `lib/core/router.dart`:
+  - [x] Add `/auth-options` route.
+  - [x] Update `DisclaimerView` to navigate to `/auth-options` instead of `/hardware-setup`.
+  - [x] Update initial redirect logic if necessary to handle the new onboarding flow.
+- [x] Update `LoginView` to support both "Sign In" and "Create Account" modes (or add a separate Account creation view).
+
+### Phase 2 Completion Checklist
 - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
 - [x] Run the `dart_fix` tool to clean up the code.
 - [x] Run the `analyze_files` tool one more time and fix any issues.
@@ -44,12 +37,20 @@ This plan outlines the steps to replace all remaining occurrences of "AuraLink" 
 - [x] Run `dart_format` to make sure that the formatting is correct.
 - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
 - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
+- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes, following any guidelines you have about commit messages. Be sure to properly escape dollar signs and backticks, and present the change message to the user for approval.
 - [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
+- [x] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
 
-## Phase 4: Documentation Updates
-- [x] Update `docs/rajat's docs/wave1-lean-final.html`: Replace `AuraLink` with `Bioliminal`.
-- [x] Update `docs/rajat's docs/final-buy-list-with-local.md`: Replace `AuraLink` with `Bioliminal`.
+## Phase 3: Hardware Discovery Refactor
+- [x] Update `HardwareSetupView`:
+  - [x] Replace "SKIP" with "CONTINUE WITHOUT SENSORS".
+  - [x] Trigger `hardwareController.startScan()` automatically on entry.
+  - [x] Implement a ~5-second timer to highlight the "CONTINUE WITHOUT SENSORS" option if no device is found.
+  - [x] Simplify the "Scanning" UI to be more approachable (minimalist animation).
+- [x] Update `HistoryView`:
+  - [x] Ensure "NEW SCAN" button routes to `/hardware-setup`.
+
+### Phase 3 Completion Checklist
 - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
 - [x] Run the `dart_fix` tool to clean up the code.
 - [x] Run the `analyze_files` tool one more time and fix any issues.
@@ -57,18 +58,24 @@ This plan outlines the steps to replace all remaining occurrences of "AuraLink" 
 - [x] Run `dart_format` to make sure that the formatting is correct.
 - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
 - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
+- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes, following any guidelines you have about commit messages. Be sure to properly escape dollar signs and backticks, and present the change message to the user for approval.
 - [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
+- [x] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
 
-## Phase 5: Project Finalization
-- [x] Update any `README.md` file for the package with relevant information from the modification (if any).
-- [x] Update any `GEMINI.md` file in the project directory so that it still correctly describes the app, its purpose, and implementation details and the layout of the files.
+## Phase 4: Finalization
+- [x] Update `README.md` with the new flow description.
+- [x] Update `GEMINI.md` to reflect the updated architecture and flow.
+- [x] Run a final `analyze_files` and `run_tests` to ensure project integrity.
 - [x] Ask the user to inspect the package (and running app, if any) and say if they are satisfied with it, or if any modifications are needed.
-- [x] Final verification of all changes.
-- [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
-- [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
-- [x] Wait for approval. Don't commit the changes.
+
+### Journal
+- **2026-04-14**: 
+  - Created `AuthOptionsView` and updated navigation from `DisclaimerView` -> `AuthOptionsView`.
+  - Integrated `/auth-options` into `goRouter`.
+  - Refactored `HardwareSetupView` to support auto-scanning and a 5-second timer for highlighting the "CONTINUE WITHOUT SENSORS" option.
+  - Updated `HistoryView` to route "NEW SCAN" through `HardwareSetupView`.
+  - Rebranded remaining references to Bioliminal.
+  - Verified with analyzer and tests (fixing routing and history view test regressions).
 
 ---
 *Note: After completing a task, if you added any TODOs to the code or didn't fully implement anything, make sure to add new tasks so that you can come back and complete them later.*

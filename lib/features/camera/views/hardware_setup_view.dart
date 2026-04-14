@@ -8,8 +8,29 @@ import 'package:bioliminal/features/camera/services/sync_calibration_service.dar
 import '../widgets/placement_ghost_skeleton.dart';
 import '../widgets/signal_led.dart';
 
-class HardwareSetupView extends ConsumerWidget {
+class HardwareSetupView extends ConsumerStatefulWidget {
   const HardwareSetupView({super.key});
+
+  @override
+  ConsumerState<HardwareSetupView> createState() => _HardwareSetupViewState();
+}
+
+class _HardwareSetupViewState extends ConsumerState<HardwareSetupView> {
+  bool _showContinueAnyway = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Auto-start scanning on entry
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(hardwareControllerProvider.notifier).startScan();
+    });
+
+    // Show "Continue without sensors" more prominently after 5 seconds
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) setState(() => _showContinueAnyway = true);
+    });
+  }
 
   static const List<String> _muscleLabels = [
     'L-Gastrocnemius',
@@ -25,7 +46,7 @@ class HardwareSetupView extends ConsumerWidget {
   ];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final setupStep = ref.watch(hardwareSetupStepProvider);
     final hardwareState = ref.watch(hardwareControllerProvider);
@@ -43,7 +64,14 @@ class HardwareSetupView extends ConsumerWidget {
               ref.read(useHardwareModeProvider.notifier).value = false;
               context.go('/screening');
             },
-            child: const Text('SKIP', style: TextStyle(color: Colors.white30)),
+            child: Text(
+              'CONTINUE WITHOUT SENSORS',
+              style: TextStyle(
+                color: _showContinueAnyway ? theme.colorScheme.secondary : Colors.white30,
+                fontSize: 10,
+                letterSpacing: 0.5,
+              ),
+            ),
           ),
           const SizedBox(width: 8),
         ],

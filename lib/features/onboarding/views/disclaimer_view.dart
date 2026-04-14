@@ -76,11 +76,11 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: _hasScrolledToBottom
-                          ? () => context.go('/hardware-setup')
+                          ? () => context.go('/auth-options')
                           : null,
                       child: Text(
                         _hasScrolledToBottom
-                            ? 'BEGIN ANALYSIS'
+                            ? 'CONTINUE'
                             : 'PLEASE READ DISCLAIMER',
                       ),
                     ),

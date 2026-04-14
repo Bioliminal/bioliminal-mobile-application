@@ -37,10 +37,10 @@ Widget _buildTestApp({required List<Assessment> assessments}) {
         builder: (context, state) => const HistoryView(),
       ),
       GoRoute(
-        path: '/screening',
+        path: '/hardware-setup',
         builder: (context, state) {
-          navigatedRoutes.add('/screening');
-          return const Scaffold(body: Text('Screening'));
+          navigatedRoutes.add('/hardware-setup');
+          return const Scaffold(body: Text('Hardware Setup'));
         },
       ),
       GoRoute(
@@ -156,14 +156,14 @@ void main() {
       },
     );
 
-    testWidgets('empty state button navigates to /screening', (tester) async {
+    testWidgets('empty state button navigates to /hardware-setup', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: []));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start Screening'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Screening'), findsOneWidget);
+      expect(find.text('Hardware Setup'), findsOneWidget);
     });
   });
 
