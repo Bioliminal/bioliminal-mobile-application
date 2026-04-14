@@ -1,87 +1,72 @@
-# Implementation Plan: Bioliminal Landing Page (Full Build)
+# Implementation Plan: Premium Bioliminal Landing Page (Storytelling Overhaul)
 
-This plan outlines the steps to build and integrate a high-fidelity, interactive landing page for the Bioliminal platform in Flutter Web.
+This plan outlines the steps to transform the Bioliminal landing page into a premium, scroll-driven cinematic experience using shader-based glassmorphism and the `flutter_animate` storytelling pattern.
 
 ## Journal
-- **2026-04-14**: Full autonomous implementation of the Bioliminal landing page completed. 
-  - Integrated `seo_renderer`, `google_fonts`, and `responsive_builder`.
-  - Built a multi-section landing page with Hero, Vision, Insight, Trust, and CTA segments.
-  - Configured `web/index.html` with SEO-optimized meta tags and Open Graph data.
-  - Realigned `GoRouter` to prioritize the landing page on web while maintaining the disclaimer flow on mobile.
-  - Successfully rebranded all references from AuraLink to Bioliminal.
+- **2026-04-14**: Plan initialized for premium redesign. Research confirmed `liquid_glass_widgets` and `flutter_animate` as core pillars.
+- **2026-04-14**: Phase 1 & 2 completed. Refactored `LandingPageView` with `CustomScrollView` and `ScrollAdapter`. Integrated `GlassMotionScope` for dynamic lighting and verified API usage for `liquid_glass_widgets`. All compilation errors resolved.
 
-## Phase 1: Preparation & Setup
+## Phase 1: Foundation & Storytelling Engine
 - [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Add `seo_renderer`, `google_fonts`, and `responsive_builder` to `pubspec.yaml`.
-- [x] Verify `web/index.html` for meta-tag entry points.
-- [x] Create `lib/features/landing/views/landing_page_view.dart`.
+- [x] Add `flutter_animate` and `liquid_glass_widgets` to `pubspec.yaml`.
+- [x] Refactor `LandingPageView` to use `CustomScrollView` and `Slivers`.
+- [x] Initialize the global `ScrollController` and link it to a `flutter_animate` `ScrollAdapter`.
 
 ### Phase 1 Completion Checklist
-- [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
 - [x] Run the `dart_fix` tool to clean up the code.
 - [x] Run the `analyze_files` tool one more time and fix any issues.
 - [x] Run any tests to make sure they all pass.
 - [x] Run `dart_format` to make sure that the formatting is correct.
 - [x] Update the Journal section.
-- [x] Commit the changes with a descriptive message.
+- [x] Commit the changes.
 
-## Phase 2: Structural Components & Hero Section
-- [x] Implement `StickyNavbar` with Glassmorphism effect.
-- [x] Implement `HeroSection` with bold typography and a stylized skeletal overlay demo (using a reference image).
-- [x] Ensure `seo_renderer` wraps all critical marketing text.
+## Phase 2: Liquid Glass Design System
+- [x] Implement `GlassMotionScope` to enable scroll-driven specular highlights.
+- [x] Create `PremiumGlassCard` and `PremiumGlassButton` reusable widgets. (Note: Using built-in GlassCard and GlassButton.custom directly)
+- [x] Add stylized background "Glow Blobs" and noise textures to `BioliminalTheme.screenBackground`.
 
 ### Phase 2 Completion Checklist
 - [x] Run the `dart_fix` tool to clean up the code.
-- [x] Run the `analyze_files` tool one more time and fix any issues.
-- [x] Run any tests to make sure they all pass.
-- [x] Run `dart_format` to make sure that the formatting is correct.
+- [x] Run the `analyze_files` tool and fix any issues.
+- [x] Run `dart_format`.
 - [x] Update the Journal section.
 - [x] Commit the changes.
 
-## Phase 3: Interactive Demos & Body Map
-- [x] Create `FeatureShowcase` section with a side-by-side vision demonstration.
-- [x] Integrate the `BodyMap` widget into the landing page for interactive insights.
-- [x] Add "Finding Cards" as hover/tap overlays on the Body Map.
+## Phase 3: The Origin (Hero Section)
+- [ ] Implement the cinematic entry animation for the Hero Visual.
+- [ ] Add scroll-driven rotation and scale transitions for the Skeleton visual (placeholder).
+- [ ] Implement typography cross-fades ("REDEFINE MOVEMENT" -> "VISION BEYOND SIGHT").
 
 ### Phase 3 Completion Checklist
-- [x] Run the `dart_fix` tool to clean up the code.
-- [x] Run the `analyze_files` tool one more time and fix any issues.
-- [x] Run any tests to make sure they all pass.
-- [x] Run `dart_format` to make sure that the formatting is correct.
-- [x] Update the Journal section.
-- [x] Commit the changes.
+- [ ] Run analysis and formatting.
+- [ ] Update the Journal section.
+- [ ] Commit the changes.
 
-## Phase 4: Clinical Trust & CTA
-- [x] Implement "Rule-Based Engine" section with an "Explainable AI" visual.
-- [x] Implement the Final CTA section with "App Store" and "Play Store" download buttons.
-- [x] Add links to research documentation (`research/yijinjing-fascial-chain-remodeling.md`).
+## Phase 4: The Sight (Feature Showcase)
+- [ ] Build the interactive feature grid using `GlassPanel` with "Jelly Physics".
+- [ ] Sync icon animations with scroll progress.
+- [ ] Refine the "Beyond Joint Metrics" side-by-side comparison with high-fidelity visuals.
 
 ### Phase 4 Completion Checklist
-- [x] Run the `dart_fix` tool to clean up the code.
-- [x] Run the `analyze_files` tool one more time and fix any issues.
-- [x] Run any tests to make sure they all pass.
-- [x] Run `dart_format` to make sure that the formatting is correct.
-- [x] Update the Journal section.
-- [x] Commit the changes.
+- [ ] Run analysis and formatting.
+- [ ] Update the Journal section.
+- [ ] Commit the changes.
 
-## Phase 5: Routing & Web Optimization
-- [x] Update `lib/core/router.dart` to include the landing page at `/` (for web only or as the root).
-- [x] Configure `web/index.html` with dynamic meta tags for Open Graph and Twitter Cards.
-- [x] Run `flutter build web --web-renderer html` to verify the build output.
+## Phase 5: The Connection (Fascial Storytelling)
+- [ ] Implement the linear "Tracing" animation for the Fascial Chain visual.
+- [ ] Add interactive hotspots that reveal frosted glass "Insight Overlays".
+- [ ] Sync the clinical documentation links with the storytelling flow.
 
 ### Phase 5 Completion Checklist
-- [x] Run the `dart_fix` tool to clean up the code.
-- [x] Run the `analyze_files` tool one more time and fix any issues.
-- [x] Run any tests to make sure they all pass.
-- [x] Run `dart_format` to make sure that the formatting is correct.
-- [x] Update the Journal section.
-- [x] Commit the changes.
+- [ ] Run analysis and formatting.
+- [ ] Update the Journal section.
+- [ ] Commit the changes.
 
-## Phase 6: Final Verification
-- [x] Update any `README.md` file for the package with relevant information.
-- [x] Update `GEMINI.md` to describe the new landing page and its role.
-- [x] Verify responsiveness across multiple device sizes (Desktop, Tablet, Mobile).
-- [x] Final project-wide check for any branding inconsistencies.
+## Phase 6: Final Polish & Assets
+- [ ] **Request Assets:** User to provide high-res Hero and Fascial Chain visuals from `nano banana`.
+- [ ] Integrate provided assets and finalize visual timings.
+- [ ] Optimize for 60FPS using `RepaintBoundary` on complex shader sections.
+- [ ] Update `GEMINI.md` and `README.md`.
 
 ---
 *Note: After completing a task, if you added any TODOs to the code or didn't fully implement anything, make sure to add new tasks so that you can come back and complete them later.*

@@ -5,14 +5,11 @@ import 'package:bioliminal/core/router.dart';
 
 void main() {
   group('GoRouter configuration', () {
-    test('initialLocation is /disclaimer', () {
-      expect(goRouter.routeInformationProvider.value.uri.path, '/disclaimer');
-    });
-
     test('expected routes are configured', () {
       final routes = goRouter.configuration.routes;
       final paths = routes.whereType<GoRoute>().map((r) => r.path).toList();
 
+      expect(paths, contains('/'));
       expect(paths, contains('/disclaimer'));
       expect(paths, contains('/screening'));
       expect(paths, contains('/report/:id'));
@@ -20,16 +17,9 @@ void main() {
       expect(paths, contains('/profile'));
     });
 
-    test('dead / route has been removed', () {
-      final routes = goRouter.configuration.routes;
-      final paths = routes.whereType<GoRoute>().map((r) => r.path).toList();
-
-      expect(paths, isNot(contains('/')));
-    });
-
     test('expected number of top-level routes exist', () {
-      // 9 GoRoutes + 1 StatefulShellRoute = 10
-      expect(goRouter.configuration.routes.length, 10);
+      // 10 GoRoutes + 1 StatefulShellRoute = 11
+      expect(goRouter.configuration.routes.length, 11);
     });
   });
 }

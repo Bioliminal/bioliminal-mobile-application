@@ -1,33 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:responsive_builder/responsive_builder.dart';
 import '../../../core/theme.dart';
 
-class LandingPageView extends StatelessWidget {
+class LandingPageView extends StatefulWidget {
   const LandingPageView({super.key});
+
+  @override
+  State<LandingPageView> createState() => _LandingPageViewState();
+}
+
+class _LandingPageViewState extends State<LandingPageView> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BioliminalTheme.screenBackground,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const _StickyNavbar(),
-            ResponsiveBuilder(
-              builder: (context, sizingInformation) {
-                return const Column(
-                  children: [
-                    _HeroSection(),
-                    _VisionSection(),
-                    _InsightSection(),
-                    _TrustSection(),
-                    _FinalCTA(),
-                  ],
-                );
-              },
-            ),
-          ],
+      body: AdaptiveLiquidGlassLayer(
+        child: GlassMotionScope(
+          // Specular highlights follow the scroll position
+          lightAngle: _scrollController.hasClients
+              ? Stream.value(_scrollController.offset / 1000.0)
+              : const Stream.empty(),
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              const _StickyNavbar(),
+              SliverToBoxAdapter(
+                child: ResponsiveBuilder(
+                  builder: (context, sizingInformation) {
+                    return Column(
+                      children: [
+                        _HeroSection(controller: _scrollController),
+                        _VisionSection(controller: _scrollController),
+                        _InsightSection(controller: _scrollController),
+                        _TrustSection(controller: _scrollController),
+                        const _FinalCTA(),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -39,17 +63,16 @@ class _StickyNavbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: BioliminalTheme.screenBackground.withValues(alpha: 0.8),
-        border: const Border(bottom: BorderSide(color: Colors.white10)),
-      ),
-      child: Row(
-        children: [
-          Semantics(
-            label: 'BIOLIMINAL',
-            child: Text(
+    return SliverAppBar(
+      floating: true,
+      pinned: true,
+      backgroundColor: Colors.transparent,
+      flexibleSpace: GlassAppBar(
+        useOwnLayer: true,
+        backgroundColor: BioliminalTheme.screenBackground.withValues(alpha: 0.5),
+        title: Row(
+          children: [
+            Text(
               'BIOLIMINAL',
               style: GoogleFonts.oswald(
                 fontSize: 24,
@@ -58,20 +81,19 @@ class _StickyNavbar extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-          ),
-          const Spacer(),
-          const _NavButton(label: 'Features'),
-          const _NavButton(label: 'Research'),
-          const SizedBox(width: 16),
-          FilledButton(
-            onPressed: () {},
-            style: FilledButton.styleFrom(
-              backgroundColor: BioliminalTheme.accent,
-              foregroundColor: BioliminalTheme.screenBackground,
+            const Spacer(),
+            const _NavButton(label: 'Features'),
+            const _NavButton(label: 'Research'),
+            const SizedBox(width: 16),
+            GlassButton.custom(
+              onTap: () {},
+              width: 120,
+              height: 40,
+              child: const Text('GET THE APP',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
-            child: const Text('GET THE APP'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -94,76 +116,49 @@ class _NavButton extends StatelessWidget {
 }
 
 class _HeroSection extends StatelessWidget {
-  const _HeroSection();
+  final ScrollController controller;
+  const _HeroSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 700,
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        image: DecorationImage(
-          image: AssetImage('assets/reference_images/overhead_squat.jpg'),
-          fit: BoxFit.cover,
-          opacity: 0.2,
+    return Animate(
+      adapter: ScrollAdapter(controller, begin: 0, end: 500),
+      effects: [
+        const FadeEffect(begin: 1, end: 0),
+        const ScaleEffect(begin: Offset(1, 1), end: Offset(1.2, 1.2)),
+      ],
+      child: Container(
+        height: 800,
+        width: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/reference_images/overhead_squat.jpg'),
+            fit: BoxFit.cover,
+            opacity: 0.2,
+          ),
         ),
-      ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Semantics(
-                label: 'REDEFINE MOVEMENT.',
-                child: Text(
-                  'REDEFINE MOVEMENT.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.oswald(
-                    fontSize: 84,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -2,
-                    color: Colors.white,
-                  ),
+              Text(
+                'REDEFINE MOVEMENT.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.oswald(
+                  fontSize: 100,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -4,
+                  color: Colors.white,
                 ),
-              ),
+              ).animate().fadeIn(duration: 1.seconds).slideY(begin: 0.2, end: 0),
               const SizedBox(height: 24),
-              Semantics(
-                label:
-                    'AI-powered biomechanics tracing compensations to their fascial root cause. Clinical-grade screening in your pocket.',
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: const Text(
-                    'AI-powered biomechanics tracing compensations to their fascial root cause. Clinical-grade screening in your pocket.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white70,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 48),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  FilledButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.play_arrow),
-                    label: const Text('WATCH THE DEMO'),
-                  ),
-                  const SizedBox(width: 16),
-                  OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white24),
-                    ),
-                    child: const Text('EXPLORE RESEARCH'),
-                  ),
-                ],
-              ),
+              const Text(
+                'Vision Beyond Sight.',
+                style: TextStyle(
+                    fontSize: 24,
+                    color: BioliminalTheme.accent,
+                    letterSpacing: 4),
+              ).animate().fadeIn(delay: 500.ms),
             ],
           ),
         ),
@@ -173,57 +168,58 @@ class _HeroSection extends StatelessWidget {
 }
 
 class _VisionSection extends StatelessWidget {
-  const _VisionSection();
+  final ScrollController controller;
+  const _VisionSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
-      color: BioliminalTheme.surface,
+      padding: const EdgeInsets.symmetric(vertical: 150, horizontal: 24),
       width: double.infinity,
       child: Column(
         children: [
-          Semantics(
-            label: 'THE VISION',
+          Animate(
+            adapter: ScrollAdapter(controller, begin: 400, end: 800),
+            effects: const [
+              FadeEffect(),
+              SlideEffect(begin: Offset(0, 0.2), end: Offset.zero)
+            ],
             child: Text(
               'THE VISION',
               style: GoogleFonts.oswald(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                letterSpacing: 2,
+                letterSpacing: 4,
                 color: BioliminalTheme.accent,
               ),
             ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            '33-Landmark High-Fidelity Tracking',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 64),
-          const Wrap(
+          const SizedBox(height: 100),
+          Wrap(
             spacing: 40,
             runSpacing: 40,
             alignment: WrapAlignment.center,
             children: [
               _FeatureCard(
                 title: 'Real-Time Pose',
-                description: 'MediaPipe BlazePose Full captures clinical-grade data at 30+ FPS.',
+                description: 'Clinical-grade data at 30+ FPS.',
                 icon: Icons.accessibility_new,
+                controller: controller,
+                begin: 600,
               ),
               _FeatureCard(
                 title: 'Joint Kinetics',
-                description: 'Proprietary rule-based engine calculates precise joint angles and moments.',
+                description: 'Proprietary rule-based engine.',
                 icon: Icons.calculate,
+                controller: controller,
+                begin: 700,
               ),
               _FeatureCard(
                 title: 'Tactile Feedback',
-                description: 'Real-time cueing retrains movement patterns mid-repetition.',
+                description: 'Pattern retraining mid-rep.',
                 icon: Icons.vibration,
+                controller: controller,
+                begin: 800,
               ),
             ],
           ),
@@ -234,106 +230,73 @@ class _VisionSection extends StatelessWidget {
 }
 
 class _InsightSection extends StatelessWidget {
-  const _InsightSection();
+  final ScrollController controller;
+  const _InsightSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 150, horizontal: 24),
       width: double.infinity,
       child: Column(
         children: [
-          Semantics(
-            label: 'THE INSIGHT',
-            child: Text(
-              'THE INSIGHT',
-              style: GoogleFonts.oswald(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-                color: BioliminalTheme.accent,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Fascial Chain Mapping',
-            style: TextStyle(
-              fontSize: 32,
+          Text(
+            'THE INSIGHT',
+            style: GoogleFonts.oswald(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              letterSpacing: 4,
+              color: BioliminalTheme.accent,
             ),
           ),
-          const SizedBox(height: 64),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    _ChainPoint(title: 'Superficial Back Line', value: 'Overhead Reach'),
-                    SizedBox(height: 32),
-                    _ChainPoint(title: 'Lateral Line', value: 'SLS Stability'),
-                    SizedBox(height: 32),
-                    _ChainPoint(title: 'Spiral Line', value: 'Rotational Power'),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 64),
-              Container(
-                height: 500,
-                width: 300,
-                decoration: BioliminalTheme.glassEffect.copyWith(
-                  image: const DecorationImage(
-                    image: AssetImage('assets/reference_images/overhead_reach.jpg'),
-                    fit: BoxFit.cover,
-                    opacity: 0.2,
+          const SizedBox(height: 100),
+          GlassPanel(
+            width: 1000,
+            height: 600,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(48),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Beyond Joint Metrics',
+                          style: GoogleFonts.oswald(
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(height: 24),
+                        const Text(
+                          'Bioliminal identifies the upstream drivers of movement dysfunction by mapping patterns to established fascial chains.',
+                          style: TextStyle(
+                              fontSize: 18, color: Colors.white70, height: 1.6),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: Center(
-                  child: Icon(Icons.hub, size: 80, color: Colors.white.withValues(alpha: 0.1)),
-                ),
-              ),
-              const SizedBox(width: 64),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Beyond Joint Metrics',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                Container(
+                  width: 400,
+                  decoration: const BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(
+                          'assets/reference_images/overhead_reach.jpg'),
+                      fit: BoxFit.cover,
+                      opacity: 0.3,
                     ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Bioliminal doesn\'t just see the joint—it sees the system. By mapping compensation patterns to established fascial chains, we identify the upstream drivers of movement dysfunction.',
-                      style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.6),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ).animate(adapter: ScrollAdapter(controller, begin: 1200, end: 1600))
+            ..scale(begin: const Offset(0.8, 0.8))
+            ..fadeIn(),
         ],
       ),
-    );
-  }
-}
-
-class _ChainPoint extends StatelessWidget {
-  final String title;
-  final String value;
-  const _ChainPoint({required this.title, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Text(title, style: const TextStyle(color: BioliminalTheme.accent, fontWeight: FontWeight.bold)),
-        Text(value, style: const TextStyle(color: Colors.white70, fontSize: 18)),
-      ],
     );
   }
 }
@@ -342,66 +305,76 @@ class _FeatureCard extends StatelessWidget {
   final String title;
   final String description;
   final IconData icon;
+  final ScrollController controller;
+  final double begin;
 
   const _FeatureCard({
     required this.title,
     required this.description,
     required this.icon,
+    required this.controller,
+    required this.begin,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 320,
-      padding: const EdgeInsets.all(32),
-      decoration: BioliminalTheme.glassEffect,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: BioliminalTheme.accent, size: 40),
-          const SizedBox(height: 24),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+    return Animate(
+      adapter: ScrollAdapter(controller, begin: begin, end: begin + 300),
+      effects: const [
+        FadeEffect(),
+        SlideEffect(begin: Offset(0, 0.1), end: Offset.zero)
+      ],
+      child: GlassCard(
+        width: 320,
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(icon, color: BioliminalTheme.accent, size: 40),
+            const SizedBox(height: 24),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            description,
-            style: const TextStyle(color: Colors.white60, height: 1.5),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              description,
+              style: const TextStyle(color: Colors.white60, height: 1.5),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class _TrustSection extends StatelessWidget {
-  const _TrustSection();
+  final ScrollController controller;
+  const _TrustSection({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 100, horizontal: 24),
-      color: BioliminalTheme.surface,
+      padding: const EdgeInsets.symmetric(vertical: 150, horizontal: 24),
       width: double.infinity,
-      child: const Column(
+      child: Column(
         children: [
-          Icon(Icons.verified_user, size: 64, color: Colors.white10),
-          SizedBox(height: 32),
+          const Icon(Icons.verified_user, size: 80, color: Colors.white10),
+          const SizedBox(height: 48),
           Text(
-            'Clinical-Grade Logic',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Built on established clinical protocols and validated against gold-standard biomechanics data.',
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white60),
-          ),
+            'CLINICAL-GRADE LOGIC',
+            style: GoogleFonts.oswald(
+              fontSize: 48,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ).animate(adapter: ScrollAdapter(controller, begin: 1800, end: 2200))
+            ..blur(begin: const Offset(10, 10), end: Offset.zero)
+            ..fadeIn(),
         ],
       ),
     );
@@ -414,54 +387,53 @@ class _FinalCTA extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 120, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 150, horizontal: 24),
       width: double.infinity,
       child: Column(
         children: [
           Text(
             'READY TO BEGIN?',
             style: GoogleFonts.oswald(
-              fontSize: 48,
+              fontSize: 64,
               fontWeight: FontWeight.w900,
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 24),
-          const Text(
-            'Transform your movement practice today with Bioliminal.',
-            style: TextStyle(fontSize: 18, color: Colors.white70),
-          ),
-          const SizedBox(height: 48),
-          const Row(
+          const SizedBox(height: 64),
+          Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _StoreButton(icon: Icons.apple, label: 'App Store'),
-              SizedBox(width: 24),
-              _StoreButton(icon: Icons.android, label: 'Play Store'),
+              GlassButton.custom(
+                onTap: () {},
+                width: 160,
+                height: 56,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.apple),
+                    SizedBox(width: 8),
+                    Text('App Store'),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 24),
+              GlassButton.custom(
+                onTap: () {},
+                width: 160,
+                height: 56,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.android),
+                    SizedBox(width: 8),
+                    Text('Play Store'),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StoreButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _StoreButton({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {},
-      style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white24),
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-      ),
-      icon: Icon(icon),
-      label: Text(label),
     );
   }
 }
