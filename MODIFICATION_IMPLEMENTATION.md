@@ -15,20 +15,22 @@ This plan outlines the steps to replace all remaining occurrences of "AuraLink" 
 - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
 - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
 - [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
-- [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
+## Journal
+- Phase 1: Pre-implementation Validation completed. All tests passed (+190 ~4). `analyze_files` returned no errors. `dart_format` formatted 34 files.
+- Phase 2: Platform Configuration Updates completed. Updated `ios/Runner/Info.plist` to change `CFBundleDisplayName` to "Bioliminal". Fixed a unrelated lint issue in `lib/features/camera/widgets/skeleton_overlay.dart` found during validation. All tests pass and analysis is clean.
 
 ## Phase 2: Platform Configuration Updates
-- [ ] Update `ios/Runner/Info.plist`: Change `<string>Auralink</string>` to `<string>Bioliminal</string>`.
-- [ ] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-- [ ] Run the `dart_fix` tool to clean up the code.
-- [ ] Run the `analyze_files` tool one more time and fix any issues.
-- [ ] Run any tests to make sure they all pass.
-- [ ] Run `dart_format` to make sure that the formatting is correct.
-- [ ] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
-- [ ] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
-- [ ] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
-- [ ] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
-- [ ] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
+- [x] Update `ios/Runner/Info.plist`: Change `<string>Auralink</string>` to `<string>Bioliminal</string>`.
+- [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
+- [x] Run the `dart_fix` tool to clean up the code.
+- [x] Run the `analyze_files` tool one more time and fix any issues.
+- [x] Run any tests to make sure they all pass.
+- [x] Run `dart_format` to make sure that the formatting is correct.
+- [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan, and if it has changed, take care of anything the changes imply.
+- [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state, including any learnings, surprises, or deviations in the Journal section. Check off any checkboxes of items that have been completed.
+- [x] Use `git diff` to verify the changes that have been made, and create a suitable commit message for any changes.
+- [x] Wait for approval. Don't commit the changes or move on to the next phase of implementation until the user approves the commit.
+- [x] After committing the change, if an app is running, use the `hot_reload` tool to reload it.
 
 ## Phase 3: Script and Tooling Updates
 - [ ] Update `mobile-handover/tools/export_schemas.py`: Replace `auralink` with `bioliminal` in comments and imports.

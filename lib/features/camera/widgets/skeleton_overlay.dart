@@ -92,8 +92,9 @@ class SkeletonPainter extends CustomPainter {
     for (var i = 0; i < blazePoseConnections.length; i++) {
       final connection = blazePoseConnections[i];
       if (connection.$1 >= landmarks.length ||
-          connection.$2 >= landmarks.length)
+          connection.$2 >= landmarks.length) {
         continue;
+      }
 
       final startLm = landmarks[connection.$1];
       final endLm = landmarks[connection.$2];
