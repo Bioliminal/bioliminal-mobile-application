@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke-test: POST the sample fixture to a running auralink server.
+# Smoke-test: POST the sample fixture to a running bioliminal server.
 #
 # Usage:
 #   ./post_sample.sh                       # defaults to http://localhost:8000

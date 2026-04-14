@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate schemas/session.schema.json from the live pydantic models.
 
-Run after any change to software/server/src/auralink/api/schemas.py to keep
+Run after any change to software/server/src/bioliminal/api/schemas.py to keep
 the mobile-handover JSON schema in lockstep.
 
 Usage:
@@ -20,7 +20,7 @@ SERVER_SRC = HANDOVER.parent / "server" / "src"
 SCHEMA_OUT = HANDOVER / "schemas" / "session.schema.json"
 
 sys.path.insert(0, str(SERVER_SRC))
-from auralink.api.schemas import Session  # noqa: E402
+from bioliminal.api.schemas import Session  # noqa: E402
 
 schema = Session.model_json_schema()
 SCHEMA_OUT.parent.mkdir(parents=True, exist_ok=True)
