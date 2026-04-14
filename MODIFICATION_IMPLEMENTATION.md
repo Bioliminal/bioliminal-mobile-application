@@ -4,7 +4,7 @@ This plan outlines the steps to realign the Bioliminal application flow, focusin
 
 ## Phase 1: Preparation & Baseline
 - [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Perform a project-wide search for any remaining "AuraLink" strings (case-insensitive) in comments, strings, or configs and update to "Bioliminal".
+- [x] Perform a project-wide search for any remaining "Bioliminal" strings (case-insensitive) in comments, strings, or configs and update to "Bioliminal".
 - [x] Ensure all existing tests pass on the current branch.
 
 ### Phase 1 Completion Checklist
