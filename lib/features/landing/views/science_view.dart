@@ -1,9 +1,16 @@
 import 'package:flutter/material.dart';
 
 import '../../waitlist/services/waitlist_service.dart';
+import '../widgets/figure_big.dart';
 import '../widgets/marketing_tokens.dart';
+import '../widgets/premium_atmosphere.dart';
+import '../widgets/scroll_reveal.dart';
 import '../widgets/site_footer.dart';
 import '../widgets/top_nav.dart';
+
+// Signature for this page: cyan glow + cyan wash.
+const _tint = SectionTint.cyan;
+const _wash = SectionTint.cyanWash;
 
 class ScienceView extends StatelessWidget {
   const ScienceView({super.key});
@@ -12,23 +19,31 @@ class ScienceView extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: MarketingPalette.bg,
-      body: CustomScrollView(
-        slivers: [
-          TopNav(currentPath: '/science', source: WaitlistSource.science),
-          SliverToBoxAdapter(child: _Hero()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _ChainsSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _ExcludedSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _SkepticsSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _TestingSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _LimitsSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(
-              child: SiteFooter(source: WaitlistSource.science)),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomScrollView(
+            slivers: [
+              TopNav(currentPath: '/science', source: WaitlistSource.science),
+              SliverToBoxAdapter(child: _Hero()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _EvidenceWall()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _ChainsSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _ExcludedSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _SkepticsSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _TestingSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _LimitsSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(
+                  child: SiteFooter(source: WaitlistSource.science)),
+            ],
+          ),
+          Positioned.fill(child: FilmGrainOverlay()),
         ],
       ),
     );
@@ -41,40 +56,136 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 140,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('SCIENCE'),
-          SizedBox(height: narrow ? 28 : 44),
-          Text(
-            'Nothing moves\nalone.',
-            style: mktDisplay(
-              narrow ? 64 : 132,
-              italic: true,
-              letterSpacing: -3,
-              height: 0.95,
-            ),
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: AtmosphereGlow(color: _tint),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: mktGutter(context),
+            vertical: narrow ? 72 : 140,
           ),
-          SizedBox(height: narrow ? 28 : 40),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
-              'A knee that collapses is often compensating for an ankle that can\'t move. '
-              'The pain site is rarely the cause. We encode the three fascial chains with '
-              'strong anatomical evidence and trace compensations back to their upstream driver.',
-              style: mktBody(
-                narrow ? 17 : 20,
-                color: MarketingPalette.muted,
-                height: 1.55,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ScrollReveal(
+                child: MarketingSectionLabel('SCIENCE'),
+              ),
+              SizedBox(height: narrow ? 28 : 44),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 80),
+                child: Text(
+                  'Nothing moves\nalone.',
+                  style: mktDisplay(
+                    narrow ? 64 : 132,
+                    italic: true,
+                    letterSpacing: -3,
+                    height: 0.95,
+                  ),
+                ),
+              ),
+              SizedBox(height: narrow ? 28 : 40),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 160),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: Text(
+                    'A knee that collapses is often compensating for an ankle that can\'t move. '
+                    'The pain site is rarely the cause. We encode the three fascial chains with '
+                    'strong anatomical evidence and trace compensations back to their upstream driver.',
+                    style: mktBody(
+                      narrow ? 17 : 20,
+                      color: MarketingPalette.muted,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _EvidenceWall extends StatelessWidget {
+  const _EvidenceWall();
+
+  @override
+  Widget build(BuildContext context) {
+    final narrow = mktNarrow(context);
+    final isDesktop = MediaQuery.of(context).size.width >= 1280;
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.9, -0.3),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('EVIDENCE STACK'),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'The credentials,\nbefore the argument.',
+                style: mktDisplay(narrow ? 36 : 56,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
               ),
             ),
-          ),
-        ],
+            SizedBox(height: narrow ? 48 : 80),
+            Wrap(
+              spacing: isDesktop ? 80 : 56,
+              runSpacing: 56,
+              children: const [
+                ScrollReveal(
+                  delay: Duration(milliseconds: 180),
+                  child: FigureBig(
+                    value: '3',
+                    unit: 'CHAINS',
+                    label: 'ENCODED — SBL / BFL / FFL',
+                    accent: _tint,
+                  ),
+                ),
+                ScrollReveal(
+                  delay: Duration(milliseconds: 260),
+                  child: FigureBig(
+                    value: '28',
+                    unit: 'STUDIES',
+                    label: 'INDEPENDENT CITATIONS',
+                    accent: _tint,
+                  ),
+                ),
+                ScrollReveal(
+                  delay: Duration(milliseconds: 340),
+                  child: FigureBig(
+                    value: '8',
+                    unit: 'TRANSITIONS',
+                    label: 'CADAVERICALLY VERIFIED',
+                    accent: _tint,
+                  ),
+                ),
+                ScrollReveal(
+                  delay: Duration(milliseconds: 420),
+                  child: FigureBig(
+                    value: '2',
+                    unit: 'REVIEWS',
+                    label: 'WILKE (2016) + KALICHMAN (2025)',
+                    accent: _tint,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -92,49 +203,82 @@ class _ChainsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('CHAINS WE USE'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Three pathways.\nStrong evidence only.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
-              'Source: Wilke et al. (2016), Archives of Physical Medicine and Rehabilitation. '
-              'Independently confirmed by Kalichman (2025) — a separate review that does not '
-              'cite Wilke yet reaches the same evidence hierarchy.',
-              style: mktBody(
-                narrow ? 15 : 17,
-                color: MarketingPalette.muted,
-                height: 1.55,
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, 0.3),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('CHAINS WE USE'),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Three pathways.\nStrong evidence only.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
               ),
             ),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          _ChainsTableHeader(narrow: narrow),
-          ..._rows.map((r) => _ChainRow(
-              name: r.$1,
-              code: r.$2,
-              evidence: r.$3,
-              verified: r.$4,
-              studies: r.$5,
-              narrow: narrow)),
-        ],
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 160),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Text(
+                  'Source: Wilke et al. (2016), Archives of Physical Medicine and Rehabilitation. '
+                  'Independently confirmed by Kalichman (2025) — a separate review that does not '
+                  'cite Wilke yet reaches the same evidence hierarchy.',
+                  style: mktBody(
+                    narrow ? 15 : 17,
+                    color: MarketingPalette.muted,
+                    height: 1.55,
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 240),
+              child: _ChainsTableHeader(narrow: narrow),
+            ),
+            ..._rows.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 300 + e.key * 70),
+                  child: _ChainRow(
+                      name: e.value.$1,
+                      code: e.value.$2,
+                      evidence: e.value.$3,
+                      verified: e.value.$4,
+                      studies: e.value.$5,
+                      narrow: narrow),
+                )),
+          ],
+        ),
       ),
     );
   }
 }
+
+// Shared table grammar for the two chains tables: CHAIN | EVIDENCE |
+// VERIFIED | STUDIES. Consistent flex factors keep header cells aligned
+// with row cells at every viewport width.
+const _chainFlex = [5, 2, 2, 2];
+
+Widget _chainTh(String s) => Text(
+      s,
+      style: mktMono(
+        10,
+        color: MarketingPalette.subtle,
+        letterSpacing: 2.4,
+        weight: FontWeight.w600,
+      ),
+    );
 
 class _ChainsTableHeader extends StatelessWidget {
   const _ChainsTableHeader({required this.narrow});
@@ -142,15 +286,6 @@ class _ChainsTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget th(String s) => Text(
-          s,
-          style: mktMono(
-            10,
-            color: MarketingPalette.subtle,
-            letterSpacing: 2.6,
-            weight: FontWeight.w600,
-          ),
-        );
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14),
       decoration: const BoxDecoration(
@@ -159,22 +294,18 @@ class _ChainsTableHeader extends StatelessWidget {
           bottom: BorderSide(color: MarketingPalette.hairline, width: 1),
         ),
       ),
-      child: narrow
-          ? Row(
-              children: [
-                Expanded(flex: 2, child: th('CHAIN')),
-                Expanded(child: th('VERIFIED')),
-                Expanded(child: th('STUDIES')),
-              ],
-            )
-          : Row(
-              children: [
-                SizedBox(width: 360, child: th('CHAIN')),
-                SizedBox(width: 140, child: th('EVIDENCE')),
-                SizedBox(width: 180, child: th('VERIFIED TRANSITIONS')),
-                Expanded(child: th('INDEPENDENT STUDIES')),
-              ],
-            ),
+      child: Row(
+        children: [
+          Expanded(flex: _chainFlex[0], child: _chainTh('CHAIN')),
+          Expanded(flex: _chainFlex[1], child: _chainTh('EVIDENCE')),
+          Expanded(
+              flex: _chainFlex[2],
+              child: _chainTh(narrow ? 'VERIFIED' : 'VERIFIED TRANSITIONS')),
+          Expanded(
+              flex: _chainFlex[3],
+              child: _chainTh(narrow ? 'STUDIES' : 'INDEPENDENT STUDIES')),
+        ],
+      ),
     );
   }
 }
@@ -204,83 +335,52 @@ class _ChainRow extends StatelessWidget {
           bottom: BorderSide(color: MarketingPalette.hairline, width: 1),
         ),
       ),
-      child: narrow
-          ? Row(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: _chainFlex[0],
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(name,
-                          style: mktBody(15,
-                              weight: FontWeight.w600,
-                              color: MarketingPalette.text)),
-                      const SizedBox(height: 2),
-                      Text(code,
-                          style: mktMono(11,
-                              color: MarketingPalette.signal,
-                              letterSpacing: 2)),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Text(verified,
-                      style: mktMono(13,
-                          color: MarketingPalette.text,
-                          weight: FontWeight.w600)),
-                ),
-                Expanded(
-                  child: Text(studies,
-                      style: mktMono(13,
-                          color: MarketingPalette.muted,
-                          weight: FontWeight.w500)),
-                ),
-              ],
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 360,
-                  child: Row(
-                    children: [
-                      Text(name,
-                          style: mktBody(18,
-                              weight: FontWeight.w600,
-                              color: MarketingPalette.text)),
-                      const SizedBox(width: 14),
-                      Text(code,
-                          style: mktMono(11,
-                              color: MarketingPalette.signal,
-                              letterSpacing: 2.4)),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 140,
-                  child: Text(evidence,
-                      style: mktMono(13,
-                          color: MarketingPalette.signal,
-                          weight: FontWeight.w600,
-                          letterSpacing: 1.4)),
-                ),
-                SizedBox(
-                  width: 180,
-                  child: Text(verified,
-                      style: mktMono(14,
-                          color: MarketingPalette.text,
-                          weight: FontWeight.w600)),
-                ),
-                Expanded(
-                  child: Text(studies,
-                      style: mktMono(14,
-                          color: MarketingPalette.muted,
-                          weight: FontWeight.w500)),
-                ),
+                Text(name,
+                    style: mktBody(narrow ? 15 : 18,
+                        weight: FontWeight.w600,
+                        color: MarketingPalette.text,
+                        height: 1.3)),
+                const SizedBox(height: 4),
+                Text(code,
+                    style: mktMono(11,
+                        color: MarketingPalette.signal,
+                        letterSpacing: 2.4,
+                        weight: FontWeight.w600)),
               ],
             ),
+          ),
+          Expanded(
+            flex: _chainFlex[1],
+            child: Text(evidence,
+                style: mktMono(narrow ? 12 : 13,
+                    color: MarketingPalette.signal,
+                    weight: FontWeight.w600,
+                    letterSpacing: 1.4)),
+          ),
+          Expanded(
+            flex: _chainFlex[2],
+            child: Text(verified,
+                style: mktMono(narrow ? 13 : 14,
+                    color: MarketingPalette.text,
+                    weight: FontWeight.w600)),
+          ),
+          Expanded(
+            flex: _chainFlex[3],
+            child: Text(studies,
+                style: mktMono(narrow ? 13 : 14,
+                    color: MarketingPalette.muted,
+                    weight: FontWeight.w500)),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -297,80 +397,97 @@ class _ExcludedSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('CHAINS WE DO NOT USE'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Saying no is\npart of the science.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Text(
-              'These chains appear in the commercial fascial-training world. Their anatomical '
-              'evidence does not meet the Wilke threshold. Including them would give coverage '
-              'we have not earned.',
-              style: mktBody(narrow ? 15 : 17,
-                  color: MarketingPalette.muted, height: 1.55),
-            ),
-          ),
-          SizedBox(height: narrow ? 32 : 48),
-          Container(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            decoration: const BoxDecoration(
-              border: Border(
-                top: BorderSide(color: MarketingPalette.hairline, width: 1),
-                bottom: BorderSide(color: MarketingPalette.hairline, width: 1),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.85, 0.5),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: MarketingSectionLabel('CHAINS WE DO NOT USE'),
               ),
             ),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: narrow ? 200 : 320,
-                  child: Text('CHAIN',
-                      style: mktMono(10,
-                          color: MarketingPalette.subtle,
-                          letterSpacing: 2.6,
-                          weight: FontWeight.w600)),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Saying no is\npart of the science.',
+                  textAlign: TextAlign.right,
+                  style: mktDisplay(narrow ? 38 : 64,
+                      italic: true, letterSpacing: -1.5, height: 1.02),
                 ),
-                if (!narrow)
-                  SizedBox(
-                    width: 160,
-                    child: Text('EVIDENCE',
-                        style: mktMono(10,
-                            color: MarketingPalette.subtle,
-                            letterSpacing: 2.6,
-                            weight: FontWeight.w600)),
-                  ),
-                Expanded(
-                  child: Text('VERIFIED TRANSITIONS',
-                      style: mktMono(10,
-                          color: MarketingPalette.subtle,
-                          letterSpacing: 2.6,
-                          weight: FontWeight.w600)),
-                ),
-                if (!narrow)
-                  SizedBox(
-                    width: 160,
-                    child: Text('',
-                        style: mktMono(10,
-                            color: MarketingPalette.subtle,
-                            letterSpacing: 2.6)),
-                  ),
-              ],
+              ),
             ),
-          ),
-          ..._rows.map((r) => _ExcludedRow(
-              name: r.$1, evidence: r.$2, verified: r.$3, status: r.$4, narrow: narrow)),
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 160),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 680),
+                  child: Text(
+                    'These chains appear in the commercial fascial-training world. Their anatomical '
+                    'evidence does not meet the Wilke threshold. Including them would give coverage '
+                    'we have not earned.',
+                    textAlign: TextAlign.right,
+                    style: mktBody(narrow ? 15 : 17,
+                        color: MarketingPalette.muted, height: 1.55),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 32 : 48),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 220),
+              child: _ExcludedTableHeader(narrow: narrow),
+            ),
+            ..._rows.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 280 + e.key * 70),
+                  child: _ExcludedRow(
+                      name: e.value.$1,
+                      evidence: e.value.$2,
+                      verified: e.value.$3,
+                      status: e.value.$4,
+                      narrow: narrow),
+                )),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ExcludedTableHeader extends StatelessWidget {
+  const _ExcludedTableHeader({required this.narrow});
+  final bool narrow;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: MarketingPalette.hairline, width: 1),
+          bottom: BorderSide(color: MarketingPalette.hairline, width: 1),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(flex: _chainFlex[0], child: _chainTh('CHAIN')),
+          Expanded(flex: _chainFlex[1], child: _chainTh('EVIDENCE')),
+          Expanded(
+              flex: _chainFlex[2],
+              child: _chainTh(narrow ? 'VERIFIED' : 'VERIFIED TRANSITIONS')),
+          Expanded(flex: _chainFlex[3], child: _chainTh('STATUS')),
         ],
       ),
     );
@@ -403,37 +520,37 @@ class _ExcludedRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(
-            width: narrow ? 200 : 320,
+          Expanded(
+            flex: _chainFlex[0],
             child: Text(name,
                 style: mktBody(narrow ? 15 : 18,
                     weight: FontWeight.w600,
-                    color: MarketingPalette.muted)),
+                    color: MarketingPalette.muted,
+                    height: 1.3)),
           ),
-          if (!narrow)
-            SizedBox(
-              width: 160,
-              child: Text(evidence,
-                  style: mktMono(13,
-                      color: MarketingPalette.muted,
-                      letterSpacing: 1.4)),
-            ),
           Expanded(
+            flex: _chainFlex[1],
+            child: Text(evidence,
+                style: mktMono(narrow ? 12 : 13,
+                    color: MarketingPalette.muted,
+                    letterSpacing: 1.4)),
+          ),
+          Expanded(
+            flex: _chainFlex[2],
             child: Text(verified,
                 style: mktMono(narrow ? 13 : 14,
                     color: MarketingPalette.muted, weight: FontWeight.w500)),
           ),
-          if (!narrow)
-            SizedBox(
-              width: 160,
-              child: Text(
-                status,
-                style: mktMono(11,
-                    color: MarketingPalette.warn,
-                    letterSpacing: 2.4,
-                    weight: FontWeight.w600),
-              ),
+          Expanded(
+            flex: _chainFlex[3],
+            child: Text(
+              status,
+              style: mktMono(narrow ? 10 : 11,
+                  color: MarketingPalette.warn,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w600),
             ),
+          ),
         ],
       ),
     );
@@ -446,45 +563,124 @@ class _SkepticsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('ENGAGING SKEPTICS'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'The critique is\nreal. Our method\nsidesteps it.',
-            style: mktDisplay(narrow ? 38 : 60,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 28 : 44),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Text(
-              'Greg Lehman\'s critique — that fascial force transmission maxes out at ~10cm in '
-              'cadaveric studies — targets direct mechanical chain effects. We agree.',
-              style: mktBody(narrow ? 16 : 18,
-                  color: MarketingPalette.muted, height: 1.55),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, -0.4),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 96 : 160,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const ScrollReveal(
+                  child: Center(
+                    child: MarketingSectionLabel('ENGAGING SKEPTICS'),
+                  ),
+                ),
+                SizedBox(height: narrow ? 40 : 64),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 80),
+                  child: Text(
+                    '\u201C',
+                    style: mktDisplay(
+                      narrow ? 140 : 220,
+                      italic: true,
+                      weight: FontWeight.w500,
+                      color: _tint.withValues(alpha: 0.55),
+                      height: 0.7,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ),
+                SizedBox(height: narrow ? 12 : 20),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 180),
+                  child: Text(
+                    'Fascial force transmission maxes out at ~10 cm\nin cadaveric studies.',
+                    textAlign: TextAlign.center,
+                    style: mktDisplay(
+                      narrow ? 28 : 44,
+                      italic: true,
+                      weight: FontWeight.w500,
+                      letterSpacing: -1,
+                      height: 1.15,
+                    ),
+                  ),
+                ),
+                SizedBox(height: narrow ? 36 : 56),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 260),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 1,
+                        color: MarketingPalette.muted,
+                      ),
+                      const SizedBox(width: 16),
+                      Text(
+                        'GREG LEHMAN  /  MECHANICAL CRITIQUE',
+                        style: mktMono(
+                          11,
+                          color: MarketingPalette.muted,
+                          letterSpacing: 2.8,
+                          weight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 48,
+                        height: 1,
+                        color: MarketingPalette.muted,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: narrow ? 48 : 80),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 340),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Text(
+                      'We agree — and our method sidesteps it.',
+                      textAlign: TextAlign.center,
+                      style: mktBody(
+                        narrow ? 18 : 22,
+                        weight: FontWeight.w600,
+                        color: MarketingPalette.text,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: narrow ? 20 : 28),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 420),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 720),
+                    child: Text(
+                      'Our approach does not depend on long-range force transmission. We detect '
+                      'co-occurring compensatory movement patterns that practitioners empirically '
+                      'associate with chain dysfunction. Whether the mechanism is fascial tension, '
+                      'neuromuscular compensation, or habitual patterning, the observable video '
+                      'signature is the same.',
+                      textAlign: TextAlign.center,
+                      style: mktBody(narrow ? 16 : 17,
+                          color: MarketingPalette.muted, height: 1.6),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Text(
-              'Our approach does not depend on long-range force transmission. We detect '
-              'co-occurring compensatory movement patterns that practitioners empirically '
-              'associate with chain dysfunction. Whether the mechanism is fascial tension, '
-              'neuromuscular compensation, or habitual patterning, the observable video '
-              'signature is the same.',
-              style: mktBody(narrow ? 16 : 18,
-                  color: MarketingPalette.muted, height: 1.55),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -514,36 +710,54 @@ class _TestingSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('WHAT WE ARE TESTING'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Three unvalidated\ninferences.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Text(
-              'Validated against 2–3 clinicians on 10 test subjects. Layered evaluation: do our '
-              'measurements match observations, do clinicians agree with our chain mapping, is '
-              'chain-aware output more useful than symptom-only output.',
-              style: mktBody(narrow ? 15 : 17,
-                  color: MarketingPalette.muted, height: 1.55),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.9, 0.3),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('WHAT WE ARE TESTING'),
             ),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          ..._items.map((i) =>
-              _TestingRow(index: i.$1, title: i.$2, desc: i.$3, narrow: narrow)),
-        ],
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Three unvalidated\ninferences.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
+              ),
+            ),
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 160),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: Text(
+                  'Validated against 2–3 clinicians on 10 test subjects. Layered evaluation: do our '
+                  'measurements match observations, do clinicians agree with our chain mapping, is '
+                  'chain-aware output more useful than symptom-only output.',
+                  style: mktBody(narrow ? 15 : 17,
+                      color: MarketingPalette.muted, height: 1.55),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ..._items.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 220 + e.key * 70),
+                  child: _TestingRow(
+                      index: e.value.$1,
+                      title: e.value.$2,
+                      desc: e.value.$3,
+                      narrow: narrow),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -638,25 +852,39 @@ class _LimitsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 140,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('KNOWN LIMITS'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Honest about\nwhere it breaks.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          ..._items.map((i) => _LimitRow(
-              headline: i.$1, detail: i.$2, narrow: narrow)),
-        ],
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, 0.6),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 140,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('KNOWN LIMITS'),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Honest about\nwhere it breaks.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ..._items.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 160 + e.key * 70),
+                  child: _LimitRow(
+                      headline: e.value.$1,
+                      detail: e.value.$2,
+                      narrow: narrow),
+                )),
+          ],
+        ),
       ),
     );
   }

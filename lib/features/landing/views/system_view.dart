@@ -3,9 +3,16 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../waitlist/services/waitlist_service.dart';
+import '../widgets/figure_big.dart';
 import '../widgets/marketing_tokens.dart';
+import '../widgets/premium_atmosphere.dart';
+import '../widgets/scroll_reveal.dart';
 import '../widgets/site_footer.dart';
 import '../widgets/top_nav.dart';
+
+// Signature for this page: emerald glow + emerald wash.
+const _tint = SectionTint.emerald;
+const _wash = SectionTint.emeraldWash;
 
 class SystemView extends StatelessWidget {
   const SystemView({super.key});
@@ -14,20 +21,27 @@ class SystemView extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: MarketingPalette.bg,
-      body: CustomScrollView(
-        slivers: [
-          TopNav(currentPath: '/system', source: WaitlistSource.system),
-          SliverToBoxAdapter(child: _Hero()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _PipelineSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _AccuracySection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _StackSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _NovelSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: SiteFooter(source: WaitlistSource.system)),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomScrollView(
+            slivers: [
+              TopNav(currentPath: '/system', source: WaitlistSource.system),
+              SliverToBoxAdapter(child: _Hero()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _PipelineSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _AccuracySection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _StackSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _NovelSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(
+                  child: SiteFooter(source: WaitlistSource.system)),
+            ],
+          ),
+          Positioned.fill(child: FilmGrainOverlay()),
         ],
       ),
     );
@@ -40,41 +54,56 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 140,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('SYSTEM'),
-          SizedBox(height: narrow ? 28 : 44),
-          Text(
-            'Open-source\nchain reasoning\nengine.',
-            style: mktDisplay(
-              narrow ? 56 : 108,
-              italic: true,
-              letterSpacing: -2.5,
-              height: 0.95,
-            ),
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: AtmosphereGlow(color: _tint),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: mktGutter(context),
+            vertical: narrow ? 72 : 140,
           ),
-          SizedBox(height: narrow ? 28 : 40),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
-              'No neural network. A rule system that encodes expert fascial-chain logic '
-              'into computable rules, running in the browser on 33 body landmarks per frame. '
-              'The intelligence is the logic, not a black box.',
-              style: mktBody(
-                narrow ? 17 : 20,
-                color: MarketingPalette.muted,
-                height: 1.55,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const ScrollReveal(
+                child: MarketingSectionLabel('SYSTEM'),
               ),
-            ),
+              SizedBox(height: narrow ? 28 : 44),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 80),
+                child: Text(
+                  'Open-source\nchain reasoning\nengine.',
+                  style: mktDisplay(
+                    narrow ? 56 : 108,
+                    italic: true,
+                    letterSpacing: -2.5,
+                    height: 0.95,
+                  ),
+                ),
+              ),
+              SizedBox(height: narrow ? 28 : 40),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 160),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: Text(
+                    'No neural network. A rule system that encodes expert fascial-chain logic '
+                    'into computable rules, running in the browser on 33 body landmarks per frame. '
+                    'The intelligence is the logic, not a black box.',
+                    style: mktBody(
+                      narrow ? 17 : 20,
+                      color: MarketingPalette.muted,
+                      height: 1.55,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -95,38 +124,55 @@ class _PipelineSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('PIPELINE'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Seven steps,\nzero server hops.',
-            style: mktDisplay(narrow ? 38 : 64, italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 32 : 56),
-          ...List.generate(_steps.length, (i) {
-            final (idx, code, desc) = _steps[i];
-            return _PipelineRow(
-              index: idx,
-              code: code,
-              description: desc,
-              isLast: i == _steps.length - 1,
-            );
-          }),
-        ],
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.9, -0.3),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('PIPELINE'),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Seven steps,\nzero server hops.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 72),
+            ...List.generate(_steps.length, (i) {
+              final (idx, code, desc) = _steps[i];
+              return ScrollReveal(
+                delay: Duration(milliseconds: 160 + i * 70),
+                child: _TimelineStep(
+                  index: idx,
+                  code: code,
+                  description: desc,
+                  isLast: i == _steps.length - 1,
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _PipelineRow extends StatelessWidget {
-  const _PipelineRow({
+// Subway-map timeline: a rail of emerald dots connected by a thin vertical
+// line on the left, with each step's code + description to the right. The
+// final dot has no connector below, so the rail terminates cleanly at 07.
+class _TimelineStep extends StatelessWidget {
+  const _TimelineStep({
     required this.index,
     required this.code,
     required this.description,
@@ -141,66 +187,97 @@ class _PipelineRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: isLast ? Colors.transparent : MarketingPalette.hairline,
-            width: 1,
-          ),
-        ),
-      ),
-      child: narrow
-          ? Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final railWidth = narrow ? 32.0 : 56.0;
+    final dotSize = narrow ? 12.0 : 16.0;
+    final gap = narrow ? 18.0 : 28.0;
+    final bottomPad = isLast ? 0.0 : (narrow ? 28.0 : 44.0);
+
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: railWidth,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Text(index,
-                        style: mktMono(11,
-                            color: MarketingPalette.signal,
-                            weight: FontWeight.w600,
-                            letterSpacing: 2.4)),
-                    const SizedBox(width: 16),
-                    Text(code,
-                        style: mktMono(12,
-                            color: MarketingPalette.text,
-                            weight: FontWeight.w600,
-                            letterSpacing: 2.8)),
-                  ],
+                // Dot sits at the top; aligns with the first text line.
+                Padding(
+                  padding: EdgeInsets.only(top: narrow ? 2 : 4),
+                  child: Container(
+                    width: dotSize,
+                    height: dotSize,
+                    decoration: BoxDecoration(
+                      color: _tint,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _tint.withValues(alpha: 0.55),
+                          blurRadius: 10,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 8),
-                Text(description,
-                    style: mktBody(15, color: MarketingPalette.muted, height: 1.5)),
-              ],
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 60,
-                  child: Text(index,
-                      style: mktMono(11,
-                          color: MarketingPalette.signal,
-                          weight: FontWeight.w600,
-                          letterSpacing: 2.4)),
-                ),
-                SizedBox(
-                  width: 160,
-                  child: Text(code,
-                      style: mktMono(12,
-                          color: MarketingPalette.text,
-                          weight: FontWeight.w600,
-                          letterSpacing: 2.8)),
-                ),
-                Expanded(
-                  child: Text(description,
-                      style:
-                          mktBody(16, color: MarketingPalette.muted, height: 1.5)),
-                ),
+                if (!isLast)
+                  Expanded(
+                    child: Container(
+                      width: 1,
+                      margin: const EdgeInsets.only(top: 6),
+                      color: _tint.withValues(alpha: 0.35),
+                    ),
+                  ),
               ],
             ),
+          ),
+          SizedBox(width: gap),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomPad),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        index,
+                        style: mktMono(
+                          narrow ? 11 : 12,
+                          color: MarketingPalette.signal,
+                          weight: FontWeight.w600,
+                          letterSpacing: 2.4,
+                        ),
+                      ),
+                      SizedBox(width: narrow ? 14 : 20),
+                      Text(
+                        code,
+                        style: mktMono(
+                          narrow ? 13 : 15,
+                          color: MarketingPalette.text,
+                          weight: FontWeight.w600,
+                          letterSpacing: 2.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: narrow ? 10 : 14),
+                  Text(
+                    description,
+                    style: mktBody(
+                      narrow ? 15 : 17,
+                      color: MarketingPalette.muted,
+                      height: 1.55,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -217,42 +294,99 @@ class _AccuracySection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('MEASUREMENT'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'What we\ncan actually\nmeasure.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 680),
-            child: Text(
-              'Published error bounds for phone-camera pose estimation, not vendor marketing numbers. '
-              'Real-world degrades with occlusion, loose clothing, lighting. Ankle-dependent findings '
-              'carry explicit reduced confidence.',
-              style: mktBody(narrow ? 15 : 17,
-                  color: MarketingPalette.muted, height: 1.55),
+    final isDesktop = MediaQuery.of(context).size.width >= 1280;
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, 0.3),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('MEASUREMENT'),
             ),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          _AccuracyTableHeader(narrow: narrow),
-          ..._rows.map((r) =>
-              _AccuracyTableRow(joint: r.$1, controlled: r.$2, real: r.$3, ok: r.$4, narrow: narrow)),
-          SizedBox(height: narrow ? 20 : 28),
-          Text(
-            'Controlled = lab MAE. Real-world = published phone-camera estimates.',
-            style: mktMono(11, color: MarketingPalette.subtle, letterSpacing: 1.6),
-          ),
-        ],
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'What we\ncan actually\nmeasure.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
+              ),
+            ),
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 160),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: Text(
+                  'Published error bounds for phone-camera pose estimation, not vendor marketing numbers. '
+                  'Real-world degrades with occlusion, loose clothing, lighting. Ankle-dependent findings '
+                  'carry explicit reduced confidence.',
+                  style: mktBody(narrow ? 15 : 17,
+                      color: MarketingPalette.muted, height: 1.55),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 48 : 72),
+            Wrap(
+              spacing: isDesktop ? 72 : 48,
+              runSpacing: 48,
+              children: const [
+                ScrollReveal(
+                  delay: Duration(milliseconds: 220),
+                  child: FigureBig(
+                    value: '2.4',
+                    unit: '° MAE',
+                    label: 'HIP — LAB ACCURACY',
+                    accent: _tint,
+                  ),
+                ),
+                ScrollReveal(
+                  delay: Duration(milliseconds: 300),
+                  child: FigureBig(
+                    value: '2.8',
+                    unit: '° MAE',
+                    label: 'KNEE — LAB ACCURACY',
+                    accent: _tint,
+                  ),
+                ),
+                ScrollReveal(
+                  delay: Duration(milliseconds: 380),
+                  child: FigureBig(
+                    value: '33',
+                    unit: 'LM',
+                    label: 'BLAZEPOSE LANDMARKS',
+                    accent: _tint,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 440),
+              child: _AccuracyTableHeader(narrow: narrow),
+            ),
+            ..._rows.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 500 + e.key * 70),
+                  child: _AccuracyTableRow(
+                      joint: e.value.$1,
+                      controlled: e.value.$2,
+                      real: e.value.$3,
+                      ok: e.value.$4,
+                      narrow: narrow),
+                )),
+            SizedBox(height: narrow ? 20 : 28),
+            Text(
+              'Controlled = lab MAE. Real-world = published phone-camera estimates.',
+              style: mktMono(11, color: MarketingPalette.subtle, letterSpacing: 1.6),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -376,24 +510,44 @@ class _StackSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('STACK'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Five moving parts.\nNo server.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          ..._items.map((i) => _StackRow(name: i.$1, purpose: i.$2)),
-        ],
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.85, 0.5),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: MarketingSectionLabel('STACK'),
+              ),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Five moving parts.\nNo server.',
+                  textAlign: TextAlign.right,
+                  style: mktDisplay(narrow ? 38 : 64,
+                      italic: true, letterSpacing: -1.5, height: 1.02),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ..._items.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 160 + e.key * 70),
+                  child: _StackRow(name: e.value.$1, purpose: e.value.$2),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -454,47 +608,66 @@ class _NovelSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 140,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('NOVEL'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Zero cross-citations\nbetween the fields\nneeded to build this.',
-            style: mktDisplay(narrow ? 36 : 60,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 28 : 44),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Text(
-              'A citation analysis of 7 landmark papers across computer vision, biomechanics, '
-              'and fascial-chain science (4,071 classified citing papers via Semantic Scholar, '
-              'April 2026) found zero cross-citations between computer-vision and fascial-chain '
-              'research in either direction.',
-              style: mktBody(narrow ? 16 : 18,
-                  color: MarketingPalette.muted, height: 1.55),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, -0.4),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 140,
+        ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const ScrollReveal(
+                  child: MarketingSectionLabel('NOVEL'),
+                ),
+                SizedBox(height: narrow ? 24 : 36),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 80),
+                  child: Text(
+                    'Zero cross-citations\nbetween the fields\nneeded to build this.',
+                    textAlign: TextAlign.center,
+                    style: mktDisplay(narrow ? 36 : 60,
+                        italic: true, letterSpacing: -1.5, height: 1.05),
+                  ),
+                ),
+                SizedBox(height: narrow ? 28 : 44),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 180),
+                  child: Text(
+                    'A citation analysis of 7 landmark papers across computer vision, biomechanics, '
+                    'and fascial-chain science (4,071 classified citing papers via Semantic Scholar, '
+                    'April 2026) found zero cross-citations between computer-vision and fascial-chain '
+                    'research in either direction.',
+                    textAlign: TextAlign.center,
+                    style: mktBody(narrow ? 16 : 18,
+                        color: MarketingPalette.muted, height: 1.6),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ScrollReveal(
+                  delay: const Duration(milliseconds: 260),
+                  child: Text(
+                    'The three fields required to build this tool have no history of academic exchange. '
+                    'Commercial platforms stop at kinematics. We built the interpretation layer between them.',
+                    textAlign: TextAlign.center,
+                    style: mktBody(narrow ? 15 : 17,
+                        color: MarketingPalette.muted, height: 1.6),
+                  ),
+                ),
+                SizedBox(height: narrow ? 40 : 60),
+                const ScrollReveal(
+                  delay: Duration(milliseconds: 340),
+                  child: _InlineCodeLink(),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 760),
-            child: Text(
-              'The three fields required to build this tool have no history of academic exchange. '
-              'Commercial platforms (Kinetisense, DARI Motion, Uplift Labs, VueMotion, Model Health) '
-              'stop at kinematics. We built the interpretation layer between them.',
-              style: mktBody(narrow ? 15 : 17,
-                  color: MarketingPalette.muted, height: 1.55),
-            ),
-          ),
-          SizedBox(height: narrow ? 40 : 60),
-          const _InlineCodeLink(),
-        ],
+        ),
       ),
     );
   }
@@ -511,7 +684,6 @@ class _InlineCodeLinkState extends State<_InlineCodeLink> {
   bool _hover = false;
 
   Future<void> _openOrRoute() async {
-    // Prefer the on-site /code page for the multi-repo story.
     if (!mounted) return;
     context.go('/code');
   }

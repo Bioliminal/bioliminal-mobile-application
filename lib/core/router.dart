@@ -45,31 +45,36 @@ final goRouter = GoRouter(
     return null;
   },
   routes: [
-    // Full-screen routes
+    // Marketing routes — web-style navigation (no mobile slide transition).
     GoRoute(
       path: '/',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const LandingPageView(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: LandingPageView()),
     ),
     GoRoute(
       path: '/system',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SystemView(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: SystemView()),
     ),
     GoRoute(
       path: '/science',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const ScienceView(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: ScienceView()),
     ),
     GoRoute(
       path: '/demo',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const DemoView(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: DemoView()),
     ),
     GoRoute(
       path: '/code',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const CodeView(),
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: CodeView()),
     ),
     GoRoute(
       path: '/disclaimer',

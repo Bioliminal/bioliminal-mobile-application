@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../waitlist/services/waitlist_service.dart';
+import '../widgets/instrument_button.dart';
 import '../widgets/marketing_tokens.dart';
+import '../widgets/premium_atmosphere.dart';
+import '../widgets/scroll_reveal.dart';
 import '../widgets/site_footer.dart';
 import '../widgets/top_nav.dart';
+
+// Signature for this page: indigo glow + sky wash.
+const _tint = SectionTint.indigo;
+const _wash = SectionTint.skyWash;
 
 class DemoView extends StatelessWidget {
   const DemoView({super.key});
@@ -13,18 +21,24 @@ class DemoView extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Scaffold(
       backgroundColor: MarketingPalette.bg,
-      body: CustomScrollView(
-        slivers: [
-          TopNav(currentPath: '/demo', source: WaitlistSource.demo),
-          SliverToBoxAdapter(child: _Hero()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _WhatSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _SetupSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: _StartSection()),
-          SliverToBoxAdapter(child: MarketingDivider()),
-          SliverToBoxAdapter(child: SiteFooter(source: WaitlistSource.demo)),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          CustomScrollView(
+            slivers: [
+              TopNav(currentPath: '/demo', source: WaitlistSource.demo),
+              SliverToBoxAdapter(child: _Hero()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _WhatSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _SetupSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: _StartSection()),
+              SliverToBoxAdapter(child: MarketingDivider()),
+              SliverToBoxAdapter(child: SiteFooter(source: WaitlistSource.demo)),
+            ],
+          ),
+          Positioned.fill(child: FilmGrainOverlay()),
         ],
       ),
     );
@@ -37,38 +51,345 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 140,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('DEMO'),
-          SizedBox(height: narrow ? 28 : 44),
-          Text(
-            'One movement.\nThirty seconds.',
-            style: mktDisplay(
-              narrow ? 56 : 108,
-              italic: true,
-              letterSpacing: -2.5,
-              height: 0.95,
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: AtmosphereGlow(color: _tint),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: mktGutter(context),
+            vertical: narrow ? 48 : 72,
+          ),
+          child: narrow ? const _HeroStacked() : const _HeroSplit(),
+        ),
+      ],
+    );
+  }
+}
+
+// Desktop layout — viewfinder on the left, text block on the right.
+// Keeps the whole hero inside one viewport.
+class _HeroSplit extends StatelessWidget {
+  const _HeroSplit();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 5,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 560),
+            child: const ScrollReveal(
+              delay: Duration(milliseconds: 80),
+              child: _ViewfinderFrame(narrow: false),
             ),
           ),
-          SizedBox(height: narrow ? 28 : 40),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
-              'This demo is scope-frozen to a single bicep curl. The full 4-movement screen '
-              '(overhead squat, single-leg balance, overhead reach, forward fold) ships with v2. '
-              'Join the waitlist to hear when it does.',
-              style: mktBody(
-                narrow ? 17 : 20,
-                color: MarketingPalette.muted,
-                height: 1.55,
+        ),
+        const SizedBox(width: 64),
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const ScrollReveal(
+                child: MarketingSectionLabel('DEMO'),
+              ),
+              const SizedBox(height: 28),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 140),
+                child: Text(
+                  'One movement.\nThirty seconds.',
+                  style: mktDisplay(
+                    72,
+                    italic: true,
+                    letterSpacing: -2,
+                    height: 0.98,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 28),
+              ScrollReveal(
+                delay: const Duration(milliseconds: 220),
+                child: Text(
+                  'Live demo ships with v1 — scope-frozen to a single bicep curl. '
+                  'The full 4-movement screen (overhead squat, single-leg balance, '
+                  'overhead reach, forward fold) follows in v2. Join the waitlist '
+                  'to hear when it lands.',
+                  style: mktBody(
+                    17,
+                    color: MarketingPalette.muted,
+                    height: 1.55,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroStacked extends StatelessWidget {
+  const _HeroStacked();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ScrollReveal(
+          child: MarketingSectionLabel('DEMO'),
+        ),
+        const SizedBox(height: 20),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 80),
+          child: Text(
+            'One movement.\nThirty seconds.',
+            style: mktDisplay(
+              44,
+              italic: true,
+              letterSpacing: -2,
+              height: 0.98,
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+        const ScrollReveal(
+          delay: Duration(milliseconds: 160),
+          child: _ViewfinderFrame(narrow: true),
+        ),
+        const SizedBox(height: 24),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 260),
+          child: Text(
+            'Live demo ships with v1 — scope-frozen to a single bicep curl. '
+            'The full 4-movement screen follows in v2. Join the waitlist to '
+            'hear when it lands.',
+            style: mktBody(
+              16,
+              color: MarketingPalette.muted,
+              height: 1.55,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Camera viewfinder — corner brackets, rule-of-thirds, REC indicator, slate
+// code. Since the live demo isn't built yet, a prominent UNDER CONSTRUCTION
+// pill sits centered inside the frame so users don't expect it to work.
+class _ViewfinderFrame extends StatelessWidget {
+  const _ViewfinderFrame({required this.narrow});
+  final bool narrow;
+
+  @override
+  Widget build(BuildContext context) {
+    final innerPad = narrow ? 14.0 : 20.0;
+    final bracketInset = narrow ? 8.0 : 12.0;
+
+    return AspectRatio(
+      aspectRatio: 4 / 3,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.32),
+          border: Border.all(
+            color: _tint.withValues(alpha: 0.22),
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          children: [
+            const Positioned.fill(
+              child: IgnorePointer(child: _RuleOfThirds()),
+            ),
+            Positioned(
+                top: bracketInset,
+                left: bracketInset,
+                child: const _CornerBracket(top: true, left: true)),
+            Positioned(
+                top: bracketInset,
+                right: bracketInset,
+                child: const _CornerBracket(top: true, left: false)),
+            Positioned(
+                bottom: bracketInset,
+                left: bracketInset,
+                child: const _CornerBracket(top: false, left: true)),
+            Positioned(
+                bottom: bracketInset,
+                right: bracketInset,
+                child: const _CornerBracket(top: false, left: false)),
+            Positioned(
+              top: innerPad,
+              left: innerPad,
+              child: Text(
+                'DEMO  /  01  ·  BICEP CURL',
+                style: mktMono(
+                  narrow ? 9 : 10,
+                  color: MarketingPalette.muted,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w600,
+                ),
               ),
             ),
+            Positioned(
+              top: innerPad,
+              right: innerPad,
+              child: Row(
+                children: [
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFF87171),
+                      shape: BoxShape.circle,
+                    ),
+                  )
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .fadeOut(
+                        duration: 820.ms,
+                        curve: Curves.easeInOut,
+                        begin: 1,
+                      ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'REC  00:00:30',
+                    style: mktMono(
+                      narrow ? 9 : 10,
+                      color: const Color(0xFFF87171),
+                      letterSpacing: 2.4,
+                      weight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Centered under-construction pill.
+            Positioned.fill(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: narrow ? 14 : 18,
+                        vertical: narrow ? 8 : 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: MarketingPalette.warn.withValues(alpha: 0.08),
+                        border: Border.all(
+                          color:
+                              MarketingPalette.warn.withValues(alpha: 0.65),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'UNDER CONSTRUCTION',
+                        style: mktMono(
+                          narrow ? 11 : 13,
+                          color: MarketingPalette.warn,
+                          letterSpacing: 3.2,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: narrow ? 14 : 18),
+                    Text(
+                      'Live demo lands with v1.',
+                      style: mktMono(
+                        narrow ? 10 : 11,
+                        color: MarketingPalette.muted,
+                        letterSpacing: 1.8,
+                        weight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              right: innerPad,
+              bottom: innerPad,
+              child: Text(
+                '30 FPS  ·  f/1.8',
+                style: mktMono(
+                  narrow ? 9 : 10,
+                  color: MarketingPalette.subtle,
+                  letterSpacing: 2.2,
+                  weight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RuleOfThirds extends StatelessWidget {
+  const _RuleOfThirds();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(painter: _RuleOfThirdsPainter());
+  }
+}
+
+class _RuleOfThirdsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = MarketingPalette.text.withValues(alpha: 0.08)
+      ..strokeWidth = 0.5;
+    final v1 = size.width / 3;
+    final v2 = 2 * size.width / 3;
+    final h1 = size.height / 3;
+    final h2 = 2 * size.height / 3;
+    canvas.drawLine(Offset(v1, 0), Offset(v1, size.height), paint);
+    canvas.drawLine(Offset(v2, 0), Offset(v2, size.height), paint);
+    canvas.drawLine(Offset(0, h1), Offset(size.width, h1), paint);
+    canvas.drawLine(Offset(0, h2), Offset(size.width, h2), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _RuleOfThirdsPainter oldDelegate) => false;
+}
+
+class _CornerBracket extends StatelessWidget {
+  const _CornerBracket({required this.top, required this.left});
+  final bool top;
+  final bool left;
+
+  @override
+  Widget build(BuildContext context) {
+    const len = 24.0;
+    const stroke = 1.5;
+    final color = _tint.withValues(alpha: 0.8);
+    return SizedBox(
+      width: len,
+      height: len,
+      child: Stack(
+        children: [
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: len, height: stroke, color: color),
+          ),
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: stroke, height: len, color: color),
           ),
         ],
       ),
@@ -93,25 +414,38 @@ class _WhatSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('WHAT IT TRACKS'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Four signals,\none rep at a time.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          ..._bullets.map((b) =>
-              _WhatRow(code: b.$1, desc: b.$2, narrow: narrow)),
-        ],
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.9, -0.4),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('WHAT IT TRACKS'),
+            ),
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Four signals,\none rep at a time.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ..._bullets.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 160 + e.key * 70),
+                  child: _WhatRow(
+                      code: e.value.$1, desc: e.value.$2, narrow: narrow),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -189,35 +523,64 @@ class _SetupSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('SETUP'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Before you start.',
-            style: mktDisplay(narrow ? 38 : 64,
-                italic: true, letterSpacing: -1.5, height: 1.02),
-          ),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: Text(
-              'Tracking quality depends on these four. The app checks them one at a time before '
-              'the rep begins — this is a preview of what to expect.',
-              style: mktBody(narrow ? 15 : 17,
-                  color: MarketingPalette.muted, height: 1.55),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(-0.85, 0.4),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 72 : 120,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const ScrollReveal(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: MarketingSectionLabel('SETUP'),
+              ),
             ),
-          ),
-          SizedBox(height: narrow ? 40 : 56),
-          ..._items.map((i) => _SetupRow(
-              index: i.$1, code: i.$2, desc: i.$3, narrow: narrow)),
-        ],
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  'Before\nyou start.',
+                  textAlign: TextAlign.right,
+                  style: mktDisplay(narrow ? 38 : 64,
+                      italic: true, letterSpacing: -1.5, height: 1.02),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 160),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 700),
+                  child: Text(
+                    'Tracking quality depends on these four. The app checks them one at a time before '
+                    'the rep begins — this is a preview of what to expect.',
+                    textAlign: TextAlign.right,
+                    style: mktBody(narrow ? 15 : 17,
+                        color: MarketingPalette.muted, height: 1.55),
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 56),
+            ..._items.asMap().entries.map((e) => ScrollReveal(
+                  delay: Duration(milliseconds: 220 + e.key * 70),
+                  child: _SetupRow(
+                      index: e.value.$1,
+                      code: e.value.$2,
+                      desc: e.value.$3,
+                      narrow: narrow),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -303,87 +666,56 @@ class _StartSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: mktGutter(context),
-        vertical: narrow ? 96 : 160,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const MarketingSectionLabel('START'),
-          SizedBox(height: narrow ? 24 : 36),
-          Text(
-            'Camera on.\nOne clean rep.',
-            style: mktDisplay(narrow ? 44 : 80,
-                italic: true, letterSpacing: -2, height: 0.98),
-          ),
-          SizedBox(height: narrow ? 40 : 60),
-          const _StartButton(),
-          SizedBox(height: narrow ? 24 : 32),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 560),
-            child: Text(
-              'The next screen asks for camera permission. Nothing uploads. You can close the '
-              'tab at any point without leaving a trace on any server.',
-              style: mktBody(narrow ? 14 : 15,
-                  color: MarketingPalette.subtle, height: 1.55),
+    return SectionShell(
+      tint: _tint,
+      glow: const Alignment(0.85, 0.7),
+      washTint: _wash,
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: mktGutter(context),
+          vertical: narrow ? 96 : 160,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const ScrollReveal(
+              child: MarketingSectionLabel('START'),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _StartButton extends StatefulWidget {
-  const _StartButton();
-
-  @override
-  State<_StartButton> createState() => _StartButtonState();
-}
-
-class _StartButtonState extends State<_StartButton> {
-  bool _hover = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: GestureDetector(
-        onTap: () => context.go('/capture'),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-          decoration: BoxDecoration(
-            color: _hover ? MarketingPalette.signal : Colors.transparent,
-            border: Border.all(color: MarketingPalette.signal, width: 1.4),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'START THE REP',
-                style: mktMono(
-                  12,
-                  color: _hover ? MarketingPalette.bg : MarketingPalette.signal,
-                  letterSpacing: 3.2,
-                  weight: FontWeight.w600,
+            SizedBox(height: narrow ? 24 : 36),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 80),
+              child: Text(
+                'Camera on.\nOne clean rep.',
+                textAlign: TextAlign.center,
+                style: mktDisplay(narrow ? 44 : 80,
+                    italic: true, letterSpacing: -2, height: 0.98),
+              ),
+            ),
+            SizedBox(height: narrow ? 40 : 60),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 180),
+              child: InstrumentButton(
+                label: 'START THE REP',
+                hint: 'CAMERA →',
+                filled: true,
+                onTap: () => context.go('/capture'),
+              ),
+            ),
+            SizedBox(height: narrow ? 24 : 32),
+            ScrollReveal(
+              delay: const Duration(milliseconds: 260),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: Text(
+                  'The next screen asks for camera permission. Nothing uploads. You can close the '
+                  'tab at any point without leaving a trace on any server.',
+                  textAlign: TextAlign.center,
+                  style: mktBody(narrow ? 14 : 15,
+                      color: MarketingPalette.subtle, height: 1.55),
                 ),
               ),
-              const SizedBox(width: 16),
-              Text(
-                '→',
-                style: mktMono(
-                  15,
-                  color: _hover ? MarketingPalette.bg : MarketingPalette.signal,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
