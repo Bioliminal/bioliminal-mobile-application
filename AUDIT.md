@@ -1,4 +1,4 @@
-# AuraLink Audit Report
+# Bioliminal Audit Report
 
 **Date:** 2026-04-08
 **Scope:** Full project — /Users/kelsiandrews/capstone
@@ -7,7 +7,7 @@
 
 ## Executive Summary
 
-AuraLink is a Flutter movement screening app with a well-designed domain model and comprehensive rule-based clinical logic. The Gemini pass found 12 issues; Claude confirmed 7, downgraded 1, and rejected 3 (false positives). Claude independently found 24 additional issues. The merged report contains 31 confirmed findings: 0 critical, 7 high, 13 medium, 11 low. The most significant issues are: (1) the entire ML pipeline is stubbed — no real pose estimation exists, (2) the privacy disclaimer contradicts the Firebase sync infrastructure, (3) authentication is never triggered so Firestore will throw on access, (4) report deep-linking is broken, and (5) there is effectively no test coverage. Score: **0/100** — high finding volume across all sections, weighted heavily by security and bugs.
+Bioliminal is a Flutter movement screening app with a well-designed domain model and comprehensive rule-based clinical logic. The Gemini pass found 12 issues; Claude confirmed 7, downgraded 1, and rejected 3 (false positives). Claude independently found 24 additional issues. The merged report contains 31 confirmed findings: 0 critical, 7 high, 13 medium, 11 low. The most significant issues are: (1) the entire ML pipeline is stubbed — no real pose estimation exists, (2) the privacy disclaimer contradicts the Firebase sync infrastructure, (3) authentication is never triggered so Firestore will throw on access, (4) report deep-linking is broken, and (5) there is effectively no test coverage. Score: **0/100** — high finding volume across all sections, weighted heavily by security and bugs.
 
 ## Score Breakdown
 

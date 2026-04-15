@@ -4,9 +4,8 @@ import 'dart:developer' as developer;
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/domain/services/pose_estimation_service.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/domain/models.dart';
 
 // ---------------------------------------------------------------------------
 // CameraState — sealed class covering the full permission + lifecycle surface
@@ -33,7 +32,7 @@ class CameraReady extends CameraState {
 class CameraStreaming extends CameraState {
   const CameraStreaming({required this.controller, this.landmarks = const []});
   final CameraController controller;
-  final List<Landmark> landmarks;
+  final List<PoseLandmark> landmarks;
 }
 
 class CameraError extends CameraState {
@@ -47,16 +46,15 @@ class CameraError extends CameraState {
 
 class AppCameraController extends AsyncNotifier<CameraState> {
   CameraController? _cameraController;
-  StreamSubscription<dynamic>? _landmarkSubscription;
   bool _isProcessing = false;
 
   @override
-  FutureOr<CameraState> build() => const CameraUninitialized();
+  FutureOr<CameraState> build() {
+    return const CameraUninitialized();
+  }
 
   /// Release all internal camera resources without touching provider state.
   Future<void> _releaseCamera() async {
-    await _landmarkSubscription?.cancel();
-    _landmarkSubscription = null;
     _cameraController?.dispose();
     _cameraController = null;
   }
@@ -75,7 +73,6 @@ class AppCameraController extends AsyncNotifier<CameraState> {
       orElse: () => cameras.first,
     );
 
-    // If we were streaming, we should restart streaming after switching.
     final wasStreaming = current is CameraStreaming;
 
     await requestPermission(specificCamera: newDesc);
@@ -117,8 +114,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
       state = AsyncData(CameraReady(controller: _cameraController!));
     } on CameraException catch (e) {
-      // CameraException code 'CameraAccessDenied' means user denied.
       if (e.code == 'CameraAccessDenied' ||
+          e.code == 'CameraPermissionDenied' ||
           e.code == 'CameraAccessDeniedWithoutPrompt') {
         final permanent = e.code == 'CameraAccessDeniedWithoutPrompt';
         state = AsyncData(CameraPermissionDenied(permanent: permanent));
@@ -130,7 +127,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     }
   }
 
-  /// Begin streaming frames to the pose estimation service.
+  /// Begin streaming frames to the pose detection service.
   Future<void> startStreaming() async {
     final current = state.value;
     if (current is! CameraReady && current is! CameraStreaming) return;
@@ -140,34 +137,36 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         : (current as CameraStreaming).controller;
 
     try {
-      final poseService = ref.read(poseEstimationServiceProvider);
-
-      // Cancel any previous subscription to ensure a clean state.
-      await _landmarkSubscription?.cancel();
       _isProcessing = false;
 
-      // Start the camera stream.
+      // Start the camera image stream.
       await controller.startImageStream((CameraImage image) {
-        _handleFrame(image, poseService);
+        _handleFrame(image);
       });
 
-      // We maintain one long-running subscription to the landmarks stream.
-      // The stream itself is handled by the poseService.
       state = AsyncData(CameraStreaming(controller: controller));
     } catch (e) {
       state = AsyncData(CameraError(message: 'Failed to start streaming: $e'));
     }
   }
 
-  void _handleFrame(CameraImage image, PoseEstimationService poseService) {
+  void _handleFrame(CameraImage image) {
     if (_isProcessing) return;
     _isProcessing = true;
 
-    // Process the frame. The service handles the heavy lifting.
-    // We listen to the first result and then reset the busy flag.
-    poseService
-        .processFrame(image)
-        .first
+    final poseDetector = ref.read(poseDetectorProvider);
+    final description = ref.read(cameraDescriptionProvider);
+    final sensorOrientation = description?.sensorOrientation ?? 0;
+    final lensDirection =
+        description?.lensDirection ?? CameraLensDirection.back;
+
+    // Calculate rotation based on sensor orientation and lens.
+    final rotationDegrees = (lensDirection == CameraLensDirection.front)
+        ? (360 - sensorOrientation) % 360
+        : sensorOrientation;
+
+    poseDetector
+        .processFrame(image, rotationDegrees: rotationDegrees)
         .then(
           (landmarks) {
             updateLandmarks(landmarks);
@@ -175,7 +174,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
           },
           onError: (e) {
             developer.log(
-              'Pose estimation error',
+              'Pose detection error',
               error: e,
               name: 'CameraController',
             );
@@ -191,8 +190,6 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
     try {
       await current.controller.stopImageStream();
-      await _landmarkSubscription?.cancel();
-      _landmarkSubscription = null;
       state = AsyncData(CameraReady(controller: current.controller));
     } catch (e) {
       state = AsyncData(CameraError(message: 'Failed to stop streaming: $e'));
@@ -205,8 +202,8 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     state = const AsyncData(CameraUninitialized());
   }
 
-  /// Update landmarks from pose estimation (called by the service integration).
-  void updateLandmarks(List<Landmark> landmarks) {
+  /// Update landmarks from pose estimation.
+  void updateLandmarks(List<PoseLandmark> landmarks) {
     final current = state.value;
     if (current is CameraStreaming) {
       state = AsyncData(
@@ -226,9 +223,7 @@ final appCameraControllerProvider =
     );
 
 /// Derived provider exposing only the current landmarks.
-/// Widgets that only need landmark data watch this instead of the full
-/// camera state — avoids rebuilds on camera lifecycle transitions.
-final currentLandmarksProvider = Provider<List<Landmark>>((ref) {
+final currentLandmarksProvider = Provider<List<PoseLandmark>>((ref) {
   final cameraState = ref.watch(appCameraControllerProvider).value;
   if (cameraState is CameraStreaming) {
     return cameraState.landmarks;

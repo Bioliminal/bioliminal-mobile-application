@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sensor Purchase Plan — Fastest Path to Proof</title>
+<style>
+  :root{--bg:#0a0a0f;--surface:#141420;--surface2:#1c1c2e;--border:#2a2a40;--text:#e0e0e8;--dim:#8888a0;--mute:#5a5a70;--t1:#ff6b35;--t2:#00d4aa;--t3:#7b68ee;--gold:#ffd700;--blue:#4a9eff}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);line-height:1.65;padding:2rem;max-width:960px;margin:0 auto}
+  h1{font-size:1.7rem;margin-bottom:.4rem;background:linear-gradient(135deg,var(--t1),var(--t3));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  h2{font-size:1.2rem;margin:2rem 0 .75rem;padding-bottom:.5rem;border-bottom:1px solid var(--border)}
+  h3{font-size:.95rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin:1.5rem 0 .5rem}
+  .sub{color:var(--dim);font-size:.85rem;margin-bottom:2rem;max-width:700px}
+  a{color:inherit}
+  .tab-nav{display:flex;gap:.25rem;flex-wrap:wrap}
+  .tab-btn{padding:.6rem 1rem;background:var(--surface);border:1px solid var(--border);border-bottom:none;border-radius:8px 8px 0 0;color:var(--dim);cursor:pointer;font-size:.8rem;font-weight:500;font-family:inherit;transition:all .2s}
+  .tab-btn:hover{background:var(--surface2);color:var(--text)}
+  .tab-btn.active{background:var(--surface2);color:var(--t2);border-color:var(--t2);border-bottom:1px solid var(--surface2)}
+  .tab-content{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:0 8px 8px 8px;padding:2rem}
+  .tab-content.active{display:block}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:.75rem;position:relative;overflow:hidden}
+  .card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+  .card.t1::before{background:var(--t1)} .card.t2::before{background:var(--t2)} .card.t3::before{background:var(--t3)}
+  .card h4{font-size:1rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  .badge{font-size:.6rem;padding:.15rem .5rem;border-radius:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .b1{background:rgba(255,107,53,.15);color:var(--t1)} .b2{background:rgba(0,212,170,.15);color:var(--t2)} .b3{background:rgba(123,104,238,.15);color:var(--t3)} .bg{background:rgba(255,215,0,.15);color:var(--gold)}
+  .card p,.card li{font-size:.85rem;color:var(--dim);margin-bottom:.3rem}
+  .card ul{padding-left:1.2rem}
+  .card strong{color:var(--text)}
+  .price{font-size:1.3rem;font-weight:800;margin:.5rem 0}
+  .buy-btn{display:inline-block;padding:.5rem 1rem;border-radius:8px;font-size:.8rem;font-weight:600;text-decoration:none;margin:.25rem .25rem .25rem 0;transition:opacity .15s}
+  .buy-btn:hover{opacity:.8}
+  .buy-btn.primary{color:#fff} .buy-btn.alt{border:1px solid var(--border)}
+  .timeline{display:grid;grid-template-columns:60px 1fr;gap:0;margin:1rem 0}
+  .tl-dot{width:14px;height:14px;border-radius:50%;margin-top:4px;justify-self:center}
+  .tl-line{width:2px;background:var(--border);justify-self:center;min-height:40px}
+  .tl-content{padding:0 0 1.5rem 1rem}
+  .tl-day{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.25rem}
+  .tl-desc{font-size:.85rem;color:var(--dim)}
+  .tl-desc strong{color:var(--text)}
+  .tl-proves{font-size:.8rem;color:var(--t2);margin-top:.5rem;padding:.5rem .75rem;background:rgba(0,212,170,.06);border-radius:6px;border-left:2px solid var(--t2)}
+  table{width:100%;border-collapse:collapse;font-size:.8rem;margin:1rem 0}
+  th,td{padding:.6rem .75rem;border:1px solid var(--border);text-align:left;vertical-align:top}
+  th{background:var(--surface);color:var(--dim);font-size:.7rem;text-transform:uppercase;letter-spacing:.04em}
+  td{background:var(--surface2)}
+  .total-row{font-weight:800;color:var(--t2)}
+  .note{font-size:.8rem;color:var(--mute);padding:.6rem .75rem;background:var(--bg);border-radius:6px;margin-top:.5rem}
+  @media(max-width:600px){body{padding:1rem}.timeline{grid-template-columns:40px 1fr}}
+</style>
+</head>
+<body>
+
+<h1>Sensor Purchase Plan</h1>
+<p class="sub">Three sensors, three timelines, three purposes. Something arrives every day. You never stop building. Working demo in 48 hours, full prototype in a week.</p>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('sensors')">The 3 Sensors</button>
+  <button class="tab-btn" onclick="showTab('support')">Supporting Parts</button>
+  <button class="tab-btn" onclick="showTab('timeline')">Daily Timeline</button>
+  <button class="tab-btn" onclick="showTab('costs')">Total Cost</button>
+</nav>
+
+<!-- ==================== SENSORS ==================== -->
+<div id="sensors" class="tab-content active">
+  <h2>Three Tiers — Buy All Three Today</h2>
+
+  <div class="card t1">
+    <h4><span class="badge b1">Tier 1</span> Generic EMG Clone — "Proof Tomorrow"</h4>
+    <div class="price" style="color:var(--t1)">~$15–25</div>
+    <p><strong>What:</strong> Treedix / OUOParts EMG Muscle Sensor for Arduino. Clone of the Advancer Technologies v3. Comes with cable + 3 snap electrodes.</p>
+    <p><strong>Why this first:</strong> Cheapest, fastest delivery, Amazon Prime overnight. Noisier than the good sensors but functional enough to see muscle activation and fatigue trends. You'll have a working EMG reading on your erector spinae tomorrow night.</p>
+    <p><strong>Setup:</strong> Requires ±3.5V dual power (two 9V batteries). Analog output → ESP32/Arduino ADC. No soldering if you use jumper wires.</p>
+    <p><strong>Signal quality:</strong> Adequate for on/off detection and gross fatigue trends. Not publication-grade. Replace with BioAmp for the real prototype.</p>
+    <div style="margin-top:.75rem">
+      <a class="buy-btn primary" style="background:var(--t1)" href="https://www.amazon.com/Treedix-Myoelectric-Electronic-Development-Compatible/dp/B0CK1P4NZ9" target="_blank">Buy: Treedix on Amazon →</a>
+      <a class="buy-btn alt" style="color:var(--t1)" href="https://www.amazon.com/Controller-Detects-Activity-Development-Wearable/dp/B0DYY9L9H2" target="_blank">Alt: OUOParts on Amazon →</a>
+      <a class="buy-btn alt" style="color:var(--t1)" href="https://www.amazon.com/Gravity-Analog-EMG-Sensor-OYMotion/dp/B07PKTW1Z1" target="_blank">Alt: Gravity Analog EMG (dry electrode) →</a>
+    </div>
+    <div class="note"><strong>Arrives:</strong> Tomorrow (Amazon Prime)</div>
+  </div>
+
+  <div class="card t2">
+    <h4><span class="badge b2">Tier 2</span> BioAmp EXG Pill × 4 — "Real Prototype"</h4>
+    <div class="price" style="color:var(--t2)">~$40 for 4 boards ($10/channel)</div>
+    <p><strong>What:</strong> Upside Down Labs BioAmp EXG Pill. Pill-size (25.4 × 10mm, &lt;2g). Open-source (CERN-OHL-S). Publication-grade signal. This is what goes in the compression shirt.</p>
+    <p><strong>Why this for the prototype:</strong> At $10/channel it makes 4 channels affordable. Tiny enough to embed in fabric. The noise floor (~5μV) is good enough for RMS fatigue tracking and L/R asymmetry detection.</p>
+    <p><strong>Setup:</strong> Requires soldering pin headers + solder jumper bridge for EMG band config. Analog output → ESP32 ADC. 1–2 hours setup per board.</p>
+    <p><strong>Signal quality:</strong> Comparable to clinical EMG with proper electrode placement and skin prep.</p>
+    <p><strong>4 channels:</strong> Ch1 = Left erector spinae · Ch2 = Right erector spinae · Ch3 = Vastus lateralis · Ch4 = Vastus medialis</p>
+    <div style="margin-top:.75rem">
+      <a class="buy-btn primary" style="background:var(--t2)" href="https://www.digikey.com/short/7hzv5wb2" target="_blank">Buy: DigiKey (MN, overnight avail) →</a>
+      <a class="buy-btn alt" style="color:var(--t2)" href="https://www.crowdsupply.com/upside-down-labs/bioamp-exg-pill" target="_blank">Alt: Crowd Supply (Portland, OR) →</a>
+      <a class="buy-btn alt" style="color:var(--t2)" href="https://www.tindie.com/products/upsidedownlabs/bioamp-exg-pill-x2-sensor-for-ecg-emg-eog-eeg/" target="_blank">Alt: Tindie (ships from India, free) →</a>
+    </div>
+    <div class="note"><strong>Arrives:</strong> Friday with FedEx overnight from DigiKey. 3–5 days from Crowd Supply. ~2 weeks from Tindie.</div>
+  </div>
+
+  <div class="card t3">
+    <h4><span class="badge b3">Tier 3</span> MyoWare 2.0 — "Clean Demo"</h4>
+    <div class="price" style="color:var(--t3)">~$43.50</div>
+    <p><strong>What:</strong> SparkFun MyoWare 2.0 (updated DEV-27924). Zero soldering. Snap-on electrodes directly onto the board. Three output modes: raw EMG, rectified, envelope.</p>
+    <p><strong>Why this for demos:</strong> It just works. Out of the box. Adjustable gain knob. Built-in LED shield option shows activation visually. Extensive Arduino/ESP32 tutorials. This is the sensor you use when showing the concept to people who don't care about electronics — they care about the signal.</p>
+    <p><strong>Setup:</strong> Stick on electrode pads, connect 3 wires (VIN, GND, SIG) to any microcontroller. Working signal in under 5 minutes.</p>
+    <p><strong>Signal quality:</strong> Best out-of-box experience. 25–450Hz bandwidth. Envelope mode gives instant fatigue proxy without any signal processing code.</p>
+    <div style="margin-top:.75rem">
+      <a class="buy-btn primary" style="background:var(--t3)" href="https://www.sparkfun.com/myoware-2-muscle-sensor.html" target="_blank">Buy: SparkFun (CO, 2–3 days) →</a>
+      <a class="buy-btn alt" style="color:var(--t3)" href="https://www.adafruit.com/product/2699" target="_blank">Alt: Adafruit (NYC, 2–3 days) →</a>
+      <a class="buy-btn alt" style="color:var(--t3)" href="https://www.amazon.com/SparkFun-MyoWare-Muscle-Sensor-DEV-21265/dp/B0FXQPVDRG" target="_blank">Alt: Amazon (check Prime) →</a>
+    </div>
+    <div class="note"><strong>Arrives:</strong> Monday–Tuesday from SparkFun/Adafruit standard shipping</div>
+  </div>
+</div>
+
+<!-- ==================== SUPPORTING PARTS ==================== -->
+<div id="support" class="tab-content">
+  <h2>Supporting Components — All Amazon Prime (Tomorrow)</h2>
+
+  <table>
+    <thead><tr><th>Item</th><th>Price</th><th>Link</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><strong>ESP32-S3 DevKitC</strong></td><td>~$12</td><td><a href="https://www.amazon.com/s?k=ESP32-S3+DevKitC" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Main MCU. BLE + WiFi, dual-core, multiple ADC channels. Or grab from Micro Center today.</td></tr>
+      <tr><td><strong>Ag/AgCl Electrode Pads (50-pack)</strong></td><td>~$8</td><td><a href="https://www.amazon.com/s?k=EMG+electrodes+disposable+snap+24mm" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Generic snap-mount, pre-gelled. 50 pack = ~8 sessions at 6 electrodes/session.</td></tr>
+      <tr><td><strong>Jumper Wire Kit</strong></td><td>~$5</td><td><a href="https://www.amazon.com/s?k=jumper+wire+kit+Arduino" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>M-M, M-F, F-F assorted pack.</td></tr>
+      <tr><td><strong>Half-Size Breadboard</strong></td><td>~$3</td><td><a href="https://www.amazon.com/s?k=half+size+breadboard" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Prototyping connections.</td></tr>
+      <tr><td><strong>Coin Vibration Motors (10-pack)</strong></td><td>~$6</td><td><a href="https://www.amazon.com/s?k=10mm+coin+vibration+motor" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Haptic cueing. Use 4, keep 6 spares.</td></tr>
+      <tr><td><strong>2N7002 MOSFET (10-pack)</strong></td><td>~$2</td><td><a href="https://www.amazon.com/s?k=2N7002+MOSFET" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Drive motors from ESP32 GPIO (motors pull 60–85mA, GPIO max is 40mA).</td></tr>
+      <tr><td><strong>9V Battery Clip (2-pack)</strong></td><td>~$3</td><td><a href="https://www.amazon.com/s?k=9V+battery+clip+snap+connector" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Dual supply for Tier 1 generic EMG sensor.</td></tr>
+      <tr><td><strong>9V Batteries (2-pack)</strong></td><td>~$5</td><td><a href="https://www.amazon.com/s?k=9V+battery+Duracell" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Powers the generic clone's ±V requirement.</td></tr>
+      <tr><td><strong>800mAh LiPo + TP4056</strong></td><td>~$10</td><td><a href="https://www.amazon.com/s?k=800mAh+LiPo+3.7V+TP4056" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Powers ESP32 + BioAmp in garment. ~7.6hr runtime.</td></tr>
+      <tr><td><strong>Compression Shirt</strong></td><td>~$15</td><td><a href="https://www.amazon.com/s?k=mens+compression+shirt" target="_blank" style="color:var(--t2)">Amazon →</a></td><td>Polyester/spandex. Get your actual size — tight fit critical.</td></tr>
+      <tr class="total-row"><td colspan="2"><strong>Amazon Prime Subtotal</strong></td><td colspan="2"><strong>~$69</strong></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Same-Day: Micro Center Austin</h3>
+  <div class="card" style="border-left:3px solid var(--gold)">
+    <h4 style="color:var(--gold)">10900 Domain Dr · 10am–9pm</h4>
+    <p>ESP32 DevKit (~$10), breadboard, jumper wires, soldering iron if needed. Check online stock before driving. Gets you coding tonight while sensors ship.</p>
+    <a class="buy-btn primary" style="background:var(--gold);color:#000" href="https://www.microcenter.com/search/search_results.aspx?N=4294910344+4294820107+4294820231" target="_blank">Check Micro Center Stock →</a>
+  </div>
+</div>
+
+<!-- ==================== TIMELINE ==================== -->
+<div id="timeline" class="tab-content">
+  <h2>Daily Build Timeline</h2>
+
+  <div class="timeline">
+    <div><div class="tl-dot" style="background:var(--gold)"></div></div>
+    <div class="tl-content">
+      <div class="tl-day" style="color:var(--gold)">Day 0 — Today (Wednesday)</div>
+      <div class="tl-desc">
+        <strong>Place all orders.</strong> Amazon Prime (Tier 1 + all supporting parts). DigiKey overnight (Tier 2 BioAmp). SparkFun standard (Tier 3 MyoWare).<br><br>
+        <strong>If Micro Center:</strong> Grab ESP32 + breadboard + wires. Start writing code tonight — analogRead loop, serial plotter, BLE streaming skeleton, vibration motor test.
+      </div>
+    </div>
+
+    <div><div class="tl-line"></div></div><div></div>
+
+    <div><div class="tl-dot" style="background:var(--t1)"></div></div>
+    <div class="tl-content">
+      <div class="tl-day" style="color:var(--t1)">Day 1 — Tomorrow (Thursday)</div>
+      <div class="tl-desc">
+        <strong>Amazon arrives:</strong> Generic EMG clone + ESP32 + electrodes + everything.<br><br>
+        Wire sensor → ESP32 → Serial Plotter. Stick electrodes on erector spinae. Do bodyweight good-mornings or light deadlifts. Watch the signal. Do a set to near-fatigue. Watch RMS amplitude climb.
+      </div>
+      <div class="tl-proves"><strong>Proves:</strong> "We can read muscle activation from the erector spinae. The signal visibly changes as fatigue accumulates. This is the invisible signal cameras can't see."</div>
+    </div>
+
+    <div><div class="tl-line"></div></div><div></div>
+
+    <div><div class="tl-dot" style="background:var(--t2)"></div></div>
+    <div class="tl-content">
+      <div class="tl-day" style="color:var(--t2)">Day 2 — Friday</div>
+      <div class="tl-desc">
+        <strong>DigiKey arrives:</strong> BioAmp EXG Pill × 4.<br><br>
+        Solder headers. Bridge solder jumper for EMG mode. Wire all 4 to ESP32 ADC. Test each channel: L erector spinae, R erector spinae, VL, VM. Compare signal quality to generic clone. Start BLE streaming to phone.
+      </div>
+      <div class="tl-proves"><strong>Proves:</strong> "4-channel EMG works simultaneously. BioAmp signal quality is sufficient for fatigue detection through compression fabric. L/R asymmetry is measurable."</div>
+    </div>
+
+    <div><div class="tl-line"></div></div><div></div>
+
+    <div><div class="tl-dot" style="background:var(--blue)"></div></div>
+    <div class="tl-content">
+      <div class="tl-day" style="color:var(--blue)">Day 3–4 — Weekend</div>
+      <div class="tl-desc">
+        <strong>Build the garment.</strong> Sew electrode pockets into compression shirt (lower back) and shorts (thigh). Wire BioAmp boards with flat ribbon cable. Hub pocket at waist for ESP32 + battery. Mount vibration motors. Test full closed loop: garment on → phone app → squats/deadlifts → haptic cue fires when fatigue threshold crossed.
+      </div>
+      <div class="tl-proves"><strong>Proves:</strong> "The full system works: sense → stream → see → think → cue. Under $200 in parts."</div>
+    </div>
+
+    <div><div class="tl-line"></div></div><div></div>
+
+    <div><div class="tl-dot" style="background:var(--t3)"></div></div>
+    <div class="tl-content">
+      <div class="tl-day" style="color:var(--t3)">Day 5 — Monday/Tuesday</div>
+      <div class="tl-desc">
+        <strong>SparkFun arrives:</strong> MyoWare 2.0.<br><br>
+        Snap on electrodes (zero setup). Side-by-side signal comparison with BioAmp. Record polished 60-second demo video: MyoWare on erector spinae during deadlifts, fatigue signal on screen, vibration motor firing at threshold. This is the demo you send to investors, partners, and early testers.
+      </div>
+      <div class="tl-proves"><strong>Proves:</strong> "Here's a working product concept in 60 seconds. The shirt detected fatigue building in my lower back and warned me before my form broke down."</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== COSTS ==================== -->
+<div id="costs" class="tab-content">
+  <h2>Total Cost Breakdown</h2>
+
+  <table>
+    <thead><tr><th>Item</th><th>Price</th><th>Source</th><th>Arrives</th></tr></thead>
+    <tbody>
+      <tr><td>Generic EMG Clone (Tier 1)</td><td>~$20</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>BioAmp EXG Pill × 4 (Tier 2)</td><td>~$40</td><td>DigiKey</td><td>Friday</td></tr>
+      <tr><td>FedEx Overnight Shipping</td><td>~$15</td><td>DigiKey</td><td>—</td></tr>
+      <tr><td>MyoWare 2.0 (Tier 3)</td><td>~$43.50</td><td>SparkFun</td><td>Mon–Tue</td></tr>
+      <tr><td>SparkFun Shipping</td><td>~$5</td><td>SparkFun</td><td>—</td></tr>
+      <tr><td>ESP32-S3 DevKitC</td><td>~$12</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>Electrodes 50-pack</td><td>~$8</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>Wires + Breadboard</td><td>~$8</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>Vibration Motors + MOSFETs</td><td>~$8</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>9V Batteries + Clips</td><td>~$8</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>LiPo 800mAh + TP4056</td><td>~$10</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr><td>Compression Shirt</td><td>~$15</td><td>Amazon Prime</td><td>Tomorrow</td></tr>
+      <tr class="total-row"><td><strong>TOTAL</strong></td><td><strong>~$194</strong></td><td colspan="2"><strong>Everything for a working 4-channel prototype + demo sensor</strong></td></tr>
+    </tbody>
+  </table>
+
+  <div class="card" style="border-left:3px solid var(--t2);margin-top:1.5rem">
+    <h4 style="color:var(--t2)">What $194 Gets You</h4>
+    <ul>
+      <li>Working EMG proof of concept <strong>tomorrow night</strong> (generic clone on erector spinae)</li>
+      <li>Full 4-channel research-quality prototype by <strong>Friday</strong> (BioAmp in compression garment)</li>
+      <li>Polished demo video by <strong>next week</strong> (MyoWare clean signal on camera)</li>
+      <li>Haptic feedback loop working by <strong>weekend</strong> (vibration motors firing on fatigue threshold)</li>
+      <li>Three different sensors to compare signal quality, setup ease, and form factor</li>
+    </ul>
+  </div>
+
+  <div class="card" style="border-left:3px solid var(--gold);margin-top:.75rem">
+    <h4 style="color:var(--gold)">Long-Term Role of Each Sensor</h4>
+    <table>
+      <thead><tr><th>Sensor</th><th>Role</th><th>Keep or Replace</th></tr></thead>
+      <tbody>
+        <tr><td>Generic EMG Clone</td><td>Quick proof, first signal ever</td><td style="color:var(--t1)">Replace — too noisy/bulky for garment</td></tr>
+        <tr><td>BioAmp EXG Pill × 4</td><td>Production prototype, embedded in shirt</td><td style="color:var(--t2)">Keep — $10/ch, pill-size, this ships</td></tr>
+        <tr><td>MyoWare 2.0</td><td>Investor demos, quick tests, education</td><td style="color:var(--t3)">Keep — the "just works" sensor</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+function showTab(id){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

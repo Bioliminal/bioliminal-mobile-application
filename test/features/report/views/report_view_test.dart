@@ -3,13 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/report/views/report_view.dart';
-import 'package:auralink/features/report/widgets/body_map.dart';
-import 'package:auralink/features/report/widgets/finding_card.dart';
-import 'package:auralink/features/report/widgets/drill_card.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/report/views/report_view.dart';
+import 'package:bioliminal/features/report/widgets/body_map.dart';
+import 'package:bioliminal/features/report/widgets/finding_card.dart';
+import 'package:bioliminal/features/report/widgets/drill_card.dart';
 
 // ---------------------------------------------------------------------------
 // Test data
@@ -119,7 +119,7 @@ Widget _buildHarness({
       GoRoute(
         path: '/report/:id',
         builder: (context, state) =>
-            ReportView(id: state.pathParameters['id']!),
+            ReportView(id: state.pathParameters['id']!, localOnly: true),
       ),
     ],
   );
@@ -290,31 +290,28 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('ReportView with longitudinal context (3+ assessments)', () {
-    testWidgets(
-      'shows archetype header with name and icon',
-      (tester) async {
-        final assessments = _multipleAssessments();
-        final storage = _FakeLocalStorageService(
-          assessments.first,
-          allAssessments: assessments,
-        );
+    testWidgets('shows archetype header with name and icon', (tester) async {
+      final assessments = _multipleAssessments();
+      final storage = _FakeLocalStorageService(
+        assessments.first,
+        allAssessments: assessments,
+      );
 
-        await tester.pumpWidget(
-          _buildHarness(
-            id: 'test-003',
-            routerExtra: assessments.first,
-            storageService: storage,
-          ),
-        );
-        // Pump frames to let didChangeDependencies fire and async futures resolve.
-        await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildHarness(
+          id: 'test-003',
+          routerExtra: assessments.first,
+          storageService: storage,
+        ),
+      );
+      // Pump frames to let didChangeDependencies fire and async futures resolve.
+      await tester.pumpAndSettle();
 
-        expect(find.text('Movement Archetype'), findsOneWidget);
-        // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
-        // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
-        expect(find.text('HIP-DOMINANT'), findsOneWidget);
-      },
-    );
+      expect(find.text('Movement Archetype'), findsOneWidget);
+      // Each assessment has 1 ankleRestriction + 1 kneeValgus + 1 hipDrop.
+      // Hip bucket = kneeValgus + hipDrop = 6/9 = 67% → hipDominant.
+      expect(find.text('HIP-DOMINANT'), findsOneWidget);
+    });
 
     testWidgets('findings are rendered in priority order', (tester) async {
       // Create assessments with different compensation patterns to

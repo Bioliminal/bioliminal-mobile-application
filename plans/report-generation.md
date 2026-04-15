@@ -78,7 +78,7 @@ Compensations arrive pre-classified with `chain` and `confidence` from the Chain
 ### Share integration
 - `share_plus: ^9.0.0` for native share sheet
 - PDF written to temp directory via `path_provider` (`getTemporaryDirectory()`)
-- `Share.shareXFiles([XFile(path)])` with subject line "AuraLink Movement Screen"
+- `Share.shareXFiles([XFile(path)])` with subject line "Bioliminal Movement Screen"
 - No Firestore upload in this story (story-1298 handles persistence)
 
 ### Confidence annotation rules
@@ -89,11 +89,11 @@ Compensations arrive pre-classified with `chain` and `confidence` from the Chain
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md
+- presearch/bioliminal-product.md
 - lib/domain/models.dart (from story-1293 -- Assessment, Report, Finding, Compensation, Citation, ConfidenceLevel, ChainType, CompensationType enums)
 - lib/features/screening/ (from story-1295 -- provides completed Assessment with compensations populated)
-- presearch/.scout-auralink-product.json (citations array, chain_mappings, cc_cp_logic, body-path language patterns)
-- lib/core/theme.dart (AuraLinkTheme.confidenceHigh/Medium/Low colors, confidenceColor() helper)
+- presearch/.scout-bioliminal-product.json (citations array, chain_mappings, cc_cp_logic, body-path language patterns)
+- lib/core/theme.dart (BioliminalTheme.confidenceHigh/Medium/Low colors, confidenceColor() helper)
 - lib/core/providers.dart (provider registration pattern)
 - lib/core/router.dart (GoRouter /report/:id route already declared)
 
@@ -101,14 +101,14 @@ Compensations arrive pre-classified with `chain` and `confidence` from the Chain
 1. Create `lib/features/report/services/pdf_generator.dart`:
    - Class `PdfGenerator` with static method `Future<Uint8List> generate(Report report, {required String assessmentId, required DateTime date})`
    - Build a `pw.Document` with:
-     - **Header**: "AuraLink Movement Screen" + formatted date
+     - **Header**: "Bioliminal Movement Screen" + formatted date
      - **Summary section**: finding count, overall confidence level (worst-case across findings), 2-3 sentence overview built from findings
      - **Findings section**: for each Finding, render body-path description in bold, confidence color as a colored pw.Container badge, upstream driver, recommendation text
      - **Citations section** per finding: source, finding text, URL as clickable pw.UrlLink
      - **Practitioner discussion points**: bulleted list
      - **Footer** on every page: "This is an educational triage tool, not a diagnostic assessment"
    - Use `pw.ThemeData` with base font (Helvetica built-in, no custom font loading needed)
-   - Confidence colors: map ConfidenceLevel to PdfColors (green/amber/red) matching AuraLinkTheme values
+   - Confidence colors: map ConfidenceLevel to PdfColors (green/amber/red) matching BioliminalTheme values
    - Return `document.save()` (Uint8List)
    - No file I/O in this class -- caller handles writing to disk
 
@@ -136,9 +136,9 @@ Compensations arrive pre-classified with `chain` and `confidence` from the Chain
      - **Practitioner point**: "Ask your practitioner about: [relevant point]"
      - **Citations**: list of `CitationExpandable` widgets for each citation on the finding
    - Confidence color derived from worst-case of finding's compensations:
-     - All high → green (AuraLinkTheme.confidenceHigh)
-     - Any medium, none low → yellow (AuraLinkTheme.confidenceMedium)
-     - Any low → red (AuraLinkTheme.confidenceLow)
+     - All high → green (BioliminalTheme.confidenceHigh)
+     - Any medium, none low → yellow (BioliminalTheme.confidenceMedium)
+     - Any low → red (BioliminalTheme.confidenceLow)
    - Use `ExpansionTile` or manual expand -- keep it simple
 
 4. Create `lib/features/report/views/report_view.dart`:
@@ -245,8 +245,8 @@ const _citationMap = { CompensationType.kneeValgus: [...], ... };
 - Confirm each task implemented correctly
 - No changes outside write scope
 - Body-path language map uses only human-readable anatomical descriptions, never chain abbreviations
-- Citation URLs match the presearch/.scout-auralink-product.json citation sources
-- Confidence color logic matches AuraLinkTheme thresholds (high >0.9, medium 0.7-0.9, low <0.7)
+- Citation URLs match the presearch/.scout-bioliminal-product.json citation sources
+- Confidence color logic matches BioliminalTheme thresholds (high >0.9, medium 0.7-0.9, low <0.7)
 - Ankle-dependent confidence cap enforced in report assembly
 - PDF contains searchable text (no rasterized content)
 - Empty state handles zero-compensation Assessment gracefully

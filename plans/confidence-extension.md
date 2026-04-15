@@ -33,7 +33,7 @@ The extension goes on `ConfidenceLevel` in `models.dart` so every file that impo
 ### What this story does NOT touch
 - `mock_chain_mapper.dart` (line 280, `_worstConfidence` and `_buildConfidenceMap`): story-1301 owns this file and will rename it to `rule_based_chain_mapper.dart`. Story-1301 adopts the extension there.
 - `report_view.dart` (line 260): story-1300 owns this file and will adopt the extension there.
-- No changes to `AuraLinkTheme` confidence colors or thresholds.
+- No changes to `BioliminalTheme` confidence colors or thresholds.
 
 ## Contract
 
@@ -72,7 +72,7 @@ extension ConfidenceLevelX on ConfidenceLevel {
 ## Read-only context
 - lib/domain/mocks/mock_chain_mapper.dart (lines 275-454 -- `_buildConfidenceMap` uses `.index >` on line 280, `_worstConfidence` on lines 448-454. DO NOT MODIFY -- story-1301 owns this file.)
 - lib/features/report/views/report_view.dart (DO NOT MODIFY -- story-1300 owns this file.)
-- lib/core/theme.dart (AuraLinkTheme.confidenceHigh/Medium/Low color constants, confidenceColor() helper -- read-only reference for finding_card.dart color mapping.)
+- lib/core/theme.dart (BioliminalTheme.confidenceHigh/Medium/Low color constants, confidenceColor() helper -- read-only reference for finding_card.dart color mapping.)
 
 ## Tasks
 1. In `lib/domain/models.dart`, add `extension ConfidenceLevelX on ConfidenceLevel` immediately after the `ConfidenceLevel` enum (line 25) and before `CitationType` (line 27). Include `severity` getter (explicit switch), `isWorseThan` method, and `static worstOf` method per the Contract section.

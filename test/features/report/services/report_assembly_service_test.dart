@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/report/services/report_assembly_service.dart';
-import 'package:auralink/features/report/data/mobility_drills.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/report/services/report_assembly_service.dart';
+import 'package:bioliminal/features/report/data/mobility_drills.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
 
 const _testCitation = Citation(
   finding: 'test',

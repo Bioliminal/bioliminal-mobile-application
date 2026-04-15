@@ -1,6 +1,6 @@
-# AuraLink Project Documentation
+# Bioliminal Project Documentation
 
-AuraLink is an AI-powered movement screening application that uses computer vision to detect biomechanical compensations and trace them to upstream fascial drivers.
+Bioliminal is an AI-powered movement screening application that uses computer vision to detect biomechanical compensations and trace them to upstream fascial drivers.
 
 ## Project Architecture
 
@@ -19,6 +19,8 @@ The project follows a feature-first structure with a clear separation of concern
   - `report/`: Post-screening analysis, body map visualization, and PDF export.
   - `history/`: Longitudinal progress tracking, archetype classification, and trend detection.
   - `settings/`: User profile and privacy/cloud-sync controls.
+  - `onboarding/`: Educational disclaimer and authentication options.
+  - `landing/`: High-fidelity Flutter Web landing page for showcasing Bioliminal.
 
 ## Key Implementation Details
 

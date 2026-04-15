@@ -1,0 +1,50 @@
+{
+  "slug": "auralink-product",
+  "skill": "scope",
+  "scope": {
+    "files": "22",
+    "stories": "7",
+    "complexity": "large"
+  },
+  "route_hint": "standard",
+  "prev": [],
+  "data": {
+    "topic": "specs/auralink-product.md",
+    "what": "Flutter-based AI movement screening app that uses phone camera pose estimation to detect biomechanical compensation patterns, maps them along three validated fascial chains (SBL/BFL/FFL) to identify upstream root causes, and generates personalized triage reports with cited evidence",
+    "audience": "Athletes, recreational fitness users, and practitioners (PTs, Rolfers, Pilates instructors)",
+    "platform": "Mobile (iOS/Android) + Web via Flutter",
+    "in_scope": [
+      "Camera pipeline with MediaPipe BlazePose (33 landmarks)",
+      "Real-time skeleton overlay with per-joint confidence colors",
+      "Progressive camera setup checklist",
+      "4 movement assessments (overhead squat, single-leg balance, overhead reach, forward fold)",
+      "Movement flow UI with instructions, rep counter, progress indicator",
+      "Between-movement preliminary findings",
+      "Joint angle calculation from landmark triplets",
+      "Threshold-based compensation detection (knee valgus >10°, asymmetry >10°)",
+      "SBL/BFL/FFL chain mapping via rule-based decision trees",
+      "Personalized report with body-path language",
+      "Inline evidence citations (expandable)",
+      "Per-finding confidence scoring",
+      "One-tap share + PDF export",
+      "Practitioner discussion points"
+    ],
+    "out_of_scope": [
+      "sEMG hardware integration and haptic cueing",
+      "User accounts, persistent profiles, login",
+      "Backend services, APIs, cloud storage",
+      "Practitioner SaaS dashboard",
+      "Find-a-practitioner directory",
+      "Payment or subscription flows",
+      "Injury prediction or diagnostic output",
+      "Multi-language / i18n",
+      "Spiral Line, Lateral Line, SFL chain mapping"
+    ],
+    "stack_detected": [],
+    "problem": "Movement screening costs $150-2,000 and requires a trained professional. Current AI tools detect what's happening but can't explain why or connect findings to root causes along fascial chains. Zero cross-citations exist between CV and fascial chain research — the fields have never talked to each other.",
+    "why": "Most athletes never get screened. They find out something's wrong when they get hurt. The clinical reasoning that connects symptoms to upstream drivers lives entirely in practitioners' heads and takes 3-4 visits to surface.",
+    "end_goal": "A working Flutter app (mobile + web) that runs a 5-minute, 4-movement screen from a phone camera, detects compensation patterns, maps them along 3 validated fascial chains, and generates a personalized triage report with cited evidence. Validated against 2-3 clinicians on 10 test subjects across 3 layers (measurement accuracy, chain mapping agreement, recommendation usefulness).",
+    "needs_research": false,
+    "complexity_reasoning": "Large product with 4 subsystems (camera, movement assessment, logic engine, report) spanning ~22 files and ~7 stories, but domain research is already complete in brainlifts/ and research/ directories."
+  }
+}

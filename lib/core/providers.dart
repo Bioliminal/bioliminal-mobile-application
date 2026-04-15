@@ -1,23 +1,25 @@
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/domain/services/pose_estimation_service.dart'
+import 'package:bioliminal/domain/services/pose_estimation_service.dart'
     as pose_service;
-import 'package:auralink/domain/services/angle_calculator.dart'
+import 'package:bioliminal/domain/services/angle_calculator.dart'
     as angle_service;
-import 'package:auralink/domain/services/chain_mapper.dart' as chain_service;
-import 'package:auralink/domain/mocks/mock_pose_estimation.dart';
-import 'package:auralink/domain/services/mlkit_pose_estimation_service.dart';
-import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
-import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
-import 'package:auralink/core/services/auth_service.dart';
-import 'package:auralink/core/services/firestore_service.dart'
+import 'package:bioliminal/domain/services/chain_mapper.dart' as chain_service;
+import 'package:bioliminal/domain/mocks/mock_pose_estimation.dart';
+import 'package:bioliminal/domain/services/mlkit_pose_estimation_service.dart';
+import 'package:bioliminal/domain/services/rule_based_angle_calculator.dart';
+import 'package:bioliminal/domain/services/rule_based_chain_mapper.dart';
+import 'package:bioliminal/core/services/auth_service.dart';
+import 'package:bioliminal/core/services/firestore_service.dart'
     as firestore_impl;
-import 'package:auralink/core/services/local_storage_service.dart'
+import 'package:bioliminal/core/services/local_storage_service.dart'
     as local_impl;
+import 'package:bioliminal/core/services/bioliminal_client.dart';
+import 'package:bioliminal/features/camera/services/pose_detector.dart';
 
 // Re-export camera providers so screening can import from one place.
-export 'package:auralink/features/camera/controllers/camera_controller.dart'
+export 'package:bioliminal/features/camera/controllers/camera_controller.dart'
     show
         currentLandmarksProvider,
         appCameraControllerProvider,
@@ -41,6 +43,16 @@ class CloudSyncNotifier extends Notifier<bool> {
 
 final cloudSyncEnabledProvider = NotifierProvider<CloudSyncNotifier, bool>(
   CloudSyncNotifier.new,
+);
+
+class PremiumNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void toggle() => state = !state;
+}
+
+final isPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
+  PremiumNotifier.new,
 );
 
 // ---------------------------------------------------------------------------
@@ -134,6 +146,12 @@ final poseEstimationServiceProvider =
       );
     });
 
+final poseDetectorProvider = Provider<PoseDetector>((ref) {
+  final detector = MediaPipePoseDetector();
+  ref.onDispose(() => detector.dispose());
+  return detector;
+});
+
 final angleCalculatorProvider = Provider<angle_service.AngleCalculator>(
   (ref) => RuleBasedAngleCalculator(),
 );
@@ -145,6 +163,50 @@ final chainMapperProvider = Provider<chain_service.ChainMapper>(
 final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
   (ref) => local_impl.LocalStorageService(),
 );
+
+final bioliminalClientProvider = Provider<BioliminalClient>((ref) {
+  final client = BioliminalClient();
+  ref.onDispose(() => client.dispose());
+  return client;
+});
+
+// ---------------------------------------------------------------------------
+// Hardware Setup State
+// ---------------------------------------------------------------------------
+
+class UseHardwareModeNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+  set value(bool v) => state = v;
+}
+
+final useHardwareModeProvider = NotifierProvider<UseHardwareModeNotifier, bool>(
+  UseHardwareModeNotifier.new,
+);
+
+enum HardwareSetupStep { scanning, placing, syncing, ready }
+
+class HardwareSetupStepNotifier extends Notifier<HardwareSetupStep> {
+  @override
+  HardwareSetupStep build() => HardwareSetupStep.scanning;
+  set value(HardwareSetupStep v) => state = v;
+}
+
+final hardwareSetupStepProvider =
+    NotifierProvider<HardwareSetupStepNotifier, HardwareSetupStep>(
+      HardwareSetupStepNotifier.new,
+    );
+
+class HardwareSyncOffsetNotifier extends Notifier<int> {
+  @override
+  int build() => 0;
+  set value(int v) => state = v;
+}
+
+final hardwareSyncOffsetProvider =
+    NotifierProvider<HardwareSyncOffsetNotifier, int>(
+      HardwareSyncOffsetNotifier.new,
+    );
 
 // ---------------------------------------------------------------------------
 // Cloud-only providers — throw when cloud sync is disabled.

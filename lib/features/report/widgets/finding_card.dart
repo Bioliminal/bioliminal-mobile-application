@@ -30,14 +30,14 @@ class FindingCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         padding: const EdgeInsets.all(20),
         decoration: selected
-            ? AuraLinkTheme.glassEffect.copyWith(
+            ? BioliminalTheme.glassEffect.copyWith(
                 color: theme.colorScheme.secondary.withValues(alpha: 0.1),
                 border: Border.all(
                   color: theme.colorScheme.secondary,
                   width: 2,
                 ),
               )
-            : AuraLinkTheme.glassEffect,
+            : BioliminalTheme.glassEffect,
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,13 +70,15 @@ class FindingCard extends StatelessWidget {
                   ),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: AuraLinkTheme.confidenceHigh.withValues(alpha: 0.2),
+                    color: BioliminalTheme.confidenceHigh.withValues(
+                      alpha: 0.2,
+                    ),
                     borderRadius: BorderRadius.circular(4),
                   ),
                   child: Text(
                     'PRIMARY DRIVER',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: AuraLinkTheme.confidenceHigh,
+                      color: BioliminalTheme.confidenceHigh,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -127,10 +129,10 @@ class _TrendIcon extends StatelessWidget {
     switch (trend) {
       case TrendClassification.improving:
         icon = Icons.trending_up;
-        color = AuraLinkTheme.confidenceHigh;
+        color = BioliminalTheme.confidenceHigh;
       case TrendClassification.worsening:
         icon = Icons.trending_down;
-        color = AuraLinkTheme.confidenceLow;
+        color = BioliminalTheme.confidenceLow;
       case TrendClassification.stable:
         icon = Icons.trending_flat;
         color = Colors.white38;

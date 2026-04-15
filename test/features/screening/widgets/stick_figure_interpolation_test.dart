@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/features/screening/data/movement_keyframes.dart';
-import 'package:auralink/features/screening/widgets/stick_figure_animation.dart';
+import 'package:bioliminal/features/screening/data/movement_keyframes.dart';
+import 'package:bioliminal/features/screening/widgets/stick_figure_animation.dart';
 
-/// Helper: create a uniform PoseFrame with all joints at the same offset.
-PoseFrame _uniform(double x, double y) => PoseFrame(
+/// Helper: create a uniform AnimationPoseFrame with all joints at the same offset.
+AnimationPoseFrame _uniform(double x, double y) => AnimationPoseFrame(
   head: Offset(x, y),
   leftShoulder: Offset(x, y),
   rightShoulder: Offset(x, y),
@@ -21,11 +21,11 @@ PoseFrame _uniform(double x, double y) => PoseFrame(
 );
 
 void main() {
-  group('PoseFrame.lerp', () {
+  group('AnimationPoseFrame.lerp', () {
     test('t=0 returns first pose', () {
       final a = _uniform(0.0, 0.0);
       final b = _uniform(1.0, 1.0);
-      final result = PoseFrame.lerp(a, b, 0.0);
+      final result = AnimationPoseFrame.lerp(a, b, 0.0);
 
       for (final joint in result.all) {
         expect(joint.dx, closeTo(0.0, 1e-10));
@@ -36,7 +36,7 @@ void main() {
     test('t=1 returns second pose', () {
       final a = _uniform(0.0, 0.0);
       final b = _uniform(1.0, 1.0);
-      final result = PoseFrame.lerp(a, b, 1.0);
+      final result = AnimationPoseFrame.lerp(a, b, 1.0);
 
       for (final joint in result.all) {
         expect(joint.dx, closeTo(1.0, 1e-10));
@@ -47,7 +47,7 @@ void main() {
     test('t=0.5 returns midpoint', () {
       final a = _uniform(0.0, 0.0);
       final b = _uniform(1.0, 1.0);
-      final result = PoseFrame.lerp(a, b, 0.5);
+      final result = AnimationPoseFrame.lerp(a, b, 0.5);
 
       for (final joint in result.all) {
         expect(joint.dx, closeTo(0.5, 1e-10));
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('lerp is linear across individual joints', () {
-      const a = PoseFrame(
+      const a = AnimationPoseFrame(
         head: Offset(0.0, 0.0),
         leftShoulder: Offset(0.2, 0.0),
         rightShoulder: Offset(0.8, 0.0),
@@ -72,7 +72,7 @@ void main() {
         rightAnkle: Offset(1.0, 0.0),
       );
       final b = _uniform(1.0, 1.0);
-      final result = PoseFrame.lerp(a, b, 0.25);
+      final result = AnimationPoseFrame.lerp(a, b, 0.25);
 
       // head: (0,0) -> (1,1) at t=0.25 => (0.25, 0.25)
       expect(result.head.dx, closeTo(0.25, 1e-10));
@@ -173,9 +173,9 @@ void main() {
     test('real keyframe data does not crash at boundaries', () {
       final allKeyframes = [
         overheadSquatKeyframes,
-        singleLegBalanceKeyframes,
-        overheadReachKeyframes,
-        forwardFoldKeyframes,
+        singleLegSquatKeyframes,
+        pushUpKeyframes,
+        rollupKeyframes,
       ];
 
       for (final keyframes in allKeyframes) {

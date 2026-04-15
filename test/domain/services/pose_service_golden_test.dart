@@ -13,7 +13,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/domain/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Minimum visibility for major joints in a clearly-visible pose.
@@ -28,14 +28,12 @@ const _majorJointIndices = [11, 12, 23, 24, 25, 26, 27, 28];
 /// Joints prone to occlusion (ankles).
 const _occlusionProneIndices = {27, 28};
 
-const _movements = [
-  'overhead_squat',
-  'single_leg_balance',
-  'forward_fold',
-  'overhead_reach',
-];
+// Screening movements (overhead_squat, single_leg_squat, rollup, push_up) are
+// dormant until post-demo. When screening is revived, add them back here and
+// capture goldens via integration_test/mlkit_golden_capture_test.dart. See #30.
+const _movements = <String>[];
 
-List<Landmark>? _loadGolden(String movementName) {
+List<PoseLandmark>? _loadGolden(String movementName) {
   final file = File('test/fixtures/golden_landmarks/$movementName.json');
   if (!file.existsSync()) return null;
   final json = jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
@@ -43,14 +41,14 @@ List<Landmark>? _loadGolden(String movementName) {
   final firstFrame = frames.first as Map<String, dynamic>;
   final rawLandmarks = firstFrame['landmarks'] as List;
   return rawLandmarks
-      .map((lm) => Landmark.fromJson(lm as Map<String, dynamic>))
+      .map((lm) => PoseLandmark.fromJson(lm as Map<String, dynamic>))
       .toList();
 }
 
 void main() {
   for (final movement in _movements) {
     group('golden validation: $movement', () {
-      late List<Landmark>? goldenLandmarks;
+      late List<PoseLandmark>? goldenLandmarks;
 
       setUpAll(() {
         goldenLandmarks = _loadGolden(movement);

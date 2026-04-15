@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:auralink/core/theme.dart';
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/theme.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/core/services/hardware_controller.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -12,9 +13,11 @@ class SettingsView extends ConsumerWidget {
     final theme = Theme.of(context);
     final profile = ref.watch(userProfileProvider);
     final aiModel = ref.watch(selectedAIModelProvider);
+    final isPremium = ref.watch(isPremiumProvider);
+    final hardwareState = ref.watch(hardwareControllerProvider);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('SETTINGS'),
         backgroundColor: Colors.transparent,
@@ -40,6 +43,33 @@ class SettingsView extends ConsumerWidget {
               onTap: () => context.push('/login'),
             ),
             const SizedBox(height: 32),
+            _sectionHeader(theme, 'PREMIUM & HARDWARE'),
+            _switchItem(
+              Icons.stars_outlined,
+              'Premium Mode',
+              'Unlock clinical kinetics',
+              isPremium,
+              theme,
+              onChanged: (val) => ref.read(isPremiumProvider.notifier).toggle(),
+            ),
+            _switchItem(
+              Icons.sensors_outlined,
+              'Hardware Simulation',
+              'Stream mock sEMG data',
+              hardwareState == HardwareConnectionState.connected,
+              theme,
+              onChanged: (val) {
+                final controller = ref.read(
+                  hardwareControllerProvider.notifier,
+                );
+                if (val) {
+                  controller.startMockData();
+                } else {
+                  controller.stopMockData();
+                }
+              },
+            ),
+            const SizedBox(height: 32),
             _sectionHeader(theme, 'ANALYSIS'),
             _item(
               Icons.videocam_outlined,
@@ -59,8 +89,8 @@ class SettingsView extends ConsumerWidget {
             _sectionHeader(theme, 'ABOUT'),
             _item(
               Icons.info_outline,
-              'AuraLink Version',
-              '1.0.0-premium',
+              'Bioliminal Version',
+              isPremium ? '1.1.0-premium' : '1.1.0-free',
               theme,
             ),
             _item(
@@ -98,7 +128,7 @@ class SettingsView extends ConsumerWidget {
             'Your biometric data and screening recordings are processed locally on your device. '
             'If Cloud Backup is disabled, no skeletal data or video ever leaves your hardware. '
             'We use state-of-the-art pose estimation models to calculate joint angles in real-time. '
-            'By using AuraLink, you agree to local data processing for the purpose of mobility assessment.',
+            'By using Bioliminal, you agree to local data processing for the purpose of mobility assessment.',
             style: TextStyle(color: Colors.white70),
           ),
         ),
@@ -125,6 +155,46 @@ class SettingsView extends ConsumerWidget {
     );
   }
 
+  Widget _switchItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    bool value,
+    ThemeData theme, {
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BioliminalTheme.glassEffect,
+      child: Row(
+        children: [
+          Icon(icon, color: theme.colorScheme.secondary, size: 20),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: theme.textTheme.bodyMedium),
+                Text(
+                  subtitle,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white30,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: theme.colorScheme.secondary,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _item(
     IconData icon,
     String title,
@@ -137,7 +207,7 @@ class SettingsView extends ConsumerWidget {
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
-        decoration: AuraLinkTheme.glassEffect,
+        decoration: BioliminalTheme.glassEffect,
         child: Row(
           children: [
             Icon(icon, color: theme.colorScheme.secondary, size: 20),

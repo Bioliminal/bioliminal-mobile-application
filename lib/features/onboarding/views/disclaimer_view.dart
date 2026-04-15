@@ -30,13 +30,13 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                 icon: Icons.auto_awesome,
                 title: 'Clinical-Grade\nMotion Analysis',
                 body:
-                    'AuraLink uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
+                    'Bioliminal uses advanced computer vision to analyze your movement patterns and identify the underlying drivers of compensation.',
               ),
               const _OnboardingSlide(
                 icon: Icons.shield_outlined,
-                title: 'Privacy-First\nArchitecture',
+                title: 'Secure & Private\nArchitecture',
                 body:
-                    'Your movement data never leaves your device. All analysis is performed locally using on-device AI.',
+                    'Your raw video never leaves your device. Only anonymized movement landmarks are sent to our secure clinical server for processing.',
               ),
               _DisclaimerSlide(
                 onScrollToBottom: () =>
@@ -76,11 +76,11 @@ class _DisclaimerViewState extends State<DisclaimerView> {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: _hasScrolledToBottom
-                          ? () => context.go('/screening')
+                          ? () => context.go('/auth-options')
                           : null,
                       child: Text(
                         _hasScrolledToBottom
-                            ? 'BEGIN ANALYSIS'
+                            ? 'CONTINUE'
                             : 'PLEASE READ DISCLAIMER',
                       ),
                     ),
@@ -170,8 +170,6 @@ class _DisclaimerSlide extends StatelessWidget {
             Expanded(
               child: NotificationListener<ScrollNotification>(
                 onNotification: (n) {
-                  // If the content is too short to scroll (maxScrollExtent == 0),
-                  // or if we've reached the bottom, trigger the callback.
                   if (n.metrics.maxScrollExtent == 0 ||
                       n.metrics.pixels >= n.metrics.maxScrollExtent - 20) {
                     onScrollToBottom();
@@ -184,7 +182,7 @@ class _DisclaimerSlide extends StatelessWidget {
                     children: [
                       _section(
                         'Educational Purpose',
-                        'AuraLink is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.',
+                        'Bioliminal is for educational use only. It is not a medical device and does not diagnose injuries or prescribe treatment. The analysis provided is based on computer vision patterns and does not constitute medical advice.',
                         theme,
                       ),
                       _section(
@@ -198,13 +196,13 @@ class _DisclaimerSlide extends StatelessWidget {
                         theme,
                       ),
                       _section(
-                        'Data Privacy',
-                        'All movement analysis is performed locally on your device. We do not transmit or store your raw video data on any external servers.',
+                        'Data Privacy & Cloud Processing',
+                        'Analysis is performed on our secure clinical server. Only anonymized landmark data is transmitted. Your raw video never leaves your device.',
                         theme,
                       ),
                       _section(
                         'Liability',
-                        'AuraLink and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.',
+                        'Bioliminal and its developers are not liable for any injuries or damages resulting from the use of this application or the implementation of any movement suggestions.',
                         theme,
                       ),
                       const SizedBox(height: 24),
@@ -214,9 +212,7 @@ class _DisclaimerSlide extends StatelessWidget {
                           color: Colors.white38,
                         ),
                       ),
-                      const SizedBox(
-                        height: 40,
-                      ), // Ensure extra space at bottom
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),

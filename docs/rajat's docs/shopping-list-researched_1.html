@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Research-Backed Shopping List — Camera + EMG Compression Shirt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #08080c;
+    --surface: #111116;
+    --surface2: #19191f;
+    --border: #252530;
+    --text: #e2e2ea;
+    --text-dim: #7c7c90;
+    --text-mute: #4a4a5a;
+    --emg: #00d4aa;
+    --mcu: #ffc83d;
+    --haptic: #8b6cef;
+    --power: #ff6839;
+    --build: #71717a;
+    --form: #d4d4dc;
+    --radius: 14px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.65;
+    padding: 40px 20px 80px;
+    max-width: 660px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .eyebrow {
+    font-size: 11px; font-weight: 800; letter-spacing: 3px;
+    text-transform: uppercase; color: var(--text-mute); margin-bottom: 12px;
+  }
+  h1 {
+    font-size: 26px; font-weight: 800; color: #fafafa;
+    line-height: 1.2; margin-bottom: 10px;
+  }
+  .subtitle {
+    font-family: 'Source Serif 4', serif;
+    font-size: 14px; color: var(--text-dim); margin-bottom: 24px;
+    max-width: 520px; font-style: italic;
+  }
+  .total-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 18px; background: var(--surface); border-radius: 12px;
+    border: 1px solid var(--border); margin-bottom: 32px;
+  }
+  .total-bar .label { font-size: 13px; color: var(--text-dim); }
+  .total-bar .amount { font-size: 22px; font-weight: 800; color: var(--emg); }
+
+  /* Item cards */
+  .item {
+    border-radius: var(--radius); overflow: hidden;
+    border: 1px solid var(--border); margin-bottom: 8px;
+    transition: border-color 0.2s;
+  }
+  .item.open { background: var(--surface); }
+  .item-header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; cursor: pointer; width: 100%;
+    background: transparent; border: none; font-family: inherit;
+    color: inherit; text-align: left;
+  }
+  .item-num {
+    width: 30px; height: 30px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 800; flex-shrink: 0;
+  }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: 14px; font-weight: 700; color: #fafafa; }
+  .item-name .qty { color: var(--text-mute); font-weight: 500; }
+  .item-meta { font-size: 11px; color: var(--text-mute); margin-top: 1px; }
+  .item-price-col { text-align: right; flex-shrink: 0; }
+  .item-price { font-size: 16px; font-weight: 800; }
+  .item-delivery { font-size: 10px; color: var(--text-mute); }
+
+  /* Expanded */
+  .item-body { display: none; padding: 0 18px 22px; }
+  .item.open .item-body { display: block; }
+
+  .placement-box {
+    padding: 10px 14px; background: var(--bg); border-radius: 10px;
+    margin-bottom: 16px; font-size: 13px; color: var(--text-dim);
+  }
+  .placement-box .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--text-mute); margin-bottom: 4px;
+  }
+  .placement-box .value { color: #d4d4dc; }
+
+  .app-card {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 10px;
+  }
+  .app-card h4 {
+    font-size: 13px; font-weight: 700; color: #fafafa; margin-bottom: 8px;
+  }
+  .app-card h4::before {
+    content: ''; display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 8px; vertical-align: middle;
+  }
+  .app-card p { font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+  .app-card .research {
+    font-family: 'Source Serif 4', serif;
+    font-size: 12px; color: var(--text-mute); font-style: italic;
+    padding: 8px 12px; background: var(--surface2); border-radius: 8px;
+    border-left: 2px solid var(--border); line-height: 1.6;
+  }
+
+  .why-box {
+    padding: 12px 14px; border-radius: 10px; margin-bottom: 8px;
+  }
+  .why-box .label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .why-box p { font-size: 12px; color: #d4d4dc; margin: 0; }
+
+  .tradeoff-box {
+    padding: 10px 14px; background: var(--surface2); border-radius: 10px;
+    font-size: 12px; color: var(--text-mute); margin-bottom: 10px;
+  }
+  .tradeoff-box strong { color: var(--text-dim); }
+
+  .buy-link {
+    display: block; text-align: center; padding: 10px; border-radius: 10px;
+    font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: opacity 0.15s;
+  }
+  .buy-link:hover { opacity: 0.8; }
+
+  /* Footer sections */
+  .footer-card {
+    margin-top: 20px; padding: 18px 20px; border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .footer-card.totals { background: var(--surface); }
+  .footer-card.arch { background: var(--bg); border-color: var(--border); }
+  .footer-card .section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-mute); margin-bottom: 10px;
+  }
+  .footer-card p {
+    font-size: 13px; color: var(--text-dim); line-height: 1.7;
+  }
+  .footer-card strong { color: #fafafa; }
+  .footer-total {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .footer-total .ft-label { font-size: 16px; font-weight: 800; color: #fafafa; }
+  .footer-total .ft-amount { font-size: 24px; font-weight: 800; color: var(--emg); }
+  .footer-note { font-size: 12px; color: var(--text-mute); }
+
+  @media (max-width: 500px) {
+    body { padding: 24px 14px 60px; }
+    h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<p class="eyebrow">Brainlift · Hardware Order</p>
+<h1>Research-Backed Shopping List</h1>
+<p class="subtitle">
+  Each item mapped to where it sits on the body, what it detects, and the research
+  that justifies it. All Amazon Prime — at your door in Austin by Friday.
+</p>
+
+<div class="total-bar">
+  <span class="label">8 items · Amazon + SparkFun + DigiKey</span>
+  <span class="amount">~$155</span>
+</div>
+
+<!-- ===== ITEM 1A: MyoWare (fast) ===== -->
+<div class="item open" id="item1">
+  <button class="item-header" onclick="toggle(1)">
+    <div class="item-num" style="background:#00d4aa18;color:var(--emg)">1a</div>
+    <div class="item-info">
+      <div class="item-name">MyoWare 2.0 Muscle Sensor <span class="qty">× 2</span></div>
+      <div class="item-meta">sEMG · FAST SHIP · SparkFun (CO) or Amazon</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--emg)">$87</div>
+      <div class="item-delivery">2–3 days</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--emg)">
+      <div class="label">On the Body</div>
+      <div class="value">Erector spinae (lower back) + Quadriceps (front thigh)</div>
+    </div>
+
+    <div class="app-card">
+      <h4 style="color:var(--emg)"><span style="color:var(--emg)">●</span> Erector Spinae — Deadlift & Squat Back Safety</h4>
+      <p>Detects fatigue in the lower back muscles before form breaks down. EMG median frequency shifts downward as the erector spinae fatigues — this happens 2–5 reps BEFORE your back visibly rounds. The camera sees the rounding; the EMG predicts it.</p>
+      <div class="research">Median frequency decline is the accepted biomarker for localized muscle fatigue (Jamaluddin et al., 2023). RMS amplitude increases as additional motor units are recruited to compensate for fatiguing fibers (Frontiers in Rehab Sciences, 2022).</div>
+    </div>
+
+    <div class="app-card">
+      <h4 style="color:var(--emg)"><span style="color:var(--emg)">●</span> Quadriceps (VL vs VM) — Knee Valgus Detection</h4>
+      <p>When the vastus medialis (inner quad) fatigues before the vastus lateralis (outer quad), the knee collapses inward — the #1 mechanism for ACL injury in squats. The camera sees the knee move; the EMG tells you WHY.</p>
+      <div class="research">H:Q activation imbalance is a primary contributing factor to ACL injury; women exhibit reduced ratios indicating quad dominance (Cal State thesis). Malaligned squats show decreased VL/VM/RF activation with increased biceps femoris and gastrocnemius compensation (J Strength Cond Res, 2017).</div>
+    </div>
+
+    <div class="why-box" style="background:var(--emg)0c;border:1px solid var(--emg)22">
+      <div class="label" style="color:var(--emg)">Why This Product</div>
+      <p>Plug-and-play with snap-on electrodes — no soldering. Envelope + Raw + Rectified output modes. Raw mode gives frequency data for fatigue detection. Extensive Arduino/ESP32 tutorials. Friend's research lists it as Budget C — more expensive than BioAmp but fastest to a working demo. Updated version DEV-27924 in stock at SparkFun.</p>
+    </div>
+
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> At $43.50/channel it's 4× the cost of BioAmp EXG Pill. Order BioAmp in parallel (see 1b below) as the cheaper long-term replacement for 4+ channels.
+    </div>
+
+    <a class="buy-link" style="background:var(--emg)18;color:var(--emg);margin-bottom:6px" href="https://www.sparkfun.com/myoware-2-muscle-sensor.html" target="_blank">Buy from SparkFun → $43.50/ea · Ships from CO · 2–3 days</a>
+    <a class="buy-link" style="background:var(--emg)10;color:var(--emg)" href="https://www.amazon.com/SparkFun-MyoWare-Muscle-Sensor-DEV-21265/dp/B0FXQPVDRG" target="_blank">Alt: Amazon → Prime 1–2 days (check stock)</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 1B: BioAmp (order now, arrives later) ===== -->
+<div class="item" id="item1b">
+  <button class="item-header" onclick="toggle('1b')">
+    <div class="item-num" style="background:#00d4aa18;color:var(--emg)">1b</div>
+    <div class="item-info">
+      <div class="item-name">BioAmp EXG Pill <span class="qty">× 4 (Explorer Pack ×2)</span></div>
+      <div class="item-meta">sEMG · ORDER NOW · Arrives ~1–2 weeks · Long-term replacement</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--emg)">$69–80</div>
+      <div class="item-delivery">~5–14 days</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--emg)">
+      <div class="label">Why Order This Too</div>
+      <div class="value">At $10/channel vs $43.50/channel, BioAmp is how you scale to 4+ muscle groups on the shirt (quads, glutes, erector spinae, lats). Pill-size (25.4 × 10mm, &lt;2g) embeds into garment far better than MyoWare. Open-source (CERN-OHL-S). Friend's "Best Value MVP" pick.</div>
+    </div>
+
+    <div class="why-box" style="background:var(--emg)0c;border:1px solid var(--emg)22">
+      <div class="label" style="color:var(--emg)">Shipping Options — Fastest to Slowest</div>
+      <p><strong>DigiKey:</strong> In stock as dev kit. Ships from MN. Next-day available (~$8 shipping). <a href="https://www.digikey.com/short/7hzv5wb2" target="_blank" style="color:var(--emg)">digikey.com</a><br>
+      <strong>Crowd Supply:</strong> Limited stock. Ships from Portland, OR. Domestic US. ~$8 shipping. <a href="https://www.crowdsupply.com/upside-down-labs/bioamp-exg-pill" target="_blank" style="color:var(--emg)">crowdsupply.com</a><br>
+      <strong>Amazon:</strong> Pack of 2 assembled. Ships from India via Amazon Global. ~1–2 weeks. <a href="https://www.amazon.com/Upside-Down-Labs-BioAmp-Pill/dp/B0CDWRHT7P" target="_blank" style="color:var(--emg)">amazon.com</a><br>
+      <strong>Tindie:</strong> Ships from India, free shipping but slowest (~2–3 weeks). <a href="https://www.tindie.com/products/upsidedownlabs/bioamp-exg-pill-x2-sensor-for-ecg-emg-eog-eeg/" target="_blank" style="color:var(--emg)">tindie.com</a></p>
+    </div>
+
+    <a class="buy-link" style="background:var(--emg)18;color:var(--emg);margin-bottom:6px" href="https://www.digikey.com/short/7hzv5wb2" target="_blank">Best: DigiKey → Ships from MN · Next-day available</a>
+    <a class="buy-link" style="background:var(--emg)10;color:var(--emg)" href="https://www.crowdsupply.com/upside-down-labs/bioamp-exg-pill" target="_blank">Alt: Crowd Supply → Ships from Portland, OR</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 2 ===== -->
+<div class="item" id="item2">
+  <button class="item-header" onclick="toggle(2)">
+    <div class="item-num" style="background:#ffc83d18;color:var(--mcu)">2</div>
+    <div class="item-info">
+      <div class="item-name">ESP32-S3 DevKitC <span class="qty">× 1</span></div>
+      <div class="item-meta">MCU · Waist hub pocket</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--mcu)">$12</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--mcu)">
+      <div class="label">On the Body</div>
+      <div class="value">Waist/lower back hub pocket on compression shirt</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--mcu)"><span style="color:var(--mcu)">●</span> Central Brain — BLE to Phone App</h4>
+      <p>Reads analog EMG signals from both MyoWare sensors, runs basic envelope/threshold processing on-chip, and streams data over Bluetooth Low Energy to your phone where the camera app is running. Phone does the heavy AI; ESP32 handles signal acquisition and haptic output.</p>
+      <div class="research">Your friend's research recommends ESP32-S3 as MVP-tier MCU. Dual-core handles EMG sampling on one core + Bluetooth on the other. The closed-loop architecture: Sense → Reason → Cue runs at ~50–200ms total loop time.</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--mcu)"><span style="color:var(--mcu)">●</span> Haptic Output Controller</h4>
+      <p>Drives 3 vibration motors via GPIO + PWM when the phone app detects a problem. Phone sends BLE command → ESP32 fires the right motor within 5–100ms.</p>
+      <div class="research">ESP32's PWM output enables variable vibration intensity for the three-state cueing gradient from your friend's design: Correction (strong burst) → Reinforcement (light sustained) → Fade (gradual release).</div>
+    </div>
+    <div class="why-box" style="background:var(--mcu)0c;border:1px solid var(--mcu)22">
+      <div class="label" style="color:var(--mcu)">Why This Product</div>
+      <p>Built-in BLE 5.0 + WiFi. Dual-core 240MHz. Multiple ADC channels. Native Arduino IDE support. USB-C native on the S3 variant. Under $12 on Amazon Prime.</p>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> For production move to nRF52840 ($25) — better BLE power efficiency. ESP32 is right for prototyping speed.
+    </div>
+    <a class="buy-link" style="background:var(--mcu)18;color:var(--mcu);margin-bottom:6px" href="https://www.amazon.com/s?k=ESP32-S3+DevKitC" target="_blank">Amazon Prime → ESP32-S3 DevKitC · $12 · 1–2 days</a>
+    <a class="buy-link" style="background:var(--mcu)10;color:var(--mcu)" href="https://www.digikey.com/en/products/filter/rf-evaluation-and-development-kits-boards/859?s=N4IgTCBcDaIBYFMDOBjALnAlgOwOYBcBDAGwFMAHAewBMQBdAXyA" target="_blank">Alt: DigiKey → ESP32-S3-DevKitC-1 · ships from MN</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 3 ===== -->
+<div class="item" id="item3">
+  <button class="item-header" onclick="toggle(3)">
+    <div class="item-num" style="background:#8b6cef18;color:var(--haptic)">3</div>
+    <div class="item-info">
+      <div class="item-name">Coin Vibration Motors 10mm <span class="qty">× 5 pack</span></div>
+      <div class="item-meta">Haptic · Quad L, Quad R, Lower back</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--haptic)">$6</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--haptic)">
+      <div class="label">On the Body</div>
+      <div class="value">3 shirt locations: left quad, right quad, lower back — with 2 spares</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--haptic)"><span style="color:var(--haptic)">●</span> Real-Time Cueing — "Activate This Muscle"</h4>
+      <p>When camera detects knee valgus or EMG detects compensation (erector spinae overloading instead of glutes), a vibration at the correct location tells the beginner WHERE to focus. Replicates the trainer's tap — "squeeze here."</p>
+      <div class="research">Vibrotactile localization accuracy is 60.7% on the torso (Deshpande 2021). Vibration excels at "where" — grabbing attention and pointing to a location. Your friend's six-dimension analysis: vibration covers 2/6 cue dimensions well (location + timing).</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--haptic)"><span style="color:var(--haptic)">●</span> Pre-Rep Warning — "Your Back Is Fatiguing"</h4>
+      <p>Between reps, a distinct vibration pattern (double-pulse vs single) signals EMG fatigue markers have crossed threshold. Beginner learns: this pattern = reduce weight or stop.</p>
+      <div class="research">Pre-rep cueing is more effective than mid-rep correction for motor learning (Muscle Minder finding, friend's research). Vibration onset is 5–100ms — fast enough for between-rep alerts. Budget coin ERMs sufficient for binary on/off at MVP.</div>
+    </div>
+    <div class="why-box" style="background:var(--haptic)0c;border:1px solid var(--haptic)22">
+      <div class="label" style="color:var(--haptic)">Why This Product</div>
+      <p>Generic 10mm flat coin ERMs at ~$1 each. Self-adhesive backing — stick directly into shirt pockets. Drive with GPIO + 2N7002 MOSFET ($0.10). Friend's Budget A vibrotactile tier — cheapest "does vibration cueing work?" test.</p>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> On/off only — no intensity control. Upgrade to LRA + DRV2605L (~$10/unit) for richer haptic vocabulary after validating that vibration cueing works at all.
+    </div>
+    <a class="buy-link" style="background:var(--haptic)18;color:var(--haptic)" href="https://www.amazon.com/s?k=10mm+coin+vibration+motor" target="_blank">Buy on Amazon → 10mm coin vibration motor</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 4 ===== -->
+<div class="item" id="item4">
+  <button class="item-header" onclick="toggle(4)">
+    <div class="item-num" style="background:#00d4aa18;color:var(--emg)">4</div>
+    <div class="item-info">
+      <div class="item-name">Ag/AgCl EMG Electrodes <span class="qty">50-pack</span></div>
+      <div class="item-meta">sEMG · Skin contact under each sensor</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--emg)">$8</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--emg)">
+      <div class="label">On the Body</div>
+      <div class="value">Skin surface under each MyoWare at lower back + quad positions</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--emg)"><span style="color:var(--emg)">●</span> Signal Quality Foundation</h4>
+      <p>Everything downstream depends on electrode-skin contact. Pre-gelled Ag/AgCl snap electrodes give cleanest signal with minimal skin prep. Shirt compression pressure improves contact throughout the workout.</p>
+      <div class="research">SENIAM guidelines specify Ag/AgCl as reference electrode material. Friend's research: compression improves electrode-skin contact — the TSA squeeze finding carries over to compression shirt form factor. 50-pack = ~25 sessions at 6 electrodes per session.</div>
+    </div>
+    <div class="why-box" style="background:var(--emg)0c;border:1px solid var(--emg)22">
+      <div class="label" style="color:var(--emg)">Why This Product</div>
+      <p>Standard 24mm snap-mount, compatible with MyoWare connectors. Pre-gelled for immediate use. Generic Ag/AgCl works identically to branded MyoWare electrodes at a fraction of the cost.</p>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> Disposable = recurring cost (~$0.16/electrode). Production shirt uses reusable conductive fabric electrodes sewn into garment — v2 problem.
+    </div>
+    <a class="buy-link" style="background:var(--emg)18;color:var(--emg);margin-bottom:6px" href="https://www.amazon.com/s?k=EMG+electrodes+disposable+snap+24mm" target="_blank">Amazon Prime → EMG electrodes 50-pack · $8 · 1–2 days</a>
+    <a class="buy-link" style="background:var(--emg)10;color:var(--emg)" href="https://www.sparkfun.com/myoware" target="_blank">Alt: SparkFun → MyoWare branded electrodes (bundle with sensors)</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 5 ===== -->
+<div class="item" id="item5">
+  <button class="item-header" onclick="toggle(5)">
+    <div class="item-num" style="background:#ff683918;color:var(--power)">5</div>
+    <div class="item-info">
+      <div class="item-name">500mAh LiPo + TP4056 Charger <span class="qty">× 1</span></div>
+      <div class="item-meta">Power · Hub pocket with ESP32</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--power)">$8</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--power)">
+      <div class="label">On the Body</div>
+      <div class="value">Hub pocket at waist/lower back alongside ESP32</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--power)"><span style="color:var(--power)">●</span> Untethered Workout Sessions</h4>
+      <p>500mAh at 3.7V powers ESP32 + 2 MyoWare sensors + 3 vibration motors for ~60–90 min of continuous use — a full workout session. USB-C charging via TP4056 between sessions.</p>
+      <div class="research">Friend's BOM: 500mAh LiPo recommended for sEMG + Vibrotactile config. EMG sensors ~5mA each, ESP32 ~80mA with BLE, vibration motors ~75mA each but only short bursts. TP4056 adds overcharge/overdischarge protection for ~$1.</div>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> For longer sessions or more motors, upgrade to 800–1000mAh. 500mAh is minimum viable for a demo.
+    </div>
+    <a class="buy-link" style="background:var(--power)18;color:var(--power)" href="https://www.amazon.com/s?k=500mAh+LiPo+3.7V+TP4056" target="_blank">Buy on Amazon → 500mAh LiPo + TP4056</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 6 ===== -->
+<div class="item" id="item6">
+  <button class="item-header" onclick="toggle(6)">
+    <div class="item-num" style="background:#71717a18;color:var(--build)">6</div>
+    <div class="item-info">
+      <div class="item-name">Jumper Wires + Breadboard + MOSFETs <span class="qty">kit</span></div>
+      <div class="item-meta">Build · Prototyping connections</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--build)">$10</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--build)">
+      <div class="label">On the Body</div>
+      <div class="value">Prototyping connections between all components in hub pocket</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--build)"><span style="color:var(--build)">●</span> Wiring the Closed Loop</h4>
+      <p>Connects MyoWare analog out → ESP32 ADC. ESP32 GPIO → MOSFET gate → vibration motor. Breadboard lets you iterate before soldering. 2N7002 MOSFETs switch motors from 3.3V logic — one per motor.</p>
+      <div class="research">Friend's Config 3 architecture: EMG analog → MCU ADC → BLE → phone → BLE → MCU → GPIO → MOSFET → motor. MOSFETs needed because vibration motors draw 60–85mA, exceeding ESP32's 40mA GPIO limit.</div>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> Replace with small custom PCB or perfboard for final shirt. Breadboard is correct for speed.
+    </div>
+    <a class="buy-link" style="background:var(--build)18;color:var(--build)" href="https://www.amazon.com/s?k=jumper+wires+breadboard+kit+arduino" target="_blank">Buy on Amazon → jumper wires + breadboard kit</a>
+  </div>
+</div>
+
+<!-- ===== ITEM 7 ===== -->
+<div class="item" id="item7">
+  <button class="item-header" onclick="toggle(7)">
+    <div class="item-num" style="background:#d4d4dc18;color:var(--form)">7</div>
+    <div class="item-info">
+      <div class="item-name">Men's Compression Shirt <span class="qty">× 1</span></div>
+      <div class="item-meta">Form Factor · The garment itself</div>
+    </div>
+    <div class="item-price-col">
+      <div class="item-price" style="color:var(--form)">$15</div>
+      <div class="item-delivery">1–2 days Prime</div>
+    </div>
+  </button>
+  <div class="item-body">
+    <div class="placement-box" style="border-left:3px solid var(--form)">
+      <div class="label">On the Body</div>
+      <div class="value">Base layer — houses all components against the skin</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--form)"><span style="color:var(--form)">●</span> Electrode Contact + Sensor Housing</h4>
+      <p>Compression fabric pressing skin maintains electrode contact during movement. Without it, sensors shift on sweaty skin and signal degrades. Sew small pockets at sensor locations (lower back, front thigh) and a hub pocket at waist. Run flat wiring through channels.</p>
+      <div class="research">Friend's research: compression sleeve + velcro-mounted pods is standard in research labs (MIT Media Lab wearable haptics). Compression gives excellent electrode contact; pods repositionable. Form Factor D (Hybrid: Sleeve + Velcro Pods) is recommended approach.</div>
+    </div>
+    <div class="app-card">
+      <h4 style="color:var(--form)"><span style="color:var(--form)">●</span> The Premium Product Itself</h4>
+      <p>This IS what the user buys. The phone app (camera AI) is free. The compression shirt with embedded EMG + haptics is the premium upsell. Starting with off-the-shelf that you modify lets you test sensor placement before committing to custom manufacturing.</p>
+      <div class="research">Product strategy: camera-first (free app) → EMG shirt (premium companion). Every user has a phone. The shirt separates casual users from serious ones willing to pay for the "invisible trainer" layer.</div>
+    </div>
+    <div class="why-box" style="background:var(--form)0c;border:1px solid var(--form)22">
+      <div class="label" style="color:var(--form)">Why This Product</div>
+      <p>Any basic compression top works. Polyester/spandex blend (wicks sweat from electrodes). Tight fit critical — loose shirts defeat the purpose. Get your actual size.</p>
+    </div>
+    <div class="tradeoff-box">
+      <strong>Tradeoff:</strong> Off-the-shelf requires manual modification (sewing). Production version: custom-manufactured with electrode pockets, wiring channels, and motor housings built in.
+    </div>
+    <a class="buy-link" style="background:var(--form)18;color:var(--form)" href="https://www.amazon.com/s?k=mens+compression+shirt" target="_blank">Buy on Amazon → men's compression shirt</a>
+  </div>
+</div>
+
+<!-- TOTAL -->
+<div class="footer-card totals">
+  <div class="footer-total">
+    <span class="ft-label">Total</span>
+    <span class="ft-amount">~$155</span>
+  </div>
+  <p class="footer-note">
+    MyoWare × 2 from SparkFun (CO, 2–3 days) · BioAmp × 4 from DigiKey (MN, next-day avail) · ESP32 + motors + electrodes + battery + breadboard from Amazon Prime (1–2 days) · Compression shirt from Amazon Prime.<br><br>
+    <strong>Immediate prototype (~$105):</strong> MyoWare + ESP32 + motors + electrodes + battery + breadboard + shirt — arrives by Friday.<br>
+    <strong>Scale-up sensors (~$50 more):</strong> BioAmp EXG Pill × 4 from DigiKey — arrives within a week for expanding to 4+ muscle groups.
+  </p>
+</div>
+
+<!-- ARCHITECTURE -->
+<div class="footer-card arch">
+  <div class="section-label">How It All Connects</div>
+  <p>
+    <strong>Layer 1 (Free App):</strong> Phone camera + MediaPipe → real-time form correction (joint angles, knee tracking, squat depth, bar path).
+    <strong>Layer 2 (Premium Shirt):</strong> MyoWare EMG reads muscle activation → ESP32 streams to phone via BLE → phone AI fuses camera + EMG → sends haptic commands back → vibration motors cue the user.
+    <strong>The loop:</strong> Sense → Reason → Cue in ~50–200ms.
+  </p>
+</div>
+
+<script>
+function toggle(n) {
+  const el = document.getElementById(n === '1b' ? 'item1b' : 'item' + n);
+  if (el.classList.contains('open')) {
+    el.classList.remove('open');
+  } else {
+    document.querySelectorAll('.item').forEach(i => i.classList.remove('open'));
+    el.classList.add('open');
+  }
+}
+</script>
+
+</body>
+</html>

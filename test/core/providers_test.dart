@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/providers.dart';
 
 void main() {
   group('CloudSyncNotifier', () {

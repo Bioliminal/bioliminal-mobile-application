@@ -1,5 +1,5 @@
-name: auralink
-description: "AI movement screening app — bridges computer vision and fascial chain science."
+name: bioliminal
+description: "Clinical-grade movement screening and real-time sEMG biofeedback."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -21,6 +21,10 @@ dependencies:
   share_plus: ^13.0.0
   path_provider: ^2.1.0
   app_settings: ^7.0.0
+  http: ^1.2.0
+  flutter_blue_plus: ^1.34.5
+  flutter_animate: ^4.5.2
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -34,3 +38,20 @@ flutter:
   assets:
     - assets/reference_images/
     - assets/models/
+    - assets/premium/
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Variable.ttf
+        - asset: assets/fonts/Fraunces-Italic-Variable.ttf
+          style: italic
+    - family: IBMPlexSans
+      fonts:
+        - asset: assets/fonts/IBMPlexSans-Variable.ttf
+    - family: IBMPlexMono
+      fonts:
+        - asset: assets/fonts/IBMPlexMono-Regular.ttf
+        - asset: assets/fonts/IBMPlexMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/IBMPlexMono-SemiBold.ttf
+          weight: 600

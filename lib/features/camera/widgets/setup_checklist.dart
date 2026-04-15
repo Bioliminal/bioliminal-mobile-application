@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/domain/models.dart';
 
 // ---------------------------------------------------------------------------
 // AI validation thresholds
@@ -74,7 +74,7 @@ class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
 
   static const int totalSteps = 4;
 
-  SetupChecklistState _validateLandmarks(List<Landmark> landmarks) {
+  SetupChecklistState _validateLandmarks(List<PoseLandmark> landmarks) {
     if (landmarks.isEmpty) return const SetupChecklistState();
 
     final distanceOk = _checkDistance(landmarks);
@@ -88,12 +88,12 @@ class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
     );
   }
 
-  bool _checkDistance(List<Landmark> landmarks) {
+  bool _checkDistance(List<PoseLandmark> landmarks) {
     if (landmarks.length < kRequiredLandmarkCount) return false;
     return landmarks.every((lm) => lm.visibility > kMinLandmarkVisibility);
   }
 
-  bool _checkLighting(List<Landmark> landmarks) {
+  bool _checkLighting(List<PoseLandmark> landmarks) {
     if (landmarks.length <= kKeyJointIndices.reduce((a, b) => a > b ? a : b)) {
       return false;
     }
@@ -104,7 +104,7 @@ class SetupChecklistNotifier extends Notifier<SetupChecklistState> {
     return (sum / kKeyJointIndices.length) > kMinLightingVisibility;
   }
 
-  bool _checkCameraAngle(List<Landmark> landmarks) {
+  bool _checkCameraAngle(List<PoseLandmark> landmarks) {
     if (landmarks.length <= kRightHipIndex) return false;
     final leftHipY = landmarks[kLeftHipIndex].y;
     final rightHipY = landmarks[kRightHipIndex].y;

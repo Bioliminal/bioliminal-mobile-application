@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/domain/services/pose_math.dart';
+import 'package:bioliminal/domain/services/pose_math.dart';
 
 void main() {
   group('rotationDegreesForSensor', () {
@@ -31,6 +31,7 @@ void main() {
         y: 240,
         z: 1.5,
         visibility: 0.95,
+        presence: 0.99,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -39,6 +40,7 @@ void main() {
       expect(lm.y, closeTo(0.5, 1e-10));
       expect(lm.z, closeTo(1.5 / 640, 1e-10));
       expect(lm.visibility, closeTo(0.95, 1e-10));
+      expect(lm.presence, closeTo(0.99, 1e-10));
     });
 
     test('origin landmark normalizes to (0, 0)', () {
@@ -47,6 +49,7 @@ void main() {
         y: 0,
         z: 0,
         visibility: 1.0,
+        presence: 1.0,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -61,6 +64,7 @@ void main() {
         y: 480,
         z: 0,
         visibility: 1.0,
+        presence: 1.0,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -75,6 +79,7 @@ void main() {
         y: null,
         z: null,
         visibility: null,
+        presence: null,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -83,6 +88,7 @@ void main() {
       expect(lm.y, 0.0);
       expect(lm.z, 0.0);
       expect(lm.visibility, 0.0);
+      expect(lm.presence, 0.0);
     });
 
     test('null x alone produces zero landmark', () {
@@ -91,6 +97,7 @@ void main() {
         y: 240,
         z: 1.0,
         visibility: 0.9,
+        presence: 0.9,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -98,6 +105,7 @@ void main() {
       expect(lm.x, 0.0);
       expect(lm.y, 0.0);
       expect(lm.visibility, 0.0);
+      expect(lm.presence, 0.0);
     });
 
     test('null z defaults to 0', () {
@@ -106,6 +114,7 @@ void main() {
         y: 240,
         z: null,
         visibility: 0.8,
+        presence: 0.8,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -120,6 +129,7 @@ void main() {
         y: 240,
         z: 1.0,
         visibility: null,
+        presence: 0.8,
         imageWidth: 640,
         imageHeight: 480,
       );
@@ -133,9 +143,9 @@ void main() {
     test('normalizes a batch of landmarks', () {
       final landmarks = normalizeRawLandmarks(
         raw: [
-          (x: 0.0, y: 0.0, z: 0.0, visibility: 0.9),
-          (x: 640.0, y: 480.0, z: 1.0, visibility: 0.8),
-          (x: 320.0, y: 240.0, z: 0.5, visibility: 0.95),
+          (x: 0.0, y: 0.0, z: 0.0, visibility: 0.9, presence: 0.9),
+          (x: 640.0, y: 480.0, z: 1.0, visibility: 0.8, presence: 0.8),
+          (x: 320.0, y: 240.0, z: 0.5, visibility: 0.95, presence: 0.95),
         ],
         imageWidth: 640,
         imageHeight: 480,
@@ -153,9 +163,9 @@ void main() {
     test('handles missing landmarks in batch', () {
       final landmarks = normalizeRawLandmarks(
         raw: [
-          (x: 320.0, y: 240.0, z: 0.0, visibility: 0.9),
-          (x: null, y: null, z: null, visibility: null),
-          (x: 160.0, y: 120.0, z: 0.0, visibility: 0.7),
+          (x: 320.0, y: 240.0, z: 0.0, visibility: 0.9, presence: 0.9),
+          (x: null, y: null, z: null, visibility: null, presence: null),
+          (x: 160.0, y: 120.0, z: 0.0, visibility: 0.7, presence: 0.7),
         ],
         imageWidth: 640,
         imageHeight: 480,
@@ -182,7 +192,8 @@ void main() {
     test('33 landmarks (BlazePose count) normalizes correctly', () {
       final raw = List.generate(
         33,
-        (i) => (x: i * 20.0, y: i * 15.0, z: 0.0, visibility: 0.9),
+        (i) =>
+            (x: i * 20.0, y: i * 15.0, z: 0.0, visibility: 0.9, presence: 0.9),
       );
 
       final landmarks = normalizeRawLandmarks(

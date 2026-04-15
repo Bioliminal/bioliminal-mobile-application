@@ -19,7 +19,7 @@ class RuleBasedAngleCalculator implements AngleCalculator {
   final CompensationProfile profile;
 
   @override
-  List<JointAngle> calculateAngles(List<Landmark> landmarks) {
+  List<JointAngle> calculateAngles(List<PoseLandmark> landmarks) {
     // Derive confidence from landmark visibility at relevant joints.
     // MediaPipe indices: 23/24=hips, 25/26=knees, 27/28=ankles, 11/12=shoulders
     final hipConfidence = _confidenceFromVisibility(
@@ -545,7 +545,7 @@ class RuleBasedAngleCalculator implements AngleCalculator {
     ];
   }
 
-  double _avgVisibility(List<Landmark> landmarks, List<int> indices) {
+  double _avgVisibility(List<PoseLandmark> landmarks, List<int> indices) {
     if (landmarks.isEmpty) return 0.9;
     var sum = 0.0;
     var count = 0;

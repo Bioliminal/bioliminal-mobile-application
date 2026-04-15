@@ -15,14 +15,14 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/domain/models.dart' as models;
 
 /// Reference images bundled as assets.
 const _images = {
   'overhead_squat': 'assets/reference_images/overhead_squat.jpg',
-  'single_leg_balance': 'assets/reference_images/single_leg_balance.jpg',
-  'forward_fold': 'assets/reference_images/forward_fold.jpg',
-  'overhead_reach': 'assets/reference_images/overhead_reach.jpg',
+  'single_leg_squat': 'assets/reference_images/single_leg_balance.jpg',
+  'rollup': 'assets/reference_images/forward_fold.jpg',
+  'push_up': 'assets/reference_images/overhead_reach.jpg',
 };
 
 void main() {
@@ -97,13 +97,21 @@ void main() {
       final landmarks = PoseLandmarkType.values.map((type) {
         final lm = pose.landmarks[type];
         if (lm == null) {
-          return const Landmark(x: 0, y: 0, z: 0, visibility: 0);
+          return const models.PoseLandmark(
+            x: 0,
+            y: 0,
+            z: 0,
+            visibility: 0,
+            presence: 0,
+          );
         }
-        return Landmark(
+        return models.PoseLandmark(
           x: lm.x / imgWidth,
           y: lm.y / imgHeight,
           z: lm.z,
           visibility: lm.likelihood,
+          presence:
+              lm.likelihood, // MLKit likelihood maps to visibility/presence
         );
       }).toList();
 

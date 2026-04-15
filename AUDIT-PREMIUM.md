@@ -1,6 +1,6 @@
-# AuraLink Premium Experience Audit
+# Bioliminal Premium Experience Audit
 
-This audit evaluates AuraLink through the lens of a **high-end, clinical-grade consumer product**. While the underlying scientific logic is robust, the current implementation sits between a "proof-of-concept" and a "stock" mobile app.
+This audit evaluates Bioliminal through the lens of a **high-end, clinical-grade consumer product**. While the underlying scientific logic is robust, the current implementation sits between a "proof-of-concept" and a "stock" mobile app.
 
 ---
 
