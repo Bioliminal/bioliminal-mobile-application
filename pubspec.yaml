@@ -38,6 +38,7 @@ flutter:
   assets:
     - assets/reference_images/
     - assets/models/
+    - assets/premium/
   fonts:
     - family: Fraunces
       fonts:

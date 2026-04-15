@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../waitlist/services/waitlist_service.dart';
 import '../widgets/instrument_button.dart';
@@ -9,6 +8,7 @@ import '../widgets/premium_atmosphere.dart';
 import '../widgets/scroll_reveal.dart';
 import '../widgets/site_footer.dart';
 import '../widgets/top_nav.dart';
+import '../widgets/walkthrough_dialog.dart';
 
 // Signature for this page: indigo glow + sky wash.
 const _tint = SectionTint.indigo;
@@ -535,38 +535,27 @@ class _SetupSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ScrollReveal(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: MarketingSectionLabel('SETUP'),
-              ),
+              child: MarketingSectionLabel('SETUP'),
             ),
             SizedBox(height: narrow ? 24 : 36),
             ScrollReveal(
               delay: const Duration(milliseconds: 80),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Before\nyou start.',
-                  textAlign: TextAlign.right,
-                  style: mktDisplay(narrow ? 38 : 64,
-                      italic: true, letterSpacing: -1.5, height: 1.02),
-                ),
+              child: Text(
+                'Before\nyou start.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
               ),
             ),
             SizedBox(height: narrow ? 24 : 32),
             ScrollReveal(
               delay: const Duration(milliseconds: 160),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
-                  child: Text(
-                    'Tracking quality depends on these four. The app checks them one at a time before '
-                    'the rep begins — this is a preview of what to expect.',
-                    textAlign: TextAlign.right,
-                    style: mktBody(narrow ? 15 : 17,
-                        color: MarketingPalette.muted, height: 1.55),
-                  ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 700),
+                child: Text(
+                  'Tracking quality depends on these four. The app checks them one at a time before '
+                  'the rep begins — this is a preview of what to expect.',
+                  style: mktBody(narrow ? 15 : 17,
+                      color: MarketingPalette.muted, height: 1.55),
                 ),
               ),
             ),
@@ -663,9 +652,94 @@ class _SetupRow extends StatelessWidget {
 class _StartSection extends StatelessWidget {
   const _StartSection();
 
+  static const _onTap = [
+    ('01', 'PERMISSION', 'Browser asks for camera access.'),
+    ('02', 'POSE', 'BlazePose loads on-device. No upload.'),
+    ('03', 'CAPTURE', '30-second recording window.'),
+    ('04', 'RESULT', 'Feedback renders locally, immediately.'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final narrow = mktNarrow(context);
+
+    final left = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const ScrollReveal(
+          child: MarketingSectionLabel('START'),
+        ),
+        SizedBox(height: narrow ? 20 : 28),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 80),
+          child: Text(
+            'Camera on.\nOne clean rep.',
+            style: mktDisplay(narrow ? 44 : 72,
+                italic: true, letterSpacing: -2, height: 0.98),
+          ),
+        ),
+        SizedBox(height: narrow ? 32 : 44),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 180),
+          child: InstrumentButton(
+            label: 'START THE REP',
+            hint: 'WALKTHROUGH →',
+            filled: true,
+            onTap: () => showDemoWalkthrough(context),
+          ),
+        ),
+        SizedBox(height: narrow ? 24 : 32),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 260),
+          child: Text(
+            'Nothing uploads. You can close the tab at any point without leaving '
+            'a trace on any server.',
+            style: mktBody(narrow ? 14 : 15,
+                color: MarketingPalette.subtle, height: 1.55),
+          ),
+        ),
+      ],
+    );
+
+    final right = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ScrollReveal(
+          delay: const Duration(milliseconds: 140),
+          child: Text(
+            '// ON TAP',
+            style: mktMono(11,
+                color: MarketingPalette.subtle, letterSpacing: 2.6),
+          ),
+        ),
+        SizedBox(height: narrow ? 28 : 36),
+        DecoratedBox(
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: MarketingPalette.hairline, width: 1),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: List.generate(_onTap.length, (i) {
+              final (idx, code, desc) = _onTap[i];
+              return ScrollReveal(
+                delay: Duration(milliseconds: 200 + i * 70),
+                child: _OnTapRow(
+                  index: idx,
+                  code: code,
+                  desc: desc,
+                  isLast: i == _onTap.length - 1,
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+
     return SectionShell(
       tint: _tint,
       glow: const Alignment(0.85, 0.7),
@@ -673,50 +747,84 @@ class _StartSection extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: mktGutter(context),
-          vertical: narrow ? 96 : 160,
+          vertical: narrow ? 56 : 88,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const ScrollReveal(
-              child: MarketingSectionLabel('START'),
-            ),
-            SizedBox(height: narrow ? 24 : 36),
-            ScrollReveal(
-              delay: const Duration(milliseconds: 80),
-              child: Text(
-                'Camera on.\nOne clean rep.',
-                textAlign: TextAlign.center,
-                style: mktDisplay(narrow ? 44 : 80,
-                    italic: true, letterSpacing: -2, height: 0.98),
+        child: narrow
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [left, const SizedBox(height: 56), right],
+              )
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: left),
+                  const SizedBox(width: 64),
+                  Expanded(child: right),
+                ],
               ),
-            ),
-            SizedBox(height: narrow ? 40 : 60),
-            ScrollReveal(
-              delay: const Duration(milliseconds: 180),
-              child: InstrumentButton(
-                label: 'START THE REP',
-                hint: 'CAMERA →',
-                filled: true,
-                onTap: () => context.go('/capture'),
-              ),
-            ),
-            SizedBox(height: narrow ? 24 : 32),
-            ScrollReveal(
-              delay: const Duration(milliseconds: 260),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: Text(
-                  'The next screen asks for camera permission. Nothing uploads. You can close the '
-                  'tab at any point without leaving a trace on any server.',
-                  textAlign: TextAlign.center,
-                  style: mktBody(narrow ? 14 : 15,
-                      color: MarketingPalette.subtle, height: 1.55),
-                ),
-              ),
-            ),
-          ],
+      ),
+    );
+  }
+}
+
+class _OnTapRow extends StatelessWidget {
+  const _OnTapRow({
+    required this.index,
+    required this.code,
+    required this.desc,
+    required this.isLast,
+  });
+
+  final String index;
+  final String code;
+  final String desc;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 22),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isLast
+                ? MarketingPalette.hairline
+                : MarketingPalette.hairline.withValues(alpha: 0.6),
+            width: 1,
+          ),
         ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 48,
+            child: Text(
+              index,
+              style: mktMono(11,
+                  color: MarketingPalette.signal,
+                  weight: FontWeight.w600,
+                  letterSpacing: 2.4),
+            ),
+          ),
+          SizedBox(
+            width: 128,
+            child: Text(
+              code,
+              style: mktMono(12,
+                  color: MarketingPalette.text,
+                  weight: FontWeight.w600,
+                  letterSpacing: 2.6),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              desc,
+              style: mktBody(15,
+                  color: MarketingPalette.muted, height: 1.5),
+            ),
+          ),
+        ],
       ),
     );
   }

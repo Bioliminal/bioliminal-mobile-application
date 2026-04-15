@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme.dart';
 import '../../waitlist/services/waitlist_service.dart';
 import '../../waitlist/widgets/waitlist_capture.dart';
+import '../widgets/site_footer.dart';
 
 // =============================================================================
 // Bioliminal landing — editorial brutalism, instrument-panel precision.
@@ -122,7 +123,12 @@ class _LandingPageViewState extends State<LandingPageView> {
               SliverToBoxAdapter(child: _SectionDivider()),
               SliverToBoxAdapter(child: _ValidationSection()),
               SliverToBoxAdapter(child: _SectionDivider()),
-              SliverToBoxAdapter(child: _Footer()),
+              SliverToBoxAdapter(
+                child: SiteFooter(
+                  source: WaitlistSource.home,
+                  showLaunchMarquee: true,
+                ),
+              ),
             ],
           ),
           // Persistent film-grain overlay.
@@ -152,8 +158,16 @@ class _SectionDivider extends StatelessWidget {
   }
 }
 
+// Matches mktGutter: on viewports >1408, extra width becomes auto-gutter so
+// the homepage doesn't stretch edge-to-edge at 2K/4K like the rest of the
+// marketing surface did before we capped content width.
+const double _maxContentWidth = 1280;
+
 double _gutter(BuildContext context) {
   final w = MediaQuery.of(context).size.width;
+  if (w >= _maxContentWidth + 128) {
+    return (w - _maxContentWidth) / 2;
+  }
   if (w >= 1280) return 64;
   if (w >= 768) return 40;
   return 20;
@@ -219,6 +233,10 @@ class _TopNavDelegate extends SliverPersistentHeaderDelegate {
                   _NavItem(
                     label: 'DEMO',
                     onTap: () => context.go('/demo'),
+                  ),
+                  _NavItem(
+                    label: 'CODE',
+                    onTap: () => context.go('/code'),
                   ),
                 ],
                 const Spacer(),
@@ -1049,31 +1067,19 @@ class _ValidationSection extends StatelessWidget {
         horizontal: _gutter(context),
         vertical: isNarrow ? 80 : 140,
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isNarrow)
-            SizedBox(
-              width: 180,
-              child: Text(
-                '// FRAME',
-                style: _mono(11, color: _Palette.subtle, letterSpacing: 2.6),
-              ),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isNarrow) ...[
-                  Text(
-                    '// FRAME',
-                    style:
-                        _mono(11, color: _Palette.subtle, letterSpacing: 2.6),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-                Text(
-                  'Nothing moves\nalone.',
+          Text(
+            '// FRAME',
+            style: _mono(11, color: _Palette.subtle, letterSpacing: 2.6),
+          ),
+          SizedBox(height: isNarrow ? 24 : 32),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Nothing moves\nalone.',
                   style: _display(
                     isNarrow ? 44 : 72,
                     italic: true,
@@ -1117,7 +1123,6 @@ class _ValidationSection extends StatelessWidget {
                 const _ScienceBridgeLink(),
               ],
             ),
-          ),
         ],
       ),
       ),
@@ -1163,152 +1168,6 @@ class _ScienceBridgeLinkState extends State<_ScienceBridgeLink> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// =============================================================================
-// Footer
-// =============================================================================
-
-class _Footer extends StatelessWidget {
-  const _Footer();
-
-  @override
-  Widget build(BuildContext context) {
-    final isNarrow = _isNarrow(context);
-
-    return _SectionShell(
-      washTint: _SectionPalettes.footerWash,
-      washOpacity: 0.05,
-      child: Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: _gutter(context),
-        vertical: isNarrow ? 72 : 120,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'DEMO ↘',
-                      style: _mono(11, color: _Palette.subtle, letterSpacing: 2.6),
-                    ),
-                    const SizedBox(height: 18),
-                    Text(
-                      '04.20.26',
-                      style: _display(
-                        isNarrow ? 52 : 96,
-                        weight: FontWeight.w600,
-                        letterSpacing: -2,
-                        height: 1,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'Austin, Texas',
-                      style: _display(
-                        isNarrow ? 22 : 32,
-                        italic: true,
-                        weight: FontWeight.w400,
-                        letterSpacing: -0.5,
-                        color: _Palette.muted,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (!isNarrow)
-                const Expanded(
-                  flex: 2,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _FooterLink('CONTACT', 'team@bioliminal.co'),
-                      SizedBox(height: 20),
-                      _FooterLink('PRESS', 'press@bioliminal.co'),
-                      SizedBox(height: 20),
-                      _FooterLink('SUBSTACK', 'bioliminal.substack.com'),
-                    ],
-                  ),
-                ),
-            ],
-          ),
-          if (isNarrow) ...[
-            const SizedBox(height: 48),
-            const _FooterLink('CONTACT', 'team@bioliminal.co'),
-            const SizedBox(height: 20),
-            const _FooterLink('PRESS', 'press@bioliminal.co'),
-            const SizedBox(height: 20),
-            const _FooterLink('SUBSTACK', 'bioliminal.substack.com'),
-          ],
-          SizedBox(height: isNarrow ? 60 : 120),
-          Container(height: 1, color: _Palette.hairlineSoft),
-          const SizedBox(height: 28),
-          Row(
-            children: [
-              Text(
-                '© 2026 BIOLIMINAL, INC.',
-                style: _mono(10, color: _Palette.subtle, letterSpacing: 2),
-              ),
-              const Spacer(),
-              if (!isNarrow)
-                Text(
-                  'SPEC. BL-01  ·  REV. 04.14.26',
-                  style: _mono(10, color: _Palette.subtle, letterSpacing: 2),
-                ),
-            ],
-          ),
-        ],
-      ),
-      ),
-    );
-  }
-}
-
-class _FooterLink extends StatefulWidget {
-  const _FooterLink(this.label, this.value);
-  final String label;
-  final String value;
-
-  @override
-  State<_FooterLink> createState() => _FooterLinkState();
-}
-
-class _FooterLinkState extends State<_FooterLink> {
-  bool _hover = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _hover = true),
-      onExit: (_) => setState(() => _hover = false),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.label,
-            style: _mono(10, color: _Palette.subtle, letterSpacing: 2.4),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            widget.value,
-            style: _body(
-              16,
-              weight: FontWeight.w400,
-              color: _hover ? _Palette.signal : _Palette.text,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1372,7 +1231,6 @@ class _SectionPalettes {
   // Washes — very low alpha applied in _SectionShell
   static const skyWash = Color(0xFF082F49);    // sky-950 — signal chapter
   static const chromeWash = Color(0xFF060B14); // near-black slate — blackout
-  static const footerWash = Color(0xFF05090F); // sink to black
 }
 
 class _SectionShell extends StatelessWidget {

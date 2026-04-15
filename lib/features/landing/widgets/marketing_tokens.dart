@@ -68,8 +68,17 @@ TextStyle mktMono(
       height: height,
     );
 
+// Widest a marketing content column is ever allowed to grow. On viewports
+// above this + standard gutter, the extra width becomes auto-gutter so
+// content stays a readable 1280px centered block instead of stretching
+// edge-to-edge on 2K/4K displays.
+const mktMaxContentWidth = 1280.0;
+
 double mktGutter(BuildContext context) {
   final w = MediaQuery.of(context).size.width;
+  if (w >= mktMaxContentWidth + 128) {
+    return (w - mktMaxContentWidth) / 2;
+  }
   if (w >= 1280) return 64;
   if (w >= 768) return 40;
   return 20;

@@ -75,8 +75,9 @@ class _WaitlistCaptureState extends ConsumerState<WaitlistCapture> {
       return _SuccessBlock(compact: widget.compact);
     }
 
-    final labelGap = widget.compact ? 20.0 : 28.0;
-    final bodyGap = widget.compact ? 14.0 : 18.0;
+    final labelGap = widget.compact ? 14.0 : 28.0;
+    final bodyGap = widget.compact ? 10.0 : 18.0;
+    final beforeFieldGap = widget.compact ? 20.0 : 28.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,21 +90,23 @@ class _WaitlistCaptureState extends ConsumerState<WaitlistCapture> {
         SizedBox(height: labelGap),
         Text(
           widget.compact ? 'Tell us you want it.' : 'Tell us\nyou want it.',
-          style: _tokens.display(widget.compact ? 32 : 52),
+          style: _tokens.display(widget.compact ? 26 : 52),
         ),
         SizedBox(height: bodyGap),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: Text(
-            'The screen itself runs on your device. This is a separate signup — just your email, so we can tell you when the full screen is ready.',
+            widget.compact
+                ? 'Just your email — we\'ll ping you when the full app ships.'
+                : 'The screen itself runs on your device. This is a separate signup — just your email, so we can tell you when the full app is ready.',
             style: _tokens.body(
-              widget.compact ? 14 : 15,
+              widget.compact ? 13 : 15,
               color: _tokens.muted,
-              height: 1.55,
+              height: 1.5,
             ),
           ),
         ),
-        const SizedBox(height: 28),
+        SizedBox(height: beforeFieldGap),
         _EmailRow(
           controller: _controller,
           focus: _focus,
@@ -235,16 +238,16 @@ class _SuccessBlock extends StatelessWidget {
           '// WAITLIST',
           style: _tokens.monoSmall(color: _tokens.subtle),
         ),
-        SizedBox(height: compact ? 20 : 28),
+        SizedBox(height: compact ? 14 : 28),
         Text(
-          compact ? "You're on\nthe list." : "You're on\nthe list.",
-          style: _tokens.display(compact ? 32 : 52),
+          compact ? "You're on the list." : "You're on\nthe list.",
+          style: _tokens.display(compact ? 26 : 52),
         ),
-        SizedBox(height: compact ? 14 : 18),
+        SizedBox(height: compact ? 10 : 18),
         ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 520),
           child: Text(
-            "We'll email you when the full screen ships. Nothing else.",
+            "We'll email you when the full app ships. Nothing else.",
             style: _tokens.body(
               compact ? 14 : 15,
               color: _tokens.muted,

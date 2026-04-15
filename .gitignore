@@ -48,3 +48,6 @@ app.*.map.json
 .claude/tracking/
 .ship-manifest.json
 .worktrees/
+
+# Firebase CLI cache
+.firebase/

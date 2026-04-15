@@ -64,7 +64,7 @@ class _Hero extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: mktGutter(context),
-            vertical: narrow ? 72 : 140,
+            vertical: narrow ? 56 : 100,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,20 +72,20 @@ class _Hero extends StatelessWidget {
               const ScrollReveal(
                 child: MarketingSectionLabel('SCIENCE'),
               ),
-              SizedBox(height: narrow ? 28 : 44),
+              SizedBox(height: narrow ? 24 : 40),
               ScrollReveal(
                 delay: const Duration(milliseconds: 80),
                 child: Text(
                   'Nothing moves\nalone.',
                   style: mktDisplay(
-                    narrow ? 64 : 132,
+                    narrow ? 56 : 120,
                     italic: true,
                     letterSpacing: -3,
                     height: 0.95,
                   ),
                 ),
               ),
-              SizedBox(height: narrow ? 28 : 40),
+              SizedBox(height: narrow ? 24 : 36),
               ScrollReveal(
                 delay: const Duration(milliseconds: 160),
                 child: ConstrainedBox(
@@ -102,10 +102,163 @@ class _Hero extends StatelessWidget {
                   ),
                 ),
               ),
+              SizedBox(height: narrow ? 36 : 56),
+              const ScrollReveal(
+                delay: Duration(milliseconds: 260),
+                child: _FascialBanner(),
+              ),
             ],
           ),
         ),
       ],
+    );
+  }
+}
+
+// Full-width banner anchoring the hero. The image's two-torsos-connected-by-
+// fascia composition illustrates the page's thesis ("Nothing moves alone")
+// more directly than any paragraph could.
+class _FascialBanner extends StatelessWidget {
+  const _FascialBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final narrow = mktNarrow(context);
+    final height = narrow ? 220.0 : 420.0;
+
+    return SizedBox(
+      height: height,
+      width: double.infinity,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: _tint.withValues(alpha: 0.22),
+            width: 1,
+          ),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(
+              'assets/premium/fascial_network.jpeg',
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+            // Soft edge fade so the image bleeds into the page bg.
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        MarketingPalette.bg.withValues(alpha: 0.55),
+                        Colors.transparent,
+                        Colors.transparent,
+                        MarketingPalette.bg.withValues(alpha: 0.55),
+                      ],
+                      stops: const [0, 0.12, 0.88, 1],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Top-left mono annotation.
+            Positioned(
+              top: 14,
+              left: 14,
+              child: Text(
+                '// FASCIAL MAP  /  3 CHAINS',
+                style: mktMono(
+                  10,
+                  color: MarketingPalette.text,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // Top-right chain codes.
+            Positioned(
+              top: 14,
+              right: 14,
+              child: Text(
+                'SBL  /  BFL  /  FFL',
+                style: mktMono(
+                  10,
+                  color: _tint,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w600,
+                ),
+              ),
+            ),
+            // Corner brackets.
+            const Positioned(
+                top: 10, left: 10, child: _FbBracket(top: true, left: true)),
+            const Positioned(
+                top: 10,
+                right: 10,
+                child: _FbBracket(top: true, left: false)),
+            const Positioned(
+                bottom: 10,
+                left: 10,
+                child: _FbBracket(top: false, left: true)),
+            const Positioned(
+                bottom: 10,
+                right: 10,
+                child: _FbBracket(top: false, left: false)),
+            // Bottom-left citation tag.
+            Positioned(
+              bottom: 14,
+              left: 14,
+              child: Text(
+                'WILKE  /  2016',
+                style: mktMono(
+                  10,
+                  color: MarketingPalette.muted,
+                  letterSpacing: 2.2,
+                  weight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FbBracket extends StatelessWidget {
+  const _FbBracket({required this.top, required this.left});
+  final bool top;
+  final bool left;
+
+  @override
+  Widget build(BuildContext context) {
+    const len = 20.0;
+    const stroke = 1.5;
+    final color = _tint.withValues(alpha: 0.85);
+    return SizedBox(
+      width: len,
+      height: len,
+      child: Stack(
+        children: [
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: len, height: stroke, color: color),
+          ),
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: stroke, height: len, color: color),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -409,39 +562,28 @@ class _ExcludedSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ScrollReveal(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: MarketingSectionLabel('CHAINS WE DO NOT USE'),
-              ),
+              child: MarketingSectionLabel('CHAINS WE DO NOT USE'),
             ),
             SizedBox(height: narrow ? 24 : 36),
             ScrollReveal(
               delay: const Duration(milliseconds: 80),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Saying no is\npart of the science.',
-                  textAlign: TextAlign.right,
-                  style: mktDisplay(narrow ? 38 : 64,
-                      italic: true, letterSpacing: -1.5, height: 1.02),
-                ),
+              child: Text(
+                'Saying no is\npart of the science.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
               ),
             ),
             SizedBox(height: narrow ? 24 : 32),
             ScrollReveal(
               delay: const Duration(milliseconds: 160),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 680),
-                  child: Text(
-                    'These chains appear in the commercial fascial-training world. Their anatomical '
-                    'evidence does not meet the Wilke threshold. Including them would give coverage '
-                    'we have not earned.',
-                    textAlign: TextAlign.right,
-                    style: mktBody(narrow ? 15 : 17,
-                        color: MarketingPalette.muted, height: 1.55),
-                  ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 680),
+                child: Text(
+                  'These chains appear in the commercial fascial-training world. Their anatomical '
+                  'evidence does not meet the Wilke threshold. Including them would give coverage '
+                  'we have not earned.',
+                  style: mktBody(narrow ? 15 : 17,
+                      color: MarketingPalette.muted, height: 1.55),
                 ),
               ),
             ),

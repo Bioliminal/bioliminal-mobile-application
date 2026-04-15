@@ -39,7 +39,7 @@ service cloud.firestore {
         && request.resource.data.email.matches('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
         && request.resource.data.source is string
         && request.resource.data.source in ['home', 'system', 'science', 'demo']
-        && request.resource.data.createdAt == request.time;
+        && request.resource.data.createdAt is timestamp;
     }
   }
 }

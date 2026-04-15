@@ -59,43 +59,59 @@ class _Hero extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: mktGutter(context),
-            vertical: narrow ? 56 : 100,
+            vertical: narrow ? 48 : 80,
           ),
+          child: narrow ? const _HeroStacked() : const _HeroSplit(),
+        ),
+      ],
+    );
+  }
+}
+
+// Desktop: text-left, terminal-right. Mirrors the system page hero pattern so
+// the visual grammar across marketing pages stays consistent.
+class _HeroSplit extends StatelessWidget {
+  const _HeroSplit();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 5,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const ScrollReveal(
                 child: MarketingSectionLabel('CODE'),
               ),
-              SizedBox(height: narrow ? 24 : 40),
-              const ScrollReveal(
-                delay: Duration(milliseconds: 80),
-                child: _TerminalPane(),
-              ),
-              SizedBox(height: narrow ? 40 : 64),
+              const SizedBox(height: 32),
               ScrollReveal(
-                delay: const Duration(milliseconds: 220),
+                delay: const Duration(milliseconds: 80),
                 child: Text(
                   'Three repositories.\nOne system.',
                   style: mktDisplay(
-                    narrow ? 52 : 96,
+                    80,
                     italic: true,
                     letterSpacing: -2.5,
                     height: 0.95,
                   ),
                 ),
               ),
-              SizedBox(height: narrow ? 24 : 36),
+              const SizedBox(height: 28),
               ScrollReveal(
-                delay: const Duration(milliseconds: 320),
+                delay: const Duration(milliseconds: 180),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
+                  constraints: const BoxConstraints(maxWidth: 520),
                   child: Text(
-                    'Bioliminal is open source. The Flutter app is one part of a larger system that '
-                    'includes ESP32 firmware for the sEMG garment and a shared research hub for '
-                    'hardware, ML, and team docs. Dev happens on GitLab; these are the public mirrors.',
+                    'Bioliminal is open source. The Flutter app is one part of a larger '
+                    'system — ESP32 firmware for the sEMG garment and a shared research '
+                    'hub for hardware, ML, and team docs. Dev happens on GitLab; these '
+                    'are the public mirrors.',
                     style: mktBody(
-                      narrow ? 17 : 20,
+                      18,
                       color: MarketingPalette.muted,
                       height: 1.55,
                     ),
@@ -103,6 +119,63 @@ class _Hero extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+        const SizedBox(width: 56),
+        const Expanded(
+          flex: 5,
+          child: ScrollReveal(
+            delay: Duration(milliseconds: 140),
+            child: _TerminalPane(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HeroStacked extends StatelessWidget {
+  const _HeroStacked();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ScrollReveal(
+          child: MarketingSectionLabel('CODE'),
+        ),
+        const SizedBox(height: 20),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 80),
+          child: Text(
+            'Three repositories.\nOne system.',
+            style: mktDisplay(
+              48,
+              italic: true,
+              letterSpacing: -2,
+              height: 0.98,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        const ScrollReveal(
+          delay: Duration(milliseconds: 160),
+          child: _TerminalPane(),
+        ),
+        const SizedBox(height: 24),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 240),
+          child: Text(
+            'Bioliminal is open source. The Flutter app is one part of a larger '
+            'system — ESP32 firmware for the sEMG garment and a shared research '
+            'hub for hardware, ML, and team docs. Dev happens on GitLab; these '
+            'are the public mirrors.',
+            style: mktBody(
+              16,
+              color: MarketingPalette.muted,
+              height: 1.55,
+            ),
           ),
         ),
       ],
@@ -638,10 +711,10 @@ class _LicenseSection extends StatelessWidget {
       child: Padding(
         padding: EdgeInsets.symmetric(
           horizontal: mktGutter(context),
-          vertical: narrow ? 56 : 100,
+          vertical: narrow ? 56 : 88,
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ScrollReveal(
               child: MarketingSectionLabel('LICENSE & CONTRIBUTIONS'),
@@ -651,7 +724,6 @@ class _LicenseSection extends StatelessWidget {
               delay: const Duration(milliseconds: 80),
               child: Text(
                 'Use it. Fork it.\nTell us what breaks.',
-                textAlign: TextAlign.right,
                 style: mktDisplay(narrow ? 38 : 64,
                     italic: true, letterSpacing: -1.5, height: 1.02),
               ),
@@ -665,7 +737,6 @@ class _LicenseSection extends StatelessWidget {
                   'Each repo ships with its own LICENSE. Development happens on GitLab; these '
                   'GitHub repos are push-mirrored on a schedule. Issues and PRs opened here are '
                   'monitored and responded to.',
-                  textAlign: TextAlign.right,
                   style: mktBody(narrow ? 15 : 17,
                       color: MarketingPalette.muted, height: 1.55),
                 ),

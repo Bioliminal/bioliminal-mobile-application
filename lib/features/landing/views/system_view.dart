@@ -62,38 +62,59 @@ class _Hero extends StatelessWidget {
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: mktGutter(context),
-            vertical: narrow ? 72 : 140,
+            vertical: narrow ? 56 : 100,
           ),
+          child: narrow ? const _HeroStacked() : const _HeroSplit(),
+        ),
+      ],
+    );
+  }
+}
+
+// Desktop: text block left, skeleton-with-landmarks image right. The image
+// IS the thesis of this page (33 landmarks, rule system), so it carries the
+// hero.
+class _HeroSplit extends StatelessWidget {
+  const _HeroSplit();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Expanded(
+          flex: 6,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               const ScrollReveal(
                 child: MarketingSectionLabel('SYSTEM'),
               ),
-              SizedBox(height: narrow ? 28 : 44),
+              const SizedBox(height: 36),
               ScrollReveal(
                 delay: const Duration(milliseconds: 80),
                 child: Text(
                   'Open-source\nchain reasoning\nengine.',
                   style: mktDisplay(
-                    narrow ? 56 : 108,
+                    88,
                     italic: true,
                     letterSpacing: -2.5,
                     height: 0.95,
                   ),
                 ),
               ),
-              SizedBox(height: narrow ? 28 : 40),
+              const SizedBox(height: 32),
               ScrollReveal(
-                delay: const Duration(milliseconds: 160),
+                delay: const Duration(milliseconds: 180),
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 700),
+                  constraints: const BoxConstraints(maxWidth: 560),
                   child: Text(
                     'No neural network. A rule system that encodes expert fascial-chain logic '
                     'into computable rules, running in the browser on 33 body landmarks per frame. '
                     'The intelligence is the logic, not a black box.',
                     style: mktBody(
-                      narrow ? 17 : 20,
+                      18,
                       color: MarketingPalette.muted,
                       height: 1.55,
                     ),
@@ -103,7 +124,216 @@ class _Hero extends StatelessWidget {
             ],
           ),
         ),
+        const SizedBox(width: 48),
+        const Expanded(
+          flex: 4,
+          child: ScrollReveal(
+            delay: Duration(milliseconds: 140),
+            child: _SkeletonHero(),
+          ),
+        ),
       ],
+    );
+  }
+}
+
+class _HeroStacked extends StatelessWidget {
+  const _HeroStacked();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const ScrollReveal(
+          child: MarketingSectionLabel('SYSTEM'),
+        ),
+        const SizedBox(height: 24),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 80),
+          child: Text(
+            'Open-source\nchain reasoning\nengine.',
+            style: mktDisplay(
+              48,
+              italic: true,
+              letterSpacing: -2,
+              height: 0.98,
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+        const ScrollReveal(
+          delay: Duration(milliseconds: 160),
+          child: _SkeletonHero(),
+        ),
+        const SizedBox(height: 24),
+        ScrollReveal(
+          delay: const Duration(milliseconds: 260),
+          child: Text(
+            'No neural network. A rule system that encodes expert fascial-chain logic '
+            'into computable rules, running in the browser on 33 body landmarks per frame. '
+            'The intelligence is the logic, not a black box.',
+            style: mktBody(
+              16,
+              color: MarketingPalette.muted,
+              height: 1.55,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// Pose-landmark skeleton image with corner brackets + mono readouts so it
+// reads as a system instrument, not a stock photo.
+class _SkeletonHero extends StatelessWidget {
+  const _SkeletonHero();
+
+  @override
+  Widget build(BuildContext context) {
+    final narrow = mktNarrow(context);
+    final height = narrow ? 380.0 : 540.0;
+
+    return Container(
+      height: height,
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: _tint.withValues(alpha: 0.22),
+          width: 1,
+        ),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // The image itself.
+          Image.asset(
+            'assets/premium/hero_skeleton_vertical.jpeg',
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          // Soft gradient to sink the edges into our bg and boost contrast for
+          // the mono overlays.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      MarketingPalette.bg.withValues(alpha: 0.35),
+                      Colors.transparent,
+                      Colors.transparent,
+                      MarketingPalette.bg.withValues(alpha: 0.55),
+                    ],
+                    stops: const [0, 0.15, 0.75, 1],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          // Top-left readout.
+          Positioned(
+            top: 14,
+            left: 14,
+            child: Text(
+              '// BLAZEPOSE  /  33 LM',
+              style: mktMono(
+                10,
+                color: MarketingPalette.text,
+                letterSpacing: 2.4,
+                weight: FontWeight.w600,
+              ),
+            ),
+          ),
+          // Top-right live indicator.
+          Positioned(
+            top: 14,
+            right: 14,
+            child: Row(
+              children: [
+                Container(
+                  width: 7,
+                  height: 7,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF34D399),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'LIVE  /  ON-DEVICE',
+                  style: mktMono(
+                    10,
+                    color: const Color(0xFF34D399),
+                    letterSpacing: 2.4,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Corner brackets so the image reads as instrument output.
+          const Positioned(
+              top: 10, left: 10, child: _Bracket(top: true, left: true)),
+          const Positioned(
+              top: 10, right: 10, child: _Bracket(top: true, left: false)),
+          const Positioned(
+              bottom: 10, left: 10, child: _Bracket(top: false, left: true)),
+          const Positioned(
+              bottom: 10, right: 10, child: _Bracket(top: false, left: false)),
+          // Bottom-left frame code.
+          Positioned(
+            bottom: 14,
+            left: 14,
+            child: Text(
+              'FRAME 01 · CONFIDENCE 0.94',
+              style: mktMono(
+                10,
+                color: MarketingPalette.muted,
+                letterSpacing: 2.2,
+                weight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Bracket extends StatelessWidget {
+  const _Bracket({required this.top, required this.left});
+  final bool top;
+  final bool left;
+
+  @override
+  Widget build(BuildContext context) {
+    const len = 20.0;
+    const stroke = 1.5;
+    final color = _tint.withValues(alpha: 0.85);
+    return SizedBox(
+      width: len,
+      height: len,
+      child: Stack(
+        children: [
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: len, height: stroke, color: color),
+          ),
+          Positioned(
+            top: top ? 0 : null,
+            bottom: top ? null : 0,
+            left: left ? 0 : null,
+            right: left ? null : 0,
+            child: Container(width: stroke, height: len, color: color),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -523,22 +753,15 @@ class _StackSection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const ScrollReveal(
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: MarketingSectionLabel('STACK'),
-              ),
+              child: MarketingSectionLabel('STACK'),
             ),
             SizedBox(height: narrow ? 24 : 36),
             ScrollReveal(
               delay: const Duration(milliseconds: 80),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: Text(
-                  'Five moving parts.\nNo server.',
-                  textAlign: TextAlign.right,
-                  style: mktDisplay(narrow ? 38 : 64,
-                      italic: true, letterSpacing: -1.5, height: 1.02),
-                ),
+              child: Text(
+                'Five moving parts.\nNo server.',
+                style: mktDisplay(narrow ? 38 : 64,
+                    italic: true, letterSpacing: -1.5, height: 1.02),
               ),
             ),
             SizedBox(height: narrow ? 40 : 56),
