@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware Build — 4-Channel Injury Prevention Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #141420;
+    --surface2: #1c1c2e;
+    --border: #2a2a40;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --text-mute: #5a5a70;
+    --green: #00d4aa;
+    --orange: #ff6b35;
+    --purple: #7b68ee;
+    --gold: #ffd700;
+    --red: #ff4757;
+    --blue: #4a9eff;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Outfit',sans-serif; background:var(--bg); color:var(--text); line-height:1.65; padding:2rem; max-width:900px; margin:0 auto; }
+  h1 { font-size:1.7rem; font-weight:800; margin-bottom:0.4rem; }
+  h2 { font-size:1.2rem; font-weight:700; margin:2.5rem 0 0.75rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+  h3 { font-size:0.95rem; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin:1.5rem 0 0.5rem; }
+  .sub { color:var(--text-dim); font-size:0.85rem; margin-bottom:2rem; max-width:700px; }
+  .badge { display:inline-block; font-size:0.6rem; padding:0.15rem 0.5rem; border-radius:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; vertical-align:middle; margin-left:0.4rem; }
+  .b-sense { background:rgba(0,212,170,0.15); color:var(--green); }
+  .b-brain { background:rgba(255,215,0,0.15); color:var(--gold); }
+  .b-cue { background:rgba(123,104,238,0.15); color:var(--purple); }
+  .b-power { background:rgba(255,107,53,0.15); color:var(--orange); }
+  .b-body { background:rgba(74,158,255,0.15); color:var(--blue); }
+
+  .item { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin-bottom:0.75rem; }
+  .item-head { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+  .item-name { font-size:1.05rem; font-weight:700; }
+  .item-price { font-size:1.1rem; font-weight:800; white-space:nowrap; }
+  .item-meta { font-size:0.8rem; color:var(--text-mute); margin-bottom:0.75rem; }
+
+  .placement { background:var(--bg); border-left:3px solid var(--green); border-radius:0 8px 8px 0; padding:0.75rem 1rem; margin-bottom:0.75rem; font-size:0.85rem; }
+  .placement .label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-mute); margin-bottom:0.2rem; }
+
+  .research { background:var(--surface2); border-radius:8px; padding:0.75rem 1rem; margin-bottom:0.5rem; font-size:0.8rem; color:var(--text-dim); }
+  .research strong { color:var(--text); }
+  .research .ref { font-size:0.7rem; color:var(--text-mute); font-style:italic; margin-top:0.3rem; }
+
+  .note { font-size:0.8rem; color:var(--text-mute); padding:0.6rem 0.75rem; background:var(--bg); border-radius:6px; margin-top:0.5rem; }
+  .note strong { color:var(--text-dim); }
+
+  .totals { background:var(--surface); border:2px solid var(--green)33; border-radius:14px; padding:1.5rem; margin:2rem 0; }
+  .totals-row { display:flex; justify-content:space-between; align-items:center; padding:0.5rem 0; border-bottom:1px solid var(--border); font-size:0.85rem; }
+  .totals-row:last-child { border-bottom:none; }
+  .totals-row.total { font-size:1.1rem; font-weight:800; padding-top:0.75rem; }
+  .totals-row.total .tp { color:var(--green); }
+
+  .arch { background:var(--surface2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; margin:1.5rem 0; }
+  .arch p { font-size:0.85rem; color:var(--text-dim); }
+  .arch strong { color:var(--text); }
+
+  .source-list { margin-top:2rem; padding-top:1rem; border-top:1px solid var(--border); }
+  .source-list p { font-size:0.7rem; color:var(--text-mute); line-height:1.8; }
+
+  @media(max-width:600px){ body{padding:1rem;} .item-head{flex-direction:column;} }
+</style>
+</head>
+<body>
+
+<h1>4-Channel Injury Prevention Prototype</h1>
+<p class="sub">Every component justified by a specific Knowledge Tree finding. 4 sEMG channels covering the two highest-injury body regions (lower back + knees) plus camera for visible form markers and haptics for real-time cueing.</p>
+
+<!-- ═══════ SENSING LAYER ═══════ -->
+<h2>Sensing Layer <span class="badge b-sense">sEMG</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">BioAmp EXG Pill × 4</div>
+      <div class="item-meta">Best-value sEMG AFE · $10/channel · 25.4 × 10mm · &lt;2g each</div>
+    </div>
+    <div class="item-price" style="color:var(--green)">$40</div>
+  </div>
+
+  <div class="placement">
+    <div class="label">Channel 1 — Left Erector Spinae</div>
+    2 electrodes + 1 reference, placed 2–3cm lateral to L3 spinous process on the left. Detects left-side lower back fatigue and co-contraction during deadlift and squat.
+  </div>
+  <div class="research">
+    <strong>Research justification (KT 1.2 + 2.4):</strong> Kinematics-only models underestimate spinal loading by 30–40% because they miss muscle co-contraction forces. EMG-assisted models are the only validated approach to estimate true compressive forces on the spine during lifting.
+    <div class="ref">Marras & Granata (1997), J Electromyography & Kinesiology; Granata et al. (2005), Clinical Biomechanics</div>
+  </div>
+
+  <div class="placement">
+    <div class="label">Channel 2 — Right Erector Spinae</div>
+    Mirror of Channel 1 on right side. Bilateral pair enables left/right asymmetry detection.
+  </div>
+  <div class="research">
+    <strong>Research justification (KT 2.3):</strong> Bilateral asymmetry &gt;10–15% is clinically meaningful and indicates compensation. The left/right erector spinae pair detects when one side of the back is overloading — a precursor to unilateral disc injury.
+    <div class="ref">Ruas et al. (2019), Sports Medicine - Open</div>
+  </div>
+
+  <div class="placement">
+    <div class="label">Channel 3 — Vastus Lateralis (outer quad)</div>
+    Electrodes on lateral thigh, 2/3 distance from ASIS to lateral patella border (SENIAM guideline). Dominant or weaker leg.
+  </div>
+  <div class="placement">
+    <div class="label">Channel 4 — Vastus Medialis (inner quad)</div>
+    Electrodes on medial thigh, ~4cm above medial patella border at 80° angle (SENIAM guideline). Same leg as Channel 3.
+  </div>
+  <div class="research">
+    <strong>Research justification (KT 1.3 + 2.3):</strong> When VM fatigues before VL, the knee collapses inward (valgus) — the #1 mechanism for ACL injury during squats. H:Q ratio imbalance is a primary contributing factor to ACL injury. EMG ratio comparison between VL and VM detects this before visible knee deviation.
+    <div class="ref">Ruas et al. (2019); Dedinsky et al. (2017), IJSPT; J Strength Cond Res (2017)</div>
+  </div>
+
+  <div class="note">
+    <strong>Why BioAmp over MyoWare:</strong> At $10/ch vs $43/ch, BioAmp makes 4 channels affordable ($40 vs $172). Pill-size (25.4×10mm, &lt;2g) embeds into compression garment better than MyoWare (52×20mm, 5g). Open-source hardware. Requires solder jumper for EMG mode config and external ADC (ESP32 built-in is adequate for RMS/envelope).
+    <br><br>
+    <strong>Sourcing:</strong> DigiKey (ships from MN, next-day to Austin) or Crowd Supply (ships from Portland, OR). If not in stock: order 2× MyoWare from Amazon as fast-start while BioAmp ships.
+  </div>
+</div>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">Ag/AgCl Snap Electrodes × 100 pack</div>
+      <div class="item-meta">Disposable · 24mm · pre-gelled · snap-mount</div>
+    </div>
+    <div class="item-price" style="color:var(--green)">$8</div>
+  </div>
+  <div class="research">
+    <strong>Research justification (KT 6.1):</strong> Ag/AgCl is the SENIAM standard electrode material for sEMG. Pre-gelled disposable electrodes provide consistent low-impedance contact without skin prep. Replaced between sessions to maintain signal quality. 100-pack = ~8 sessions at 12 electrodes/session (4 channels × 3 electrodes each).
+    <div class="ref">Disselhorst-Klug et al. (2020), Frontiers in Neurology; SENIAM guidelines</div>
+  </div>
+  <div class="note"><strong>Sourcing:</strong> Amazon Prime — 1–2 day delivery.</div>
+</div>
+
+<!-- ═══════ PROCESSING ═══════ -->
+<h2>Processing Layer <span class="badge b-brain">MCU</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">ESP32-S3 DevKitC × 1</div>
+      <div class="item-meta">Dual-core 240MHz · BLE 5.0 + WiFi · Multiple ADC channels · USB-C</div>
+    </div>
+    <div class="item-price" style="color:var(--gold)">$12</div>
+  </div>
+  <div class="research">
+    <strong>Role in system:</strong> Reads 4 analog sEMG channels via ADC, computes RMS envelope on-chip, streams to phone via BLE at ~4 kB/s. Receives haptic commands from phone, drives vibration motors via GPIO/PWM. Phone runs MediaPipe + AI reasoning; ESP32 handles real-time signal acquisition and actuator control.
+    <div class="ref">Partner's architecture analysis: phone can run MediaPipe at 30fps AND maintain BLE receiving 4ch sEMG at 500Hz simultaneously on 2022+ phones.</div>
+  </div>
+  <div class="note"><strong>Sourcing:</strong> Amazon Prime ($12, 1–2 days) or Micro Center Austin (in-store pickup same day, 10900 Domain Dr).</div>
+</div>
+
+<!-- ═══════ FEEDBACK ═══════ -->
+<h2>Feedback Layer <span class="badge b-cue">Haptic</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">10mm Coin Vibration Motors (ERM) × 6</div>
+      <div class="item-meta">4 active positions + 2 spares · self-adhesive · GPIO + MOSFET drive</div>
+    </div>
+    <div class="item-price" style="color:var(--purple)">$6</div>
+  </div>
+
+  <div class="placement">
+    <div class="label">Motor 1 — Left erector spinae (co-located with sEMG Ch1)</div>
+    Vibrates when left erector spinae fatigue threshold crossed. Pre-rep alert: "your left lower back is fatiguing — reduce weight or end set."
+  </div>
+  <div class="placement">
+    <div class="label">Motor 2 — Right erector spinae (co-located with sEMG Ch2)</div>
+    Vibrates when right side fatigues OR when L/R asymmetry exceeds 15%. Alert: "you're shifting load to one side."
+  </div>
+  <div class="placement">
+    <div class="label">Motor 3 — Vastus medialis (co-located with sEMG Ch4)</div>
+    Vibrates when VM activation drops relative to VL — the pre-valgus signal. Cue: "activate your inner quad."
+  </div>
+  <div class="placement">
+    <div class="label">Motor 4 — Gluteus medius (lateral hip, no sEMG here)</div>
+    Vibrates when camera detects knee valgus — directs attention to glute med which stabilizes the knee from above. Cue: "squeeze your glute."
+  </div>
+
+  <div class="research">
+    <strong>Research justification (KT 4.2 + 4.3):</strong> Haptic feedback is most effective for force/effort tasks and shows the least dependency effect of any feedback modality. Pre-rep cueing is justified for safety-critical applications. Vibrotactile localization accuracy is 60.7% on the torso — sufficient for "which body region" cueing. Onset at 5–100ms is fast enough for between-rep alerts.
+    <div class="ref">Sigrist et al. (2013), Psychonomic Bulletin & Review; Deshpande et al. (2021), PMC8541989</div>
+  </div>
+
+  <div class="note"><strong>Sourcing:</strong> Amazon Prime — 10-pack for ~$6 (use 4, keep 6 spares). Drive via 2N7002 N-channel MOSFET ($0.10 each) from ESP32 GPIO.</div>
+</div>
+
+<!-- ═══════ VISION ═══════ -->
+<h2>Vision Layer <span class="badge b-brain">Camera</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">Smartphone + MediaPipe Pose Estimation</div>
+      <div class="item-meta">User's existing phone · No additional hardware cost</div>
+    </div>
+    <div class="item-price" style="color:var(--gold)">$0</div>
+  </div>
+
+  <div class="research">
+    <strong>What it detects (KT 3.2):</strong> Knee valgus angle (RMSE 3–10° — better than IMUs), lumbar flexion / trunk lean (RMSE ≤10°), squat depth, bar path deviation, full-body compensatory movement. 85–95% classification accuracy for correct vs incorrect squat form. Runs at 25–30fps with sub-50ms latency on modern phones.
+    <div class="ref">Mercadal-Baudart et al. (2024), Heliyon; Bhadane et al. (2025), WIREs Data Mining</div>
+  </div>
+  <div class="research">
+    <strong>What it can't detect (KT 3.3 — the gap EMG fills):</strong> Muscle fatigue before visible form breakdown. Which muscle is doing the work. Internal spinal loading (co-contraction). Left/right activation asymmetry. The 2–5 rep warning window.
+    <div class="ref">Marras & Granata (1997); Rampichini et al. (2020), Entropy</div>
+  </div>
+  <div class="note"><strong>Setup:</strong> Phone propped against wall or water bottle at ~45° angle, 6–8 feet from lifting platform, frontal or sagittal view depending on exercise.</div>
+</div>
+
+<!-- ═══════ POWER ═══════ -->
+<h2>Power <span class="badge b-power">Battery</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">800mAh LiPo 3.7V + TP4056 Charger</div>
+      <div class="item-meta">Powers ESP32 + 4 BioAmp + 4 vibration motors</div>
+    </div>
+    <div class="item-price" style="color:var(--orange)">$10</div>
+  </div>
+  <div class="research">
+    <strong>Runtime estimate:</strong> ESP32 BLE active ~80mA + 4 BioAmp ~5mA each + vibration motors ~75mA each but intermittent (duty cycle ~5%) = ~105mA sustained. 800mAh ÷ 105mA ≈ 7.6 hours. More than enough for any workout session. TP4056 provides overcharge/overdischarge protection.
+    <div class="ref">Partner's engineering specs: safe continuous compression &lt;30 mmHg, fail-open on power loss.</div>
+  </div>
+  <div class="note"><strong>Sourcing:</strong> Amazon Prime — $10 for battery + charger board.</div>
+</div>
+
+<!-- ═══════ GARMENT ═══════ -->
+<h2>Garment <span class="badge b-body">Body</span></h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">Compression Shirt + Compression Shorts/Leggings</div>
+      <div class="item-meta">Off-the-shelf athletic compression wear · Polyester/spandex</div>
+    </div>
+    <div class="item-price" style="color:var(--blue)">$30</div>
+  </div>
+  <div class="placement">
+    <div class="label">Shirt — Lower back region</div>
+    Channels 1 + 2 (L/R erector spinae) + Motors 1 + 2. Sew electrode pockets at L3 level, ~6cm apart. Hub pocket at waistband for ESP32 + battery.
+  </div>
+  <div class="placement">
+    <div class="label">Shorts/leggings — Anterior thigh</div>
+    Channels 3 + 4 (VL + VM) + Motors 3 + 4. Electrode pockets on front thigh following SENIAM placement. Wiring runs from thigh to waist hub.
+  </div>
+  <div class="research">
+    <strong>Research justification (KT 6.4):</strong> Compression garments produce sEMG signal quality comparable to adhesive electrodes through uniform passive pressure at 15–20 mmHg. Lower experimental failure rates than strap-based systems. Looks like normal gym wear — critical for the target beginner who's intimidated by the gym environment. Setup must be under 2 minutes or compliance drops sharply.
+    <div class="ref">Ohiri et al. (2022), Scientific Reports; Toon (2023), U of Derby dissertation</div>
+  </div>
+  <div class="note"><strong>Sourcing:</strong> Amazon Prime — any athletic compression shirt (~$15) + compression shorts (~$15). Polyester/spandex blend. Get your actual size — tight fit is critical for electrode contact.</div>
+</div>
+
+<!-- ═══════ BUILD SUPPLIES ═══════ -->
+<h2>Build Supplies</h2>
+
+<div class="item">
+  <div class="item-head">
+    <div>
+      <div class="item-name">Wiring, Breadboard, MOSFETs, Misc</div>
+      <div class="item-meta">Jumper wires (M-M, M-F, F-F) · mini breadboard · 2N7002 × 10 · solder + iron</div>
+    </div>
+    <div class="item-price" style="color:var(--text-dim)">$15</div>
+  </div>
+  <div class="note">
+    <strong>What you need:</strong> Jumper wire kit (~$5), half-size breadboard (~$3), 2N7002 MOSFET 10-pack (~$2), flat ribbon cable for garment wiring (~$3), needle + thread for sewing pockets (~$2). If you don't have a soldering iron, add ~$25 (or pick one up at Micro Center Austin).
+  </div>
+</div>
+
+<!-- ═══════ TOTALS ═══════ -->
+<div class="totals">
+  <h3 style="margin-top:0;color:var(--green)">Bill of Materials</h3>
+  <div class="totals-row"><span>BioAmp EXG Pill × 4 (sEMG)</span><span>$40</span></div>
+  <div class="totals-row"><span>Ag/AgCl Electrodes × 100</span><span>$8</span></div>
+  <div class="totals-row"><span>ESP32-S3 DevKitC</span><span>$12</span></div>
+  <div class="totals-row"><span>Coin Vibration Motors × 6</span><span>$6</span></div>
+  <div class="totals-row"><span>Smartphone (existing)</span><span>$0</span></div>
+  <div class="totals-row"><span>800mAh LiPo + TP4056</span><span>$10</span></div>
+  <div class="totals-row"><span>Compression Shirt + Shorts</span><span>$30</span></div>
+  <div class="totals-row"><span>Wiring / Build Supplies</span><span>$15</span></div>
+  <div class="totals-row total"><span>Total</span><span class="tp">$121</span></div>
+</div>
+
+<!-- ═══════ ARCHITECTURE ═══════ -->
+<div class="arch">
+  <h3 style="margin-top:0;color:var(--gold)">How It All Connects</h3>
+  <p>
+    <strong>Sense:</strong> 4× BioAmp on erector spinae (L/R) and quads (VL/VM) → analog signals to ESP32 ADC.<br><br>
+    <strong>Stream:</strong> ESP32 computes RMS envelope, streams to phone via BLE at ~4 kB/s.<br><br>
+    <strong>See:</strong> Phone camera runs MediaPipe pose estimation at 30fps — tracks knee angle, trunk lean, squat depth.<br><br>
+    <strong>Think:</strong> Phone app fuses EMG data + camera data. Detects: erector spinae fatigue (RMS rise), quad imbalance (VL/VM ratio diverging), knee valgus (camera), lumbar flexion (camera).<br><br>
+    <strong>Cue:</strong> Phone sends BLE command to ESP32 → fires vibration motor at the relevant muscle location. Pre-rep alert for fatigue, real-time cue for compensation.<br><br>
+    <strong>Loop time:</strong> ~50–200ms from detection to vibration.
+  </p>
+</div>
+
+<!-- ═══════ WHAT THIS PROVES ═══════ -->
+<div class="arch">
+  <h3 style="margin-top:0;color:var(--orange)">What This Prototype Validates</h3>
+  <p>
+    <strong>1. Can we get clean sEMG signal from erector spinae and quads during compound lifts?</strong><br>
+    The #1 risk. If signal quality is too poor through compression fabric during a sweaty deadlift, the entire EMG thesis fails. (KT 6.1)<br><br>
+
+    <strong>2. Does the EMG fatigue signal actually precede visible form breakdown?</strong><br>
+    The core claim: 2–5 rep warning window. If RMS amplitude rise on erector spinae doesn't consistently precede lumbar flexion increase on camera, the EMG layer doesn't add enough value over camera-only. (KT 3.4)<br><br>
+
+    <strong>3. Does VL/VM ratio divergence precede visible knee valgus?</strong><br>
+    Same question for the knee: if quad imbalance on EMG doesn't predict knee valgus on camera, the quad channels aren't earning their place. (KT 1.3 + 2.3)<br><br>
+
+    <strong>4. Does haptic cueing change what the beginner does on the next rep?</strong><br>
+    If vibration at the erector spinae when fatigue is detected doesn't cause the user to reduce weight or improve bracing, the feedback loop isn't closing. (KT 4.2 + 6.3)<br><br>
+
+    <strong>5. Will a beginner actually wear this?</strong><br>
+    If setup takes more than 2 minutes, or the garment looks weird, or the electrodes are uncomfortable, none of the above matters. (KT 6.4)
+  </p>
+</div>
+
+<!-- ═══════ ORDERING ═══════ -->
+<div class="arch">
+  <h3 style="margin-top:0;color:var(--green)">Order Sequence — Austin, TX</h3>
+  <p>
+    <strong>Today — Wave 1 (arrives 1–2 days):</strong><br>
+    Amazon Prime: ESP32-S3 ($12), coin motors 10-pack ($6), electrodes 100-pack ($8), 800mAh LiPo + TP4056 ($10), jumper wires + breadboard ($8), compression shirt ($15), compression shorts ($15). <strong>Subtotal: ~$74</strong><br><br>
+
+    <strong>Today — Wave 2 (arrives 2–5 days):</strong><br>
+    DigiKey or Mouser: BioAmp EXG Pill × 4 (~$40) + spare headers + MOSFETs. <strong>Subtotal: ~$47</strong><br><br>
+
+    <strong>Optional same-day:</strong><br>
+    Micro Center Austin (10900 Domain Dr): soldering iron, extra breadboards, wire strippers if needed. <strong>Subtotal: ~$30</strong><br><br>
+
+    <strong>While BioAmp ships:</strong> Start with ESP32 + vibration motor bench testing. Validate BLE connection to phone app. Build garment pockets. When BioAmp arrives, plug in and start EMG testing immediately.
+  </p>
+</div>
+
+<!-- ═══════ SOURCES ═══════ -->
+<div class="source-list">
+  <h3>Knowledge Tree Sources Referenced</h3>
+  <p>
+    KT 1.2 / 2.4: Marras & Granata (1997), J Electromyography & Kinesiology — spinal loading models<br>
+    KT 1.3: Bonilla et al. (2022), IJERPH — gym injury epidemiology<br>
+    KT 1.5: Parakkat (2004), Ohio State — novice motor control<br>
+    KT 1.6: Bakhshinejad et al. (2025), Sports Med - Open — fatigue effects on squat/bench/deadlift<br>
+    KT 2.1: Rampichini et al. (2020), Entropy — EMG fatigue biomarkers<br>
+    KT 2.2: Hakariya et al. (2023), J Sports Sciences — muscle synergy patterns<br>
+    KT 2.3: Ruas et al. (2019), Sports Med - Open — H:Q ratios; Dedinsky et al. (2017), IJSPT<br>
+    KT 3.1: Falk, Aasa & Berglund (2021) — visual assessment accuracy<br>
+    KT 3.2: Bhadane et al. (2025), WIREs — movement tracking review; Mercadal-Baudart et al. (2024), Heliyon<br>
+    KT 4.2: Sigrist et al. (2013), Psychonomic Bulletin & Review — feedback modalities<br>
+    KT 4.4: van Dijk (2006) — guidance hypothesis; Lauber & Keller (2014), European J Sport Sci<br>
+    KT 6.1: Disselhorst-Klug et al. (2020), Frontiers in Neurology — sEMG barriers<br>
+    KT 6.4: Toon (2023), U of Derby — smart textile end-user feedback<br>
+    Deshpande et al. (2021), PMC8541989 — vibrotactile localization
+  </p>
+</div>
+
+</body>
+</html>

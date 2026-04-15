@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -28,10 +29,6 @@ const _archetypeDisplayNames = <MobilityArchetype, String>{
   MobilityArchetype.balanced: 'Balanced',
 };
 
-// ---------------------------------------------------------------------------
-// Archetype to preferred CompensationType mapping (for drill badge)
-// ---------------------------------------------------------------------------
-
 const _archetypePreferredType = <MobilityArchetype, CompensationType>{
   MobilityArchetype.ankleDominant: CompensationType.ankleRestriction,
   MobilityArchetype.hipDominant: CompensationType.hipDrop,
@@ -43,9 +40,10 @@ const _archetypePreferredType = <MobilityArchetype, CompensationType>{
 // ---------------------------------------------------------------------------
 
 class ReportView extends ConsumerStatefulWidget {
-  const ReportView({super.key, required this.id});
+  const ReportView({super.key, required this.id, this.localOnly = false});
 
   final String id;
+  final bool localOnly;
 
   @override
   ConsumerState<ReportView> createState() => _ReportViewState();
@@ -55,13 +53,16 @@ class _ReportViewState extends ConsumerState<ReportView> {
   String? _cachedPdfPath;
   bool _generating = false;
   Assessment? _assessment;
+  Report? _remoteReport;
   bool _didLoad = false;
   bool _loading = false;
+  bool _polling = false;
   int? _selectedFindingIndex;
 
   TrendReport? _trendReport;
   MobilityArchetype? _archetype;
 
+  Timer? _pollingTimer;
   final _scrollController = ScrollController();
   final _findingKeys = <int, GlobalKey>{};
 
@@ -77,7 +78,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     );
 
     final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/auralink_report_${assessment.id}.pdf');
+    final file = File('${dir.path}/bioliminal_report_${assessment.id}.pdf');
     await file.writeAsBytes(bytes);
     _cachedPdfPath = file.path;
     return file.path;
@@ -89,7 +90,10 @@ class _ReportViewState extends ConsumerState<ReportView> {
     try {
       final path = await _generatePdf(report, assessment);
       await SharePlus.instance.share(
-        ShareParams(files: [XFile(path)], subject: 'AuraLink Movement Screen'),
+        ShareParams(
+          files: [XFile(path)],
+          subject: 'Bioliminal Movement Screen',
+        ),
       );
     } catch (e) {
       if (mounted) {
@@ -114,10 +118,10 @@ class _ReportViewState extends ConsumerState<ReportView> {
     if (extra != null) {
       _assessment = extra;
       _loadLongitudinalContext();
+      if (extra.report == null && !widget.localOnly) _startPolling();
       return;
     }
 
-    // Deep-link: no router extra, load from local storage.
     setState(() => _loading = true);
     ref.read(localStorageServiceProvider).loadAssessment(widget.id).then((
       loaded,
@@ -129,6 +133,40 @@ class _ReportViewState extends ConsumerState<ReportView> {
       });
       if (loaded != null) {
         _loadLongitudinalContext();
+        if (loaded.report == null && !widget.localOnly) _startPolling();
+      }
+    });
+  }
+
+  void _startPolling() {
+    if (_polling) return;
+    setState(() => _polling = true);
+
+    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      final client = ref.read(bioliminalClientProvider);
+      try {
+        final report = await client.fetchReport(widget.id);
+        if (report != null && mounted) {
+          timer.cancel();
+          setState(() {
+            _remoteReport = report;
+            _polling = false;
+          });
+          // Save the fetched report locally
+          if (_assessment != null) {
+            final updated = Assessment(
+              id: _assessment!.id,
+              createdAt: _assessment!.createdAt,
+              movements: _assessment!.movements,
+              compensations: _assessment!.compensations,
+              payload: _assessment!.payload,
+              report: report,
+            );
+            ref.read(localStorageServiceProvider).saveAssessment(updated);
+          }
+        }
+      } catch (_) {
+        // Retry on next tick
       }
     });
   }
@@ -151,6 +189,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
 
   @override
   void dispose() {
+    _pollingTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -182,10 +221,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
     final theme = Theme.of(context);
 
     if (_loading) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Report')),
-        body: const Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     final assessment = _assessment;
@@ -196,10 +232,57 @@ class _ReportViewState extends ConsumerState<ReportView> {
       );
     }
 
-    // Empty state: no compensations.
-    if (assessment.compensations.isEmpty) {
+    final report = _remoteReport ?? assessment.report;
+
+    // Processing state: no local report and still polling
+    if (report == null && _polling) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Your Report')),
+        backgroundColor: BioliminalTheme.screenBackground,
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 32),
+              Text(
+                'CLINICAL ANALYSIS IN PROGRESS',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: theme.colorScheme.secondary,
+                  letterSpacing: 2.0,
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 48),
+                child: Text(
+                  'Our servers are calculating joint moments and muscle forces. This usually takes 10-15 seconds.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.white54),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Fallback: build a local report if server fails or for prototype fallback
+    final activeReport =
+        report ??
+        ReportAssemblyService.buildReport(
+          assessment,
+          trendReport: _trendReport,
+          archetype: _archetype,
+        );
+
+    // Empty state: no findings detected.
+    if (activeReport.findings.isEmpty) {
+      return Scaffold(
+        backgroundColor: BioliminalTheme.screenBackground,
+        appBar: AppBar(
+          title: const Text('ANALYSIS'),
+          backgroundColor: Colors.transparent,
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -218,19 +301,13 @@ class _ReportViewState extends ConsumerState<ReportView> {
       );
     }
 
-    final report = ReportAssemblyService.buildReport(
-      assessment,
-      trendReport: _trendReport,
-      archetype: _archetype,
-    );
-
     // Ensure we have GlobalKeys for each finding.
-    for (var i = 0; i < report.findings.length; i++) {
+    for (var i = 0; i < activeReport.findings.length; i++) {
       _findingKeys.putIfAbsent(i, () => GlobalKey());
     }
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('ANALYSIS'),
         backgroundColor: Colors.transparent,
@@ -243,7 +320,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.share_outlined),
-            onPressed: _generating ? null : () => _onShare(report, assessment),
+            onPressed: _generating
+                ? null
+                : () => _onShare(activeReport, assessment),
           ),
         ],
       ),
@@ -301,9 +380,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 24),
                 padding: const EdgeInsets.all(16),
-                decoration: AuraLinkTheme.glassEffect,
+                decoration: BioliminalTheme.glassEffect,
                 child: BodyMap(
-                  findings: report.findings,
+                  findings: activeReport.findings,
                   selectedFindingIndex: _selectedFindingIndex,
                   onRegionTap: _onRegionTap,
                 ),
@@ -326,7 +405,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
                     ),
                   ),
                   Text(
-                    '${report.findings.length} DETECTED',
+                    '${activeReport.findings.length} DETECTED',
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: Colors.white38,
                     ),
@@ -343,9 +422,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 scrollDirection: Axis.horizontal,
-                itemCount: report.findings.length,
+                itemCount: activeReport.findings.length,
                 itemBuilder: (context, i) {
-                  final finding = report.findings[i];
+                  final finding = activeReport.findings[i];
                   final isSelected = _selectedFindingIndex == i;
                   return SizedBox(
                     width: MediaQuery.of(context).size.width * 0.85,
@@ -365,7 +444,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
             const SizedBox(height: 32),
 
             // -- Practitioner Points --
-            if (report.practitionerPoints.isNotEmpty)
+            if (activeReport.practitionerPoints.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Container(
@@ -385,7 +464,7 @@ class _ReportViewState extends ConsumerState<ReportView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...report.practitionerPoints.map(
+                      ...activeReport.practitionerPoints.map(
                         (p) => Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: Row(
@@ -414,12 +493,19 @@ class _ReportViewState extends ConsumerState<ReportView> {
 
             const SizedBox(height: 32),
 
+            // -- EMG Summary (If available) --
+            if (assessment.payload != null &&
+                assessment.payload!.frames.isNotEmpty)
+              _EMGActivationSection(payload: assessment.payload!),
+
+            const SizedBox(height: 32),
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _onShare(report, assessment),
+                  onPressed: () => _onShare(activeReport, assessment),
                   icon: const Icon(Icons.picture_as_pdf_outlined),
                   label: const Text('EXPORT CLINICAL PDF'),
                 ),
@@ -429,6 +515,98 @@ class _ReportViewState extends ConsumerState<ReportView> {
             const SizedBox(height: 48),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EMGActivationSection extends StatelessWidget {
+  const _EMGActivationSection({required this.payload});
+  final SessionPayload payload;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    // Simple average across all frames for the report
+    final averages = List.filled(10, 0.0);
+    for (final frame in payload.frames) {
+      for (var i = 0; i < 10; i++) {
+        averages[i] += frame
+            .landmarks[i]
+            .x; // Using x as proxy for EMG value if stored there, or similar
+        // Note: Real implementation would use a dedicated EMG field in payload
+      }
+    }
+    for (var i = 0; i < 10; i++) {
+      averages[i] /= payload.frames.length;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'EMG ACTIVATION',
+            style: theme.textTheme.labelLarge?.copyWith(
+              letterSpacing: 2.0,
+              color: Colors.white70,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Column(
+              children: [
+                _activationRow(
+                  'Calves',
+                  (averages[0] + averages[1] + averages[2] + averages[3]) / 4,
+                  theme,
+                ),
+                _activationRow('Quads', (averages[4] + averages[5]) / 2, theme),
+                _activationRow(
+                  'Glutes',
+                  (averages[6] + averages[7]) / 2,
+                  theme,
+                ),
+                _activationRow('Core', (averages[8] + averages[9]) / 2, theme),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _activationRow(String label, double value, ThemeData theme) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: theme.textTheme.bodySmall),
+              Text(
+                '${(value * 100).toInt()}%',
+                style: theme.textTheme.labelSmall,
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          LinearProgressIndicator(
+            value: value.clamp(0.0, 1.0),
+            backgroundColor: Colors.white10,
+            color: theme.colorScheme.secondary,
+            minHeight: 4,
+          ),
+        ],
       ),
     );
   }

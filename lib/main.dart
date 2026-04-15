@@ -9,17 +9,17 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: AuraLinkApp()));
+  runApp(const ProviderScope(child: BioliminalApp()));
 }
 
-class AuraLinkApp extends StatelessWidget {
-  const AuraLinkApp({super.key});
+class BioliminalApp extends StatelessWidget {
+  const BioliminalApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'AuraLink',
-      theme: AuraLinkTheme.darkTheme,
+      title: 'Bioliminal',
+      theme: BioliminalTheme.darkTheme,
       routerConfig: goRouter,
     );
   }

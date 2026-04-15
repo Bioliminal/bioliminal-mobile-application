@@ -1,0 +1,123 @@
+{
+  "$defs": {
+    "Frame": {
+      "description": "A single captured frame with 33 BlazePose landmarks in canonical order.",
+      "properties": {
+        "timestamp_ms": {
+          "minimum": 0,
+          "title": "Timestamp Ms",
+          "type": "integer"
+        },
+        "landmarks": {
+          "items": {
+            "$ref": "#/$defs/Landmark"
+          },
+          "title": "Landmarks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "timestamp_ms",
+        "landmarks"
+      ],
+      "title": "Frame",
+      "type": "object"
+    },
+    "Landmark": {
+      "description": "Single BlazePose landmark.\n\nCoordinates in normalized [0, 1] space (x, y) or input-relative (z).\nVisibility and presence are sigmoid'd values in [0, 1].",
+      "properties": {
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "title": "Z",
+          "type": "number"
+        },
+        "visibility": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Visibility",
+          "type": "number"
+        },
+        "presence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Presence",
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y",
+        "z",
+        "visibility",
+        "presence"
+      ],
+      "title": "Landmark",
+      "type": "object"
+    },
+    "SessionMetadata": {
+      "properties": {
+        "movement": {
+          "enum": [
+            "overhead_squat",
+            "single_leg_squat",
+            "push_up",
+            "rollup"
+          ],
+          "title": "Movement",
+          "type": "string"
+        },
+        "device": {
+          "title": "Device",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "frame_rate": {
+          "exclusiveMinimum": 0,
+          "title": "Frame Rate",
+          "type": "number"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "movement",
+        "device",
+        "model",
+        "frame_rate"
+      ],
+      "title": "SessionMetadata",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "metadata": {
+      "$ref": "#/$defs/SessionMetadata"
+    },
+    "frames": {
+      "items": {
+        "$ref": "#/$defs/Frame"
+      },
+      "title": "Frames",
+      "type": "array"
+    }
+  },
+  "required": [
+    "metadata",
+    "frames"
+  ],
+  "title": "Session",
+  "type": "object"
+}

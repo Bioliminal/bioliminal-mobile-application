@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:auralink/core/providers.dart' as core_providers;
-import 'package:auralink/core/theme.dart';
+import 'package:bioliminal/core/providers.dart' as core_providers;
+import 'package:bioliminal/core/theme.dart';
+import 'package:bioliminal/core/services/biofeedback_engine.dart';
 import '../controllers/screening_controller.dart';
 import '../../camera/widgets/skeleton_overlay.dart';
+import '../../camera/widgets/muscle_activation_sidebar.dart';
 import '../widgets/preliminary_findings.dart';
 import '../widgets/stick_figure_animation.dart';
 import '../../camera/widgets/setup_checklist.dart';
@@ -62,8 +64,6 @@ class _ScreeningViewState extends ConsumerState<ScreeningView>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    // Don't dispose camera here if we want it to stay warm,
-    // but definitely stop streaming.
     _cameraControllerNotifier.stopStreaming();
     super.dispose();
   }
@@ -121,14 +121,12 @@ class _SetupScreen extends ConsumerWidget {
         .watch(core_providers.appCameraControllerProvider)
         .value;
 
-    // Determine which movement is next to show an animation.
     final screeningState = ref.watch(screeningControllerProvider);
 
     final MovementConfig? nextMovement;
     if (screeningState is MovementPreparation) {
       nextMovement = screeningState.config;
     } else {
-      // Very first entry (ScreeningSetup)
       nextMovement = screeningMovements.first;
     }
 
@@ -138,7 +136,7 @@ class _SetupScreen extends ConsumerWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AuraLinkTheme.screenBackground, AuraLinkTheme.surface],
+            colors: [BioliminalTheme.screenBackground, BioliminalTheme.surface],
           ),
         ),
         child: Stack(
@@ -231,7 +229,6 @@ class _SetupScreen extends ConsumerWidget {
                       ),
                     ],
 
-                    // Camera status indicator
                     if (cameraState is core_providers.CameraPermissionDenied)
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
@@ -337,38 +334,48 @@ class _ActiveMovementScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
+      body: Row(
         children: [
-          // Camera preview
-          if (cameraState is core_providers.CameraStreaming ||
-              cameraState is core_providers.CameraReady)
-            Positioned.fill(
-              child: RepaintBoundary(
-                child: _CameraPreviewWrapper(
-                  controller: cameraState is core_providers.CameraStreaming
-                      ? cameraState.controller
-                      : (cameraState as core_providers.CameraReady).controller,
+          Expanded(
+            child: Stack(
+              children: [
+                // Camera preview
+                if (cameraState is core_providers.CameraStreaming ||
+                    cameraState is core_providers.CameraReady)
+                  Positioned.fill(
+                    child: RepaintBoundary(
+                      child: _CameraPreviewWrapper(
+                        controller:
+                            cameraState is core_providers.CameraStreaming
+                            ? cameraState.controller
+                            : (cameraState as core_providers.CameraReady)
+                                  .controller,
+                      ),
+                    ),
+                  )
+                else
+                  const Positioned.fill(
+                    child: ColoredBox(
+                      color: Color(0xFF0F172A),
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  ),
+
+                // Skeleton overlay
+                const Positioned.fill(
+                  child: RepaintBoundary(child: SkeletonOverlay()),
                 ),
-              ),
-            )
-          else
-            const Positioned.fill(
-              child: ColoredBox(
-                color: Color(0xFF0F172A),
-                child: Center(child: CircularProgressIndicator()),
-              ),
+
+                // Consolidated Header
+                const _ActiveScreeningHeader(),
+
+                // Consolidated Footer
+                const _ActiveScreeningFooter(),
+              ],
             ),
-
-          // Skeleton overlay
-          const Positioned.fill(
-            child: RepaintBoundary(child: SkeletonOverlay()),
           ),
-
-          // Consolidated Header - Isolated rebuilds
-          const _ActiveScreeningHeader(),
-
-          // Consolidated Footer - Isolated rebuilds
-          const _ActiveScreeningFooter(),
+          // Sidebar showing 10-channel EMG
+          const MuscleActivationSidebar(),
         ],
       ),
     );
@@ -382,7 +389,6 @@ class _ActiveScreeningHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
-    // Select only the fields needed for the header to avoid rebuilds on landmarks.
     final movementIndex = ref.watch(
       screeningControllerProvider.select((s) {
         if (s is ActiveMovement) return s.movementIndex;
@@ -413,8 +419,7 @@ class _ActiveScreeningHeader extends ConsumerWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
           child: Container(
-            // Use semi-transparent background to reduce BackdropFilter cost
-            decoration: AuraLinkTheme.glassEffect.copyWith(
+            decoration: BioliminalTheme.glassEffect.copyWith(
               color: Colors.black.withValues(alpha: 0.6),
             ),
             child: Column(
@@ -529,8 +534,9 @@ class _ActiveScreeningFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final isPremium = ref.watch(core_providers.isPremiumProvider);
+    final biofeedback = ref.watch(biofeedbackEngineProvider);
 
-    // Select only reps and current movement type for the footer.
     final repsCompleted = ref.watch(
       screeningControllerProvider.select((s) {
         if (s is ActiveMovement) return s.repsCompleted;
@@ -557,13 +563,11 @@ class _ActiveScreeningFooter extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              // Use semi-transparent background to reduce BackdropFilter cost
-              decoration: AuraLinkTheme.glassEffect.copyWith(
+              decoration: BioliminalTheme.glassEffect.copyWith(
                 color: Colors.black.withValues(alpha: 0.6),
               ),
               child: Row(
                 children: [
-                  // Mini Guide
                   Container(
                     width: 56,
                     height: 56,
@@ -587,7 +591,6 @@ class _ActiveScreeningFooter extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  // Rep Counter
                   Expanded(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -610,8 +613,15 @@ class _ActiveScreeningFooter extends ConsumerWidget {
                       ],
                     ),
                   ),
+                  if (isPremium) ...[
+                    const SizedBox(width: 16),
+                    _BiofeedbackRatio(
+                      ratio: biofeedback.gsRatio,
+                      label: 'G:S RATIO',
+                      cue: biofeedback.activeCue,
+                    ),
+                  ],
                   const SizedBox(width: 16),
-                  // Skip
                   TextButton(
                     onPressed: () => ref
                         .read(screeningControllerProvider.notifier)
@@ -635,6 +645,40 @@ class _ActiveScreeningFooter extends ConsumerWidget {
   }
 }
 
+class _BiofeedbackRatio extends StatelessWidget {
+  const _BiofeedbackRatio({
+    required this.ratio,
+    required this.label,
+    required this.cue,
+  });
+  final double ratio;
+  final String label;
+  final BiofeedbackCue cue;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color = cue == BiofeedbackCue.none ? Colors.white30 : Colors.orange;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          ratio.toStringAsFixed(1),
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: color,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(color: color, fontSize: 8, letterSpacing: 1.0),
+        ),
+      ],
+    );
+  }
+}
+
 class _EnvironmentSetupScreen extends ConsumerWidget {
   const _EnvironmentSetupScreen();
 
@@ -648,7 +692,6 @@ class _EnvironmentSetupScreen extends ConsumerWidget {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // Camera preview
           if (cameraState is core_providers.CameraStreaming ||
               cameraState is core_providers.CameraReady)
             Positioned.fill(
@@ -666,7 +709,6 @@ class _EnvironmentSetupScreen extends ConsumerWidget {
               ),
             ),
 
-          // Setup checklist overlay
           Positioned.fill(
             child: SetupChecklist(
               onAllPassed: () => ref
@@ -702,13 +744,7 @@ class _CameraPreviewWrapper extends StatelessWidget {
     }
 
     final size = MediaQuery.of(context).size;
-
-    // Calculate the scaling required to fill the entire screen while maintaining aspect ratio.
-    // The camera's aspectRatio is typically width/height in landscape, so on mobile (portrait)
-    // it's effectively height/width.
     var scale = size.aspectRatio * controller.value.aspectRatio;
-
-    // Ensure the scale is always >= 1 to fill the screen.
     if (scale < 1) scale = 1 / scale;
 
     return ClipRect(
@@ -751,7 +787,7 @@ class _CompleteScreenState extends State<_CompleteScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,

@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
-import 'package:auralink/domain/models.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
 
 void main() {
   group('Cloud sync disabled by default', () {
@@ -33,7 +33,7 @@ void main() {
 
   group('LocalStorageService works offline', () {
     test('save and load assessment without auth', () async {
-      final tempDir = await Directory.systemTemp.createTemp('auralink_test_');
+      final tempDir = await Directory.systemTemp.createTemp('bioliminal_test_');
       addTearDown(() => tempDir.delete(recursive: true));
 
       final service = LocalStorageService(directory: tempDir);
@@ -53,7 +53,7 @@ void main() {
     });
 
     test('save and load report without auth', () async {
-      final tempDir = await Directory.systemTemp.createTemp('auralink_test_');
+      final tempDir = await Directory.systemTemp.createTemp('bioliminal_test_');
       addTearDown(() => tempDir.delete(recursive: true));
 
       final service = LocalStorageService(directory: tempDir);
@@ -72,7 +72,7 @@ void main() {
     });
 
     test('list assessments works without auth', () async {
-      final tempDir = await Directory.systemTemp.createTemp('auralink_test_');
+      final tempDir = await Directory.systemTemp.createTemp('bioliminal_test_');
       addTearDown(() => tempDir.delete(recursive: true));
 
       final service = LocalStorageService(directory: tempDir);
@@ -101,7 +101,7 @@ void main() {
     });
 
     test('delete assessment works without auth', () async {
-      final tempDir = await Directory.systemTemp.createTemp('auralink_test_');
+      final tempDir = await Directory.systemTemp.createTemp('bioliminal_test_');
       addTearDown(() => tempDir.delete(recursive: true));
 
       final service = LocalStorageService(directory: tempDir);

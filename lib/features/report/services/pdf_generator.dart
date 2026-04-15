@@ -82,7 +82,7 @@ class PdfGenerator {
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
                 pw.Text(
-                  'AuraLink Movement Screen',
+                  'Bioliminal Movement Screen',
                   style: pw.TextStyle(
                     fontSize: 22,
                     fontWeight: pw.FontWeight.bold,

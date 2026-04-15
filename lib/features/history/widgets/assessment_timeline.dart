@@ -203,9 +203,9 @@ class _ConfidenceBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = switch (level) {
-      ConfidenceLevel.high => AuraLinkTheme.confidenceHigh,
-      ConfidenceLevel.medium => AuraLinkTheme.confidenceMedium,
-      ConfidenceLevel.low => AuraLinkTheme.confidenceLow,
+      ConfidenceLevel.high => BioliminalTheme.confidenceHigh,
+      ConfidenceLevel.medium => BioliminalTheme.confidenceMedium,
+      ConfidenceLevel.low => BioliminalTheme.confidenceLow,
     };
 
     final label = switch (level) {
@@ -249,10 +249,10 @@ class _DeltaChip extends StatelessWidget {
     final trendClassification = _resolveTrend();
 
     final color = switch (trendClassification) {
-      TrendClassification.improving => AuraLinkTheme.confidenceHigh,
-      TrendClassification.stable => AuraLinkTheme.confidenceMedium,
-      TrendClassification.worsening => AuraLinkTheme.confidenceLow,
-      TrendClassification.newPattern => AuraLinkTheme.confidenceMedium,
+      TrendClassification.improving => BioliminalTheme.confidenceHigh,
+      TrendClassification.stable => BioliminalTheme.confidenceMedium,
+      TrendClassification.worsening => BioliminalTheme.confidenceLow,
+      TrendClassification.newPattern => BioliminalTheme.confidenceMedium,
     };
 
     final icon = switch (trendClassification) {

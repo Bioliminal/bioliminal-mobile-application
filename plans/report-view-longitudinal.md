@@ -37,7 +37,7 @@ ReportView (ConsumerStatefulWidget)
 | Status | Color | Label |
 |---|---|---|
 | Improving | Colors.green | "Improving" |
-| Worsening | AuraLinkTheme.confidenceLow | "Worsening" |
+| Worsening | BioliminalTheme.confidenceLow | "Worsening" |
 | Stable | Colors.grey | "Stable" |
 | New Pattern | Colors.blue | "New Pattern" |
 
@@ -89,7 +89,7 @@ Assessment (from router extra or local storage)
 - lib/features/report/widgets/finding_card.dart (FindingCard widget — may need trendStatus param)
 - lib/features/report/widgets/drill_card.dart (DrillCard widget — may need isArchetypeMatch param)
 - lib/features/report/widgets/body_map.dart (BodyMap — unchanged)
-- lib/core/theme.dart (AuraLinkTheme confidence colors)
+- lib/core/theme.dart (BioliminalTheme confidence colors)
 - lib/core/providers.dart (localStorageServiceProvider)
 - lib/domain/models.dart (all model types)
 

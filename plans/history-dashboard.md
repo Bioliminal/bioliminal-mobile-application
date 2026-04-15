@@ -34,9 +34,9 @@ HistoryView (Scaffold)
 ### Trend Badge Colors
 | State | Color | Icon |
 |---|---|---|
-| Improving | AuraLinkTheme.confidenceHigh | Icons.trending_down (value decreasing = improving) |
-| Stable | AuraLinkTheme.confidenceMedium | Icons.trending_flat |
-| Worsening | AuraLinkTheme.confidenceLow | Icons.trending_up (value increasing = worsening) |
+| Improving | BioliminalTheme.confidenceHigh | Icons.trending_down (value decreasing = improving) |
+| Stable | BioliminalTheme.confidenceMedium | Icons.trending_flat |
+| Worsening | BioliminalTheme.confidenceLow | Icons.trending_up (value increasing = worsening) |
 
 ### Body-Path Language for Delta Chips
 - ankleRestriction -> "Ankle flexibility"
@@ -76,7 +76,7 @@ _assessmentsProvider → List<Assessment>
 ## Read-only context
 - lib/features/history/services/comparison_service.dart (existing pairwise comparison — still used by timeline for per-node deltas)
 - lib/core/providers.dart (provider registration pattern)
-- lib/core/theme.dart (AuraLinkTheme confidence colors)
+- lib/core/theme.dart (BioliminalTheme confidence colors)
 - lib/domain/models.dart (Assessment, Report, Finding, Compensation, TrendReport, MobilityArchetype)
 
 ## Tasks

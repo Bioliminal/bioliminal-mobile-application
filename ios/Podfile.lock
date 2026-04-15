@@ -1272,6 +1272,9 @@ PODS:
     - GoogleUtilities/Environment (~> 8.1)
     - GTMSessionFetcher/Core (< 6.0, >= 3.4)
   - Flutter (1.0.0)
+  - flutter_blue_plus_darwin (0.0.2):
+    - Flutter
+    - FlutterMacOS
   - google_mlkit_commons (0.11.1):
     - Flutter
     - MLKitVision (~> 10.0.0)
@@ -1462,6 +1465,7 @@ DEPENDENCIES:
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
   - firebase_storage (from `.symlinks/plugins/firebase_storage/ios`)
   - Flutter (from `Flutter`)
+  - flutter_blue_plus_darwin (from `.symlinks/plugins/flutter_blue_plus_darwin/darwin`)
   - google_mlkit_commons (from `.symlinks/plugins/google_mlkit_commons/ios`)
   - google_mlkit_pose_detection (from `.symlinks/plugins/google_mlkit_pose_detection/ios`)
   - integration_test (from `.symlinks/plugins/integration_test/ios`)
@@ -1516,6 +1520,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/firebase_storage/ios"
   Flutter:
     :path: Flutter
+  flutter_blue_plus_darwin:
+    :path: ".symlinks/plugins/flutter_blue_plus_darwin/darwin"
   google_mlkit_commons:
     :path: ".symlinks/plugins/google_mlkit_commons/ios"
   google_mlkit_pose_detection:
@@ -1546,6 +1552,7 @@ SPEC CHECKSUMS:
   FirebaseSharedSwift: 9d2fa84a46676302b89dbd5e6e62bce2fe376909
   FirebaseStorage: 3ba2348d876c295236cdd9f408a62d3f9ff8e6b5
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  flutter_blue_plus_darwin: 20a08bfeaa0f7804d524858d3d8744bcc1b6dbc3
   google_mlkit_commons: a5e4ffae5bc59ea4c7b9025dc72cb6cb79dc1166
   google_mlkit_pose_detection: 211eabf55f5ea8d6a9537fdade0a37148fc84d8b
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7

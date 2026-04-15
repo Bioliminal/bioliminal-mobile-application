@@ -3,10 +3,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/main.dart' as app;
-import 'package:auralink/features/screening/controllers/screening_controller.dart';
-import 'package:auralink/features/screening/models/movement.dart';
-import 'package:auralink/features/screening/widgets/stick_figure_animation.dart';
+import 'package:bioliminal/main.dart' as app;
+import 'package:bioliminal/features/screening/controllers/screening_controller.dart';
+import 'package:bioliminal/features/screening/models/movement.dart';
+import 'package:bioliminal/features/screening/widgets/stick_figure_animation.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

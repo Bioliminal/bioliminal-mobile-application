@@ -4,12 +4,15 @@ import '../data/movement_keyframes.dart';
 import '../../../domain/models.dart';
 
 /// Maps each [MovementType] to its keyframe sequence.
-List<PoseFrame> keyframesFor(MovementType type) {
+List<AnimationPoseFrame> keyframesFor(MovementType type) {
   return switch (type) {
     MovementType.overheadSquat => overheadSquatKeyframes,
-    MovementType.singleLegBalance => singleLegBalanceKeyframes,
-    MovementType.overheadReach => overheadReachKeyframes,
-    MovementType.forwardFold => forwardFoldKeyframes,
+    MovementType.singleLegSquat => singleLegSquatKeyframes,
+    MovementType.pushUp => pushUpKeyframes,
+    MovementType.rollup => rollupKeyframes,
+    MovementType.bicepCurl => throw UnsupportedError(
+      'bicepCurl uses the rep_capture pipeline, not screening keyframes.',
+    ),
   };
 }
 
@@ -91,8 +94,11 @@ class _StickFigureAnimationState extends State<StickFigureAnimation>
 
 /// Given a list of keyframes and a normalized [t] in [0,1], returns the
 /// interpolated pose. Distributes time evenly across keyframe segments.
-PoseFrame interpolateKeyframes(List<PoseFrame> keyframes, double t) {
-  if (keyframes.isEmpty) return PoseFrame.empty;
+AnimationPoseFrame interpolateKeyframes(
+  List<AnimationPoseFrame> keyframes,
+  double t,
+) {
+  if (keyframes.isEmpty) return AnimationPoseFrame.empty;
   if (keyframes.length == 1) return keyframes.first;
 
   final segments = keyframes.length - 1;
@@ -100,7 +106,7 @@ PoseFrame interpolateKeyframes(List<PoseFrame> keyframes, double t) {
   final segmentIndex = scaledT.floor().clamp(0, segments - 1);
   final segmentT = scaledT - segmentIndex;
 
-  return PoseFrame.lerp(
+  return AnimationPoseFrame.lerp(
     keyframes[segmentIndex],
     keyframes[segmentIndex + 1],
     segmentT,
@@ -119,7 +125,7 @@ class _StickFigurePainter extends CustomPainter {
     required this.jointRadius,
   });
 
-  final PoseFrame pose;
+  final AnimationPoseFrame pose;
   final Color color;
   final double strokeWidth;
   final double jointRadius;

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/providers.dart';
 
 /// High-friction opt-in dialog for cloud sync. The user must type "SYNC" to
 /// confirm, ensuring no accidental data upload. Shows what data is synced and

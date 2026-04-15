@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hardware Alignment — Injury Prevention Research Backing</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #141420;
+    --surface2: #1c1c2e;
+    --border: #2a2a40;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --text-mute: #5a5a70;
+    --accent-yes: #00d4aa;
+    --accent-warn: #ff6b35;
+    --accent-no: #ff4757;
+    --accent-info: #7b68ee;
+    --accent-gold: #ffd700;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent-yes), var(--accent-info)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .subtitle { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.9rem; max-width: 800px; }
+  .tab-nav { display: flex; gap: 0.25rem; margin-bottom: 0; flex-wrap: wrap; }
+  .tab-btn { padding: 0.6rem 1rem; background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; font-family: inherit; }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--surface2); color: var(--accent-yes); border-color: var(--accent-yes); border-bottom: 1px solid var(--surface2); }
+  .tab-content { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; padding: 2rem; }
+  .tab-content.active { display: block; }
+
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin: 1rem 0; }
+  .matrix-table th, .matrix-table td { padding: 0.75rem 0.85rem; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .matrix-table th { background: var(--surface); color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
+  .matrix-table td { background: var(--surface2); }
+  .yes { color: var(--accent-yes); font-weight: 700; }
+  .warn { color: var(--accent-warn); font-weight: 600; }
+  .no { color: var(--accent-no); opacity: 0.7; }
+
+  .rationale-box { background: var(--surface); border-left: 3px solid var(--accent-warn); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; font-size: 0.85rem; color: var(--text-dim); }
+  .rationale-box strong { color: var(--text); }
+  .rationale-box.green { border-left-color: var(--accent-yes); }
+  .rationale-box.red { border-left-color: var(--accent-no); }
+  .rationale-box.purple { border-left-color: var(--accent-info); }
+
+  .component-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; position: relative; overflow: hidden; }
+  .component-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .component-card.aligned::before { background: var(--accent-yes); }
+  .component-card.diverge::before { background: var(--accent-warn); }
+  .component-card.excluded::before { background: var(--accent-no); }
+  .component-card h4 { font-size: 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+
+  .badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-aligned { background: rgba(0,212,170,0.15); color: var(--accent-yes); }
+  .badge-diverge { background: rgba(255,107,53,0.15); color: var(--accent-warn); }
+  .badge-excluded { background: rgba(255,71,87,0.15); color: var(--accent-no); }
+  .badge-decision { background: rgba(255,215,0,0.15); color: var(--accent-gold); }
+
+  .evidence-card { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 0.85rem 1rem; margin: 0.5rem 0; font-size: 0.8rem; }
+  .evidence-card .finding { color: var(--text); margin-bottom: 0.25rem; }
+  .evidence-card .source { color: var(--text-mute); font-size: 0.75rem; font-style: italic; }
+  .evidence-card .tag { display: inline-block; font-size: 0.6rem; padding: 0.1rem 0.4rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; margin-right: 0.3rem; }
+  .tag-strong { background: rgba(0,212,170,0.15); color: var(--accent-yes); }
+  .tag-moderate { background: rgba(255,215,0,0.15); color: var(--accent-gold); }
+  .tag-indirect { background: rgba(123,104,238,0.15); color: var(--accent-info); }
+  .tag-none { background: rgba(255,71,87,0.15); color: var(--accent-no); }
+
+  .decision-card { background: var(--surface); border: 1px solid var(--accent-gold); border-radius: 12px; padding: 1.25rem; margin: 0.75rem 0; }
+  .decision-card .q-num { color: var(--accent-gold); font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; }
+  .decision-card .q-text { font-size: 0.95rem; color: var(--text); margin-bottom: 0.5rem; }
+  .decision-card .q-context { font-size: 0.8rem; color: var(--text-dim); }
+
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0 1.5rem; padding: 0.75rem 1rem; background: var(--surface); border-radius: 8px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .config-grid { grid-template-columns: 1fr; }
+    .matrix-table { font-size: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Hardware Alignment</h1>
+<p class="subtitle">Comparing our injury prevention research with the partner's hardware configurations and engineering specs. Every component evaluated for research-backed injury prevention value.</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-yes)"></div> Fully Aligned</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-warn)"></div> Divergence — Decision Needed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-no)"></div> Excluded by Research</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-gold)"></div> Decision Point</div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('overview')">Alignment Overview</button>
+  <button class="tab-btn" onclick="showTab('components')">Component Detail</button>
+  <button class="tab-btn" onclick="showTab('evidence')">Evidence Strength</button>
+  <button class="tab-btn" onclick="showTab('divergences')">Divergences</button>
+  <button class="tab-btn" onclick="showTab('decisions')">Decisions Needed</button>
+</nav>
+
+<!-- ==================== TAB 0: OVERVIEW ==================== -->
+<div id="overview" class="tab-content active">
+  <h2>Architecture Agreement</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem">Both sides independently arrived at the same two-layer architecture. The disagreements are about scope and form factor, not fundamentals.</p>
+
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Component</th><th>Our Research</th><th>Partner's Spec</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>sEMG Sensors</strong></td>
+        <td>BioAmp EXG Pill (MVP)<br>MyoWare 2.0 (fast prototype)<br>ADS1292R (upgrade)</td>
+        <td>BioAmp EXG Pill (Best Value MVP)<br>MyoWare 2.0 (Budget C)<br>ADS1292R (Mid tier)</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>MCU</strong></td>
+        <td>ESP32-S3 (MVP)<br>nRF52840 (production)</td>
+        <td>ESP32-S3 (~$10, MVP)<br>nRF52840 Feather (~$25, post-MVP)</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>Vibrotactile</strong></td>
+        <td>Generic coin ERM (MVP)<br>PM 310-103 (named)<br>LRA + DRV2605L (upgrade)</td>
+        <td>Generic coin ERM (Budget A)<br>PM 310-103 (Budget B)<br>LRA + DRV2605L (Mid)</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>TSA Squeeze</strong></td>
+        <td>Not in current plan</td>
+        <td>Central to design. N20 + Dyneema (MVP), Pololu 25D (mid)</td>
+        <td class="warn">⚠️ Diverge</td>
+      </tr>
+      <tr>
+        <td><strong>IMU Sensors</strong></td>
+        <td>Excluded — camera replaces</td>
+        <td>Not mentioned anywhere</td>
+        <td class="yes">✅ Both excluded</td>
+      </tr>
+      <tr>
+        <td><strong>Power</strong></td>
+        <td>500mAh LiPo + TP4056</td>
+        <td>500–800mAh LiPo + TP4056</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>Electrodes</strong></td>
+        <td>Disposable Ag/AgCl (prototype)</td>
+        <td>Disposable Ag/AgCl (MVP)</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>Phone Architecture</strong></td>
+        <td>Camera + BLE to garment</td>
+        <td>MediaPipe CV + BLE + LLM reasoning on phone</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+      <tr>
+        <td><strong>Body Region</strong></td>
+        <td>Lower body + back (squats, deadlifts)</td>
+        <td>Torso (bench, rows, push-ups)</td>
+        <td class="warn">⚠️ Diverge</td>
+      </tr>
+      <tr>
+        <td><strong>Form Factor</strong></td>
+        <td>Compression shirt</td>
+        <td>Adjustable strap-harness + snap-grid pods</td>
+        <td class="warn">⚠️ Diverge</td>
+      </tr>
+      <tr>
+        <td><strong>Channel Count</strong></td>
+        <td>2 channels (concept validation)</td>
+        <td>8–14 channels (full system)</td>
+        <td class="warn">⚠️ Diverge</td>
+      </tr>
+      <tr>
+        <td><strong>FDA Strategy</strong></td>
+        <td>General wellness, no medical claims</td>
+        <td>"Training tool, not diagnostic." Mirrors Whoop/Athos language</td>
+        <td class="yes">✅ Aligned</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box green">
+    <strong>Bottom line:</strong> 8 of 12 components are fully aligned — identical product picks, same tier preferences, same upgrade paths. The 4 divergences are about scope and ambition, not about which technology to use. Both sides agree on sEMG + camera + haptics as the stack. Both excluded IMUs independently.
+  </div>
+</div>
+
+<!-- ==================== TAB 1: COMPONENT DETAIL ==================== -->
+<div id="components" class="tab-content">
+  <h2>Component-by-Component Research Backing</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Each component evaluated for its specific role in injury prevention during lifting. Research citations for every claim.</p>
+
+  <div class="component-card aligned">
+    <h4><span class="badge badge-aligned">Aligned</span> Camera — MediaPipe Pose Estimation</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Layer 1 (free app). Detects visible biomechanical injury markers from a single phone camera.</p>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Knee valgus detection: camera achieves RMSE 3–10° — outperforms body-worn IMUs (RMSE 7–15°) for this ACL risk marker</div>
+      <div class="source">Mercadal-Baudart et al. (2024), Heliyon; Chia et al. (2021), Med Eng & Physics</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Lumbar flexion: RMSE ≤10° for trunk angle and spinal flexion from single phone camera, validated against VICON motion capture during squats, deadlifts, drop jumps</div>
+      <div class="source">Mercadal-Baudart et al. (2024), Heliyon</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Full kinetic chain captured simultaneously — replaces what would require 3–5 body-worn IMU sensors</div>
+      <div class="source">Direct comparison study: minimum 3 IMUs needed to match single camera view accuracy</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> PTs cannot visually detect posterior pelvic tilt until it exceeds 34° — camera with angle measurement beats trained human observation</div>
+      <div class="source">Falk, Aasa & Berglund (2021), Musculoskeletal Science and Practice</div>
+    </div>
+  </div>
+
+  <div class="component-card aligned">
+    <h4><span class="badge badge-aligned">Aligned</span> sEMG Sensors — BioAmp EXG Pill / MyoWare 2.0</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Layer 2 (premium hardware). Detects what the camera fundamentally cannot see.</p>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Fatigue prediction: EMG median frequency shifts downward 2–5 reps BEFORE visible form breakdown. Accepted biomarker for localized muscle fatigue</div>
+      <div class="source">Rampichini et al. (2020), Entropy; Cifrek et al. (2009), Clinical Biomechanics</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Fatigue classification accuracy: 95.4% using SVM on EMG frequency-domain features</div>
+      <div class="source">Scientific Reports (2025), hybrid EMG–NMES fatigue study</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Compensation detection: malaligned squats show decreased VL/VM/RF activation with increased BF and gastrocnemius compensation — invisible to observation</div>
+      <div class="source">J Strength Cond Res (2017), muscle activation patterns during squat techniques</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> H:Q ratio imbalance is a primary contributing factor to ACL injury. Women exhibit reduced ratios indicating quad dominance</div>
+      <div class="source">Ruas et al. (2019), Sports Medicine - Open; Dedinsky et al. (2017), IJSPT</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Kinematics alone underestimates spinal loading — EMG-assisted models are the only way to account for muscle co-contraction forces on the spine</div>
+      <div class="source">Marras & Granata (1997), J Electromyography & Kinesiology</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-none">Gap</span> No published RCT demonstrates sEMG-based feedback directly reduces injury rates during resistance training. Evidence stops at detection accuracy</div>
+      <div class="source">Battis et al. (2023), Research Square; Seshadri et al. (2022), systematic scoping review</div>
+    </div>
+  </div>
+
+  <div class="component-card aligned">
+    <h4><span class="badge badge-aligned">Aligned</span> Vibrotactile Motors — Coin ERM / PM 310-103</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Feedback loop — alerts user to detected injury risk signals.</p>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-moderate">Moderate</span> Vibrotactile localization accuracy: 60.7% on torso — best modality for spatial "where" cueing ("this muscle, not that one")</div>
+      <div class="source">Deshpande et al. (2021), PMC8541989</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-moderate">Moderate</span> Pre-rep cueing more effective than mid-rep correction for motor learning. Vibration onset 5–100ms is fast enough for between-rep alerts</div>
+      <div class="source">Partner's research (Muscle Minder finding); Sigrist et al. (2013), Psychonomic Bulletin & Review</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-indirect">Indirect</span> Vibration habituates in 5–15s (Pacinian receptors). Cannot sustain cueing through a rep — only useful for discrete alerts, not continuous guidance</div>
+      <div class="source">Johansson & Flanagan (2009), Nature Reviews Neuroscience</div>
+    </div>
+  </div>
+
+  <div class="component-card diverge">
+    <h4><span class="badge badge-diverge">Partner Only</span> TSA Squeeze Actuators</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">In partner's spec but not in our current plan. Addresses vibration's limitations.</p>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-moderate">Moderate</span> Vibration covers 2/6 dimensions of a trainer's hand cue. Pressure covers 4/6: magnitude, duration, release pattern, partial direction</div>
+      <div class="source">Partner's six-dimension analysis; Deshpande et al. (2021)</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-indirect">Indirect</span> Sustained pressure activates Merkel/Ruffini receptors — these don't habituate. Enables "keep this muscle engaged" cueing through entire rep</div>
+      <div class="source">Johansson & Flanagan (2009); partner's receptor analysis</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-indirect">Indirect</span> Gradual squeeze release = scaffolding withdrawal. Tests motor independence. Well-established in motor learning theory but not directly studied with TSA for lifting</div>
+      <div class="source">van Dijk (2006), guidance hypothesis; Lauber & Keller (2014), European J Sport Science</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-none">Gap</span> No study has tested TSA squeeze specifically for lifting injury prevention. The mechanism is extrapolated from motor learning + haptic perception research</div>
+      <div class="source">—</div>
+    </div>
+    <div class="rationale-box">
+      <strong>Engineering cost:</strong> ~$20–55 per squeeze zone. Adds motors, strings (Dyneema), PTFE routing, calibration algorithm, fail-safe design. Partner's spec covers all of this in detail. <strong>The question isn't "does it work?" — it's "is it needed for MVP?"</strong>
+    </div>
+  </div>
+
+  <div class="component-card excluded">
+    <h4><span class="badge badge-excluded">Excluded</span> IMU Sensors — Both Sides Independently Rejected</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Camera replaces everything an IMU does for form tracking, often with better accuracy.</p>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> Camera outperforms IMUs for knee valgus: RMSE 3–10° vs 7–15°. IMUs "not recommended for knee frontal-plane kinematic estimations"</div>
+      <div class="source">Chia et al. (2021), Med Eng & Physics</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-strong">Strong</span> IMU magnetometers corrupted by ferromagnetic gym equipment (steel plates, racks, cable machines). Gyroscopes drift every ~30 min</div>
+      <div class="source">Multiple IMU validation studies; partner's spec does not include IMUs</div>
+    </div>
+    <div class="evidence-card">
+      <div class="finding"><span class="tag tag-moderate">Moderate</span> One thing IMUs do better: bar velocity tracking (ICC 0.91–0.96). But velocity is a performance metric, not an injury prevention metric. Deferrable</div>
+      <div class="source">Weakley et al. (2021), systematic review of VBT device validity</div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: EVIDENCE STRENGTH ==================== -->
+<div id="evidence" class="tab-content">
+  <h2>Evidence Strength for Injury Prevention</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Honest assessment of what's research-backed, what's extrapolated, and what's unproven. Sorted by evidence strength.</p>
+
+  <h3>Strong Research Backing</h3>
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Component</th><th>Injury Prevention Mechanism</th><th>Evidence</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Camera</strong><br>(MediaPipe)</td>
+        <td>Detects knee valgus (ACL risk), lumbar flexion (disc risk), compensatory movement patterns</td>
+        <td class="yes">&lt;10° RMSE validated against VICON for squats, deadlifts. Outperforms IMUs for frontal-plane markers</td>
+      </tr>
+      <tr>
+        <td><strong>sEMG</strong><br>(fatigue detection)</td>
+        <td>Median frequency shift predicts form breakdown 2–5 reps before it's visible</td>
+        <td class="yes">Accepted biomarker. 95.4% SVM classification accuracy. Replicated across multiple studies</td>
+      </tr>
+      <tr>
+        <td><strong>sEMG</strong><br>(L/R asymmetry)</td>
+        <td>H:Q ratio imbalance predicts ACL injury risk. Bilateral asymmetry precedes visible movement deviation</td>
+        <td class="yes">Extensively studied in sports medicine. Multiple systematic reviews</td>
+      </tr>
+      <tr>
+        <td><strong>sEMG</strong><br>(spinal loading)</td>
+        <td>EMG-assisted models reveal actual compressive forces invisible to kinematics-only approaches</td>
+        <td class="yes">Marras lab (1997–2017). Gold standard for occupational spine loading research</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Moderate / Indirect Research Backing</h3>
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Component</th><th>Claimed Mechanism</th><th>Evidence Gap</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>sEMG</strong><br>(compensation)</td>
+        <td>Identifies when wrong muscle takes over (TFL for glute, erectors for glutes)</td>
+        <td class="warn">Patterns well-documented in clinical literature. Real-time detection in consumer wearables during lifting is unproven</td>
+      </tr>
+      <tr>
+        <td><strong>Vibration</strong><br>(pre-rep cueing)</td>
+        <td>Alerts user to fatigue threshold before dangerous rep</td>
+        <td class="warn">Motor learning research supports anticipatory cueing. No lifting-specific RCT on vibrotactile injury prevention</td>
+      </tr>
+      <tr>
+        <td><strong>TSA squeeze</strong><br>(sustained cueing)</td>
+        <td>Replicates trainer's hand for muscle engagement through rep</td>
+        <td class="warn">Motor learning literature supports sustained feedback > discrete. Receptor science (Merkel/Ruffini) supports mechanism. No TSA-specific lifting study</td>
+      </tr>
+      <tr>
+        <td><strong>TSA squeeze</strong><br>(scaffolding fade)</td>
+        <td>Gradual release builds motor independence</td>
+        <td class="warn">Guidance hypothesis well-established. Application to lifting via mechanical squeeze is extrapolated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>No Direct Research Backing</h3>
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Claim</th><th>Honest Assessment</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Any wearable reducing lifting injury rates</strong></td>
+        <td class="no">No published RCT shows wearable-based feedback reduces resistance training injury rates. The entire field stops at detection accuracy. This is the biggest gap in the evidence base — and our biggest opportunity to be first</td>
+      </tr>
+      <tr>
+        <td><strong>Vibrate at muscle → activation changes</strong></td>
+        <td class="no">Deshpande shows localization accuracy. But "vibrate at the right muscle and recruitment changes" is assumed from biofeedback literature, not proven for lifting context</td>
+      </tr>
+      <tr>
+        <td><strong>IMUs for injury prevention</strong></td>
+        <td class="no">Excluded. Camera does everything an IMU does for form tracking, often better. IMUs add cost and complexity with no unique injury prevention signal</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box red">
+    <strong>The honest gap we must acknowledge:</strong> We can detect fatigue (strong evidence). We can detect compensation (moderate evidence). We can cue the user (moderate evidence). But nobody has proven the full loop — detect → cue → behavior changes → injuries decrease. Being first to close this loop IS the product thesis. The research gap is also the market opportunity.
+  </div>
+</div>
+
+<!-- ==================== TAB 3: DIVERGENCES ==================== -->
+<div id="divergences" class="tab-content">
+  <h2>Where We Diverge — With Evidence</h2>
+
+  <div class="component-card diverge">
+    <h4><span class="badge badge-decision">Decision 1</span> Body Region: Lower Body vs Torso</h4>
+    <div class="config-grid">
+      <div style="padding:0.5rem">
+        <h3 style="color:var(--accent-yes);margin-top:0">Our Research: Lower Body + Back</h3>
+        <div class="evidence-card">
+          <div class="finding">Squats and deadlifts produce the most frequent and most severe beginner injuries — lumbar disc herniation, ACL tears, muscle strains</div>
+          <div class="source">Bonilla et al. (2022), IJERPH</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Erector spinae fatigue during deadlift is the primary mechanism for lumbar injury. EMG detects this before form visibly breaks down</div>
+          <div class="source">Bakhshinejad et al. (2025), Sports Med - Open</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Knee valgus from quad imbalance (VM fatiguing before VL) is the #1 ACL injury mechanism in squats</div>
+          <div class="source">Ruas et al. (2019); Dedinsky et al. (2017)</div>
+        </div>
+        <p style="color:var(--accent-yes);font-size:0.8rem;margin-top:0.75rem"><strong>Strongest injury prevention case.</strong> This is where people actually get hurt.</p>
+      </div>
+      <div style="padding:0.5rem">
+        <h3 style="color:var(--accent-warn);margin-top:0">Partner's Spec: Torso</h3>
+        <div class="evidence-card">
+          <div class="finding">Torso offers more muscle groups to differentiate between — pecs, lats, traps, delts all distinguishable at 40–60mm two-point discrimination</div>
+          <div class="source">Partner's skin spatial resolution analysis</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Push-ups need zero equipment — best for demo floor. "Your right pec is lazy" narrative is universally relatable</div>
+          <div class="source">Partner's MVP exercise analysis (Q10)</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Shoulder injury during bench press is linked to muscular fatigue + biomechanics — EMG-detectable</div>
+          <div class="source">Motlagh & Lipps (2024), J Strength Cond Res</div>
+        </div>
+        <p style="color:var(--accent-warn);font-size:0.8rem;margin-top:0.75rem"><strong>Best demo practicality.</strong> Easier to show, harder to justify for injury prevention thesis.</p>
+      </div>
+    </div>
+    <div class="rationale-box">
+      <strong>Possible bridge:</strong> Push-ups are a compound movement activating pecs, delts, AND core (including erector spinae). A torso garment monitoring push-up form validates both the activation coaching narrative AND detects core compensation relevant to injury prevention. Squats added via leg sleeves in v2.
+    </div>
+  </div>
+
+  <div class="component-card diverge">
+    <h4><span class="badge badge-decision">Decision 2</span> Form Factor: Compression Shirt vs Strap-Harness</h4>
+    <div class="config-grid">
+      <div style="padding:0.5rem">
+        <h3 style="color:var(--accent-yes);margin-top:0">Our Research: Compression Shirt</h3>
+        <div class="evidence-card">
+          <div class="finding">Compression garments produce sEMG signal quality comparable to conventional adhesive electrodes — uniform passive pressure at 15–20 mmHg</div>
+          <div class="source">Ohiri et al. (2022), Scientific Reports</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Compression systems had far fewer experimental failures than strap/electrode attachment systems</div>
+          <div class="source">PMC 2018, smart compression garment validation</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Looks like normal gym wear — critical for beginners who are already intimidated by the gym environment</div>
+          <div class="source">Product thesis / target user research</div>
+        </div>
+        <p style="color:var(--accent-yes);font-size:0.8rem;margin-top:0.75rem"><strong>Better for the product.</strong> Better signal reliability. Less intimidating for target user.</p>
+      </div>
+      <div style="padding:0.5rem">
+        <h3 style="color:var(--accent-warn);margin-top:0">Partner's Spec: Strap-Harness</h3>
+        <div class="evidence-card">
+          <div class="finding">One adjustable harness fits many body sizes — buckle straps with 15cm adjustment range. No S/M/L/XL sizing problem</div>
+          <div class="source">Partner's form factor analysis (Q7)</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Snap-grid pods are repositionable — iterate on electrode placement without sewing. Electronics removable for washing</div>
+          <div class="source">Partner's Form Factor B: Modular Vest + Snap-Grid Pods</div>
+        </div>
+        <div class="evidence-card">
+          <div class="finding">Leaves skin exposed for camera tracking — compression shirt may occlude body landmarks needed by MediaPipe</div>
+          <div class="source">Partner's design rationale</div>
+        </div>
+        <p style="color:var(--accent-warn);font-size:0.8rem;margin-top:0.75rem"><strong>Better for R&D.</strong> Faster iteration. More flexible. But looks like a research device.</p>
+      </div>
+    </div>
+    <div class="rationale-box">
+      <strong>Recommendation: Build both.</strong> Strap-harness for R&D — faster iteration, repositionable pods, partner's snap-grid enables rapid A/B testing. Compression shirt for the consumer product — looks normal, passive contact pressure, less intimidating. The harness is the lab tool. The shirt is what ships.
+    </div>
+  </div>
+
+  <div class="component-card diverge">
+    <h4><span class="badge badge-decision">Decision 3</span> TSA Squeeze: In MVP or V2?</h4>
+    <p style="color:var(--text-dim);font-size:0.85rem;margin:0.5rem 0 1rem">Partner's strongest unique contribution. Not in our current plan. Research case is solid but indirect.</p>
+    <table class="matrix-table">
+      <thead><tr><th>Factor</th><th>Include in MVP</th><th>Defer to V2</th></tr></thead>
+      <tbody>
+        <tr><td>Cueing completeness</td><td class="yes">Covers 4/6 dimensions vibration can't</td><td class="no">Vibration-only covers 2/6</td></tr>
+        <tr><td>Injury prevention value</td><td class="warn">Sustained "keep this muscle engaged" through rep</td><td class="warn">Pre-rep alerts may be enough to validate concept</td></tr>
+        <tr><td>Complexity cost</td><td class="no">Motors, strings, PTFE, calibration, fail-safe</td><td class="yes">Simpler build, faster to demo</td></tr>
+        <tr><td>BOM cost per zone</td><td class="no">+$20–55 per squeeze zone</td><td class="yes">$0 — vibration only</td></tr>
+        <tr><td>Research backing</td><td class="warn">Indirect — motor learning + receptor science</td><td>—</td></tr>
+        <tr><td>Build timeline</td><td class="no">Adds 1–2 weeks to prototype</td><td class="yes">Ship vibration-only MVP faster</td></tr>
+      </tbody>
+    </table>
+    <div class="rationale-box">
+      <strong>Our position:</strong> If the MVP question is "does EMG detection + basic cueing change beginner behavior?" — vibration-only answers it faster and cheaper. If the question is "can we replicate a trainer's hand?" — TSA is necessary. Which question are we answering first?
+    </div>
+  </div>
+
+  <div class="component-card diverge">
+    <h4><span class="badge badge-decision">Decision 4</span> Channel Count: 2 vs 8–14</h4>
+    <table class="matrix-table">
+      <thead><tr><th>Approach</th><th>Cost</th><th>Timeline</th><th>What It Validates</th></tr></thead>
+      <tbody>
+        <tr><td><strong>2 channels</strong> (MyoWare)</td><td>~$87</td><td>Testing in 2 days</td><td>"Can we get clean EMG signal on erector spinae / quads during lifting? Does the camera + EMG combo detect something useful?"</td></tr>
+        <tr><td><strong>8–14 channels</strong> (BioAmp)</td><td>~$330 full build</td><td>Full system in 1–2 weeks</td><td>"Can we build a multi-muscle cueing system that tracks compensation patterns across an entire kinetic chain?"</td></tr>
+      </tbody>
+    </table>
+    <div class="rationale-box green">
+      <strong>These are sequential, not competing.</strong> Order 2x MyoWare now (Amazon, arrives tomorrow) for immediate concept validation. Order 10x BioAmp simultaneously (DigiKey/Mouser, arrives in 3–5 days) for the full harness build. Start testing with 2 channels while the BioAmp ships. Don't wait.
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: DECISIONS ==================== -->
+<div id="decisions" class="tab-content">
+  <h2>Decisions Needed — Both Partners</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1.5rem">Four decisions that need alignment before the next build sprint. Each has a recommended path based on injury prevention research.</p>
+
+  <div class="decision-card">
+    <div class="q-num">Decision 1 — Body Region for MVP</div>
+    <div class="q-text">Lower body/back (strongest injury prevention case) vs torso (best demo practicality) vs push-ups (bridges both)?</div>
+    <div class="q-context">
+      <strong>Research recommendation:</strong> Push-ups as MVP exercise. Validates torso EMG hardware (pecs, delts, core) while also measuring erector spinae / core compensation patterns relevant to injury prevention. Zero equipment needed for demos. Squats/deadlifts added with leg sleeves as v2 expansion — that's where the injury prevention thesis is strongest but requires additional hardware.
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="q-num">Decision 2 — Form Factor</div>
+    <div class="q-text">Strap-harness for R&D + compression shirt for product? Or one form factor for both?</div>
+    <div class="q-context">
+      <strong>Research recommendation:</strong> Both, in sequence. Harness now (partner's snap-grid design is ready, fastest iteration). Compression shirt after electrode positions are validated — that's the consumer product for beginners. The research shows compression garments have better signal reliability AND lower failure rates than strap-based systems, but straps are better for R&D flexibility.
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="q-num">Decision 3 — TSA Squeeze in MVP?</div>
+    <div class="q-text">Partner's strongest unique contribution. Adds ~$20–55/zone + significant mechanical complexity. Include now or defer?</div>
+    <div class="q-context">
+      <strong>Research recommendation:</strong> Include TSA at 1–2 zones for A/B testing alongside vibration-only zones. Partner has already spec'd the N20 + Dyneema + Hall encoder build (~$25/zone). This lets you test "does sustained pressure cueing outperform discrete vibration?" with research data, rather than making the decision theoretically. If TSA wins, scale it. If vibration-only is sufficient, you saved $100+ on motors.
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="q-num">Decision 4 — Channel Count & Ordering</div>
+    <div class="q-text">How many EMG channels for initial build?</div>
+    <div class="q-context">
+      <strong>Recommendation:</strong> Order everything now, test sequentially.<br><br>
+      <strong>Wave 1 (arrives tomorrow):</strong> 2x MyoWare + ESP32 + vibes + electrodes from Amazon (~$105). Start bench-testing EMG signal quality immediately.<br><br>
+      <strong>Wave 2 (arrives 3–5 days):</strong> 10x BioAmp from DigiKey/Mouser + N20 motors + Dyneema + harness materials (~$225). Build full system while Wave 1 validates the concept.<br><br>
+      <strong>Wave 3 (only if needed):</strong> Pololu mid-tier motors, LRA + DRV2605L, ADS1292R. Don't pre-buy — budget tier answers most questions.
+    </div>
+  </div>
+
+  <div class="rationale-box green" style="margin-top:2rem">
+    <strong>Total Day 1 spend recommendation: ~$330.</strong> Gets you 2-channel quick test (Wave 1) AND full 8+ channel harness components (Wave 2) plus spares for iteration. Everything arrives within 1–5 days to Austin. Start testing the concept in 48 hours while the full system ships.
+  </div>
+</div>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</div>
+</body>
+</html>

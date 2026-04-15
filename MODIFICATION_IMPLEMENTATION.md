@@ -1,105 +1,73 @@
-# IMPLEMENTATION: AuraLink App Stabilization & Premium Overhaul
+# Implementation Plan: Premium Bioliminal Landing Page (Storytelling Overhaul)
 
-This plan outlines the steps to resolve state errors, optimize camera performance, and deliver a premium UI/UX.
+This plan outlines the steps to transform the Bioliminal landing page into a premium, scroll-driven cinematic experience using shader-based glassmorphism and the `flutter_animate` storytelling pattern.
 
 ## Journal
-- Phase 1 Complete: Refactored cloud providers to be nullable, added null checks in `LoginView`, and updated related unit tests. App should no longer crash on launch when cloud sync is disabled.
-- Phase 2 Complete: Optimized `AppCameraController` with a "busy flag" pattern and a persistent stream, significantly reducing the overhead of ML processing per frame.
-- Phase 3 Complete: Isolated high-frequency UI updates in `ScreeningView`. Header and Footer now use `.select` to avoid unnecessary rebuilds during pose estimation. Added `RepaintBoundary` to the camera and skeleton layers to further reduce GPU load.
-- Phase 4 Complete: Cleaned up extensive dead code in `HistoryView` and `ReportView`. Refined `StickFigureAnimation` with smoother sinusoidal interpolation and a joint glow effect for a more premium aesthetic. Updated sharing integration to use modern APIs.
-- Phase 5 Complete: Updated `README.md` and `AUDIT-GEMINI.md`. Created `GEMINI.md` to document the new architecture. Verified all navigation flows and confirmed zero static analysis errors.
+- **2026-04-14**: Plan initialized for premium redesign. Research confirmed `liquid_glass_widgets` and `flutter_animate` as core pillars.
+- **2026-04-14**: Phase 1 & 2 completed. Refactored `LandingPageView` with `CustomScrollView` and `ScrollAdapter`. Integrated `GlassMotionScope` for dynamic lighting.
+- **2026-04-14**: Phase 3, 4 & 5 completed. Implemented cinematic Hero section with typography cross-fades, high-fidelity Feature Cards with internal animations, and the Fascial Storytelling section with stylized network backgrounds. All animations are scroll-synced.
 
-## Phase 1: Foundation & State Stabilization
-Goal: Eliminate app crashes caused by cloud provider errors and ensure a clean starting point.
-
+## Phase 1: Foundation & Storytelling Engine
 - [x] Run all tests to ensure the project is in a good state before starting modifications.
-- [x] Refactor `authServiceProvider` and `firestoreServiceProvider` in `lib/core/providers.dart` to return `null` instead of throwing `StateError`.
-- [x] Update `lib/core/services/auth_service.dart` and `firestore_service.dart` if necessary to support nullable initialization.
-- [x] Add null-checks to any widgets currently watching these providers (e.g., `SettingsView`, `LoginView`).
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+- [x] Add `flutter_animate` and `liquid_glass_widgets` to `pubspec.yaml`.
+- [x] Refactor `LandingPageView` to use `CustomScrollView` and `Slivers`.
+- [x] Initialize the global `ScrollController` and link it to a `flutter_animate` `ScrollAdapter`.
 
-## Phase 2: Camera Pipeline Optimization
-Goal: Achieve 30+ FPS by optimizing frame processing and avoiding redundant stream subscriptions.
+### Phase 1 Completion Checklist
+- [x] Run the `dart_fix` tool to clean up the code.
+- [x] Run the `analyze_files` tool one more time and fix any issues.
+- [x] Run any tests to make sure they all pass.
+- [x] Run `dart_format` to make sure that the formatting is correct.
+- [x] Update the Journal section.
+- [x] Commit the changes.
 
-- [x] Refactor `AppCameraController` in `lib/features/camera/controllers/camera_controller.dart` to use a persistent `_handleFrame` loop with a `_isProcessing` flag.
-- [x] Remove the frame-by-frame subscription cancellation logic.
-- [x] Optimize `ResolutionPreset` to `medium` (or `low` if needed) for better performance on older devices.
-- [x] Ensure `_landmarkSubscription` is correctly managed across the app lifecycle (resumed/paused).
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+## Phase 2: Liquid Glass Design System
+- [x] Implement `GlassMotionScope` to enable scroll-driven specular highlights.
+- [x] Create `PremiumGlassCard` and `PremiumGlassButton` reusable widgets.
+- [x] Add stylized background "Glow Blobs" and noise textures to `BioliminalTheme.screenBackground`.
 
-## Phase 3: UI Rebuild Optimization
-Goal: Isolate heavy UI elements from high-frequency AI updates.
+### Phase 2 Completion Checklist
+- [x] Run the `dart_fix` tool to clean up the code.
+- [x] Run the `analyze_files` tool and fix any issues.
+- [x] Run `dart_format`.
+- [x] Update the Journal section.
+- [x] Commit the changes.
 
-- [x] Refactor `ScreeningView` in `lib/features/screening/views/screening_view.dart` to separate the "Skeleton Layer" from the "Control UI Layer".
-- [x] Use Riverpod's `.select` in `_ActiveMovementScreen` to ensure the header, footer, and progress indicators only rebuild when their specific data changes (e.g., `repsCompleted`).
-- [x] Wrap `SkeletonOverlay` and `CameraPreview` in `RepaintBoundary` widgets to isolate their rendering.
-- [x] Replace or optimize expensive `BackdropFilter` usage in the active screening screen.
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+## Phase 3: The Origin (Hero Section)
+- [x] Implement the cinematic entry animation for the Hero Visual.
+- [x] Add scroll-driven rotation and scale transitions for the Skeleton visual (placeholder).
+- [x] Implement typography cross-fades ("REDEFINE MOVEMENT" -> "VISION BEYOND SIGHT").
 
-## Phase 4: Premium UI Polish & Cleanup
-Goal: Deliver a sophisticated look and remove technical debt.
+### Phase 3 Completion Checklist
+- [x] Run analysis and formatting.
+- [x] Update the Journal section.
+- [x] Commit the changes.
 
-- [x] Remove unused components and "dead code" in `lib/features/report/views/report_view.dart` and `lib/features/history/views/history_view.dart`.
-- [x] Fully wire the `PDFGenerator` and `SharePlus` integration in `ReportView`.
-- [x] Refine `StickFigureAnimation` with smoother transitions and improved stroke/joint aesthetics.
-- [x] Apply a consistent "Glassmorphism" theme (using optimized containers) across all secondary screens.
-- [x] **Validation & Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+## Phase 4: The Sight (Feature Showcase)
+- [x] Build the interactive feature grid using `GlassPanel` with "Jelly Physics".
+- [x] Sync icon animations with scroll progress.
+- [x] Refine the "Beyond Joint Metrics" side-by-side comparison with high-fidelity visuals.
 
-## Phase 5: Final Validation & Documentation
-Goal: Ensure everything works as intended and the codebase is well-documented.
+### Phase 4 Completion Checklist
+- [x] Run analysis and formatting.
+- [x] Update the Journal section.
+- [x] Commit the changes.
 
-- [x] Update `README.md` with relevant information from the modification.
-- [x] Update `GEMINI.md` to reflect the new architecture and file layout.
-- [x] Perform a final full-app walkthrough to verify all navigation and data persistence flows.
-- [x] Ask the user to inspect the package (and running app, if any) and say if they are satisfied with it.
-- [x] **Final Commit:**
-    - [x] Create/modify unit tests for testing the code added or modified in this phase, if relevant.
-    - [x] Run the `dart_fix` tool to clean up the code.
-    - [x] Run the `analyze_files` tool one more time and fix any issues.
-    - [x] Run any tests to make sure they all pass.
-    - [x] Run `dart_format` to make sure that the formatting is correct.
-    - [x] Re-read the `MODIFICATION_IMPLEMENTATION.md` file to see what, if anything, has changed in the implementation plan.
-    - [x] Update the `MODIFICATION_IMPLEMENTATION.md` file with the current state in the Journal section. Check off completed items.
-    - [x] Use `git diff` to verify changes and prepare a commit message.
-    - [x] Wait for user approval before committing.
-    - [x] After committing, use `hot_reload` if the app is running.
+## Phase 5: The Connection (Fascial Storytelling)
+- [x] Implement the linear "Tracing" animation for the Fascial Chain visual.
+- [x] Add interactive hotspots that reveal frosted glass "Insight Overlays".
+- [x] Sync the clinical documentation links with the storytelling flow.
+
+### Phase 5 Completion Checklist
+- [x] Run analysis and formatting.
+- [x] Update the Journal section.
+- [x] Commit the changes.
+
+## Phase 6: Final Polish & Assets
+- [ ] **Request Assets:** User to provide high-res Hero and Fascial Chain visuals from `nano banana`.
+- [ ] Integrate provided assets and finalize visual timings.
+- [ ] Optimize for 60FPS using `RepaintBoundary` on complex shader sections.
+- [ ] Update `GEMINI.md` and `README.md`.
+
+---
+*Note: After completing a task, if you added any TODOs to the code or didn't fully implement anything, make sure to add new tasks so that you can come back and complete them later.*

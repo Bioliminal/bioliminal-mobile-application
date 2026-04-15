@@ -120,7 +120,7 @@ CameraImage (story-1294)
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md
+- presearch/bioliminal-product.md
 - lib/domain/models.dart (from story-1293)
 - lib/features/camera/ (from story-1294)
 - lib/domain/services/ (from story-1296)

@@ -27,5 +27,19 @@ service cloud.firestore {
         && request.resource.data.practitionerPoints is list
         && (!('pdfUrl' in request.resource.data) || request.resource.data.pdfUrl == null || request.resource.data.pdfUrl is string);
     }
+
+    // Public marketing waitlist. Write-only for everyone, no reads, no updates.
+    // Emails are inspected in the Firebase console.
+    match /waitlist/{doc} {
+      allow read, update, delete: if false;
+      allow create: if request.resource.data.keys().hasOnly(['email', 'source', 'createdAt'])
+        && request.resource.data.email is string
+        && request.resource.data.email.size() > 5
+        && request.resource.data.email.size() < 255
+        && request.resource.data.email.matches('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
+        && request.resource.data.source is string
+        && request.resource.data.source in ['home', 'system', 'science', 'demo']
+        && request.resource.data.createdAt is timestamp;
+    }
   }
 }

@@ -3,7 +3,7 @@ Story: story-1293
 Agent: architect
 
 ## Context
-Initialize the AuraLink Flutter project from scratch: project structure, all dependencies, shared domain models, routing, theme, Firebase config, and Riverpod DI. This is the foundation every downstream feature imports from. No existing code — pure greenfield.
+Initialize the Bioliminal Flutter project from scratch: project structure, all dependencies, shared domain models, routing, theme, Firebase config, and Riverpod DI. This is the foundation every downstream feature imports from. No existing code — pure greenfield.
 
 Files:
 - lib/core/router.dart
@@ -22,15 +22,15 @@ Files:
 | firebase.json | Firebase Hosting configuration pointing to build/web, Firestore and Storage deploy targets |
 | lib/domain/models.dart | All shared domain model classes: Landmark, JointAngle, Compensation, Assessment, Movement, Report, Finding, Citation + enums MovementType, CompensationType, ChainType, ConfidenceLevel, CitationType |
 | lib/core/router.dart | GoRouter config with routes: / (splash), /camera, /screening, /report/:id |
-| lib/core/theme.dart | AuraLink ThemeData — brand colors, confidence colors (green >0.9, yellow 0.7-0.9, red <0.7), typography scale |
+| lib/core/theme.dart | Bioliminal ThemeData — brand colors, confidence colors (green >0.9, yellow 0.7-0.9, red <0.7), typography scale |
 | lib/core/providers.dart | Global Riverpod providers for PoseEstimationService, AngleCalculator, ChainMapper, FirestoreService, AuthService, LocalStorageService — all initially throw UnimplementedError, overridden per-story |
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md (technical briefing)
+- presearch/bioliminal-product.md (technical briefing)
 
 ## Tasks
-1. Run `flutter create --org com.auralink --platforms ios,android,web auralink` in the project root. Move generated contents to project root if nested.
+1. Run `flutter create --org com.bioliminal --platforms ios,android,web bioliminal` in the project root. Move generated contents to project root if nested.
 2. Replace the generated `pubspec.yaml` with the full dependency manifest:
    ```yaml
    dependencies:
@@ -75,7 +75,7 @@ Files:
    - Placeholder screens are simple `Scaffold` + `Center(child: Text('ScreenName'))` — downstream stories replace them
    - Export the router as a `final goRouter` top-level variable
 7. Create `lib/core/theme.dart`:
-   - `AuraLinkTheme` class with static `ThemeData get lightTheme`
+   - `BioliminalTheme` class with static `ThemeData get lightTheme`
    - Brand primary: deep teal `Color(0xFF00695C)`, secondary: warm coral `Color(0xFFFF6B6B)`
    - Confidence semantic colors as static `Color` constants: `confidenceHigh` = green `Color(0xFF4CAF50)`, `confidenceMedium` = amber `Color(0xFFFFC107)`, `confidenceLow` = red `Color(0xFFF44336)`
    - Confidence thresholds as static constants: `highThreshold = 0.9`, `mediumThreshold = 0.7`
@@ -85,7 +85,7 @@ Files:
    - Import `flutter_riverpod`
    - Placeholder providers that throw `UnimplementedError('Provided by story-XXXX')` for: `poseEstimationServiceProvider`, `angleCalculatorProvider`, `chainMapperProvider`, `firestoreServiceProvider`, `authServiceProvider`, `localStorageServiceProvider`
    - Each provider typed to return the corresponding abstract interface (defined as `abstract class` stubs at top of file or imported from domain)
-9. Update `lib/main.dart` to wrap the app in `ProviderScope`, use `MaterialApp.router` with `AuraLinkTheme.lightTheme` and the `goRouter` config.
+9. Update `lib/main.dart` to wrap the app in `ProviderScope`, use `MaterialApp.router` with `BioliminalTheme.lightTheme` and the `goRouter` config.
 <!-- END_CODER_ONLY -->
 
 ## Contract
@@ -109,7 +109,7 @@ class Report { final List<Finding> findings; final List<String> practitionerPoin
 class Assessment { final String id; final DateTime createdAt; final List<Movement> movements; final List<Compensation> compensations; final Report? report; }
 
 // lib/core/theme.dart
-class AuraLinkTheme {
+class BioliminalTheme {
   static ThemeData get lightTheme;
   static const Color confidenceHigh;   // green — visibility > 0.9
   static const Color confidenceMedium; // amber — visibility 0.7–0.9

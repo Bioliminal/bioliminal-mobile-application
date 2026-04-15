@@ -65,19 +65,19 @@ The `_cloudSyncEnabled` flag is injected via constructor. When the provider is n
 
 ### DisclaimerView privacy section
 
-The existing "Your Privacy" section is updated. A new section "Data & Cloud Sync" is added before the button. Links open via `url_launcher`'s `launchUrl()`. Placeholder URLs point to `https://auralink.app/privacy` and `https://auralink.app/terms`.
+The existing "Your Privacy" section is updated. A new section "Data & Cloud Sync" is added before the button. Links open via `url_launcher`'s `launchUrl()`. Placeholder URLs point to `https://bioliminal.app/privacy` and `https://bioliminal.app/terms`.
 
 ### Import update for story-1301 seam
 
 `providers.dart` currently imports:
 ```dart
-import 'package:auralink/domain/mocks/mock_angle_calculator.dart';
-import 'package:auralink/domain/mocks/mock_chain_mapper.dart';
+import 'package:bioliminal/domain/mocks/mock_angle_calculator.dart';
+import 'package:bioliminal/domain/mocks/mock_chain_mapper.dart';
 ```
 After story-1301 these become:
 ```dart
-import 'package:auralink/domain/services/rule_based_angle_calculator.dart';
-import 'package:auralink/domain/services/rule_based_chain_mapper.dart';
+import 'package:bioliminal/domain/services/rule_based_angle_calculator.dart';
+import 'package:bioliminal/domain/services/rule_based_chain_mapper.dart';
 ```
 And provider constructors change from `MockAngleCalculator()` / `MockChainMapper()` to `RuleBasedAngleCalculator()` / `RuleBasedChainMapper()`.
 
@@ -96,8 +96,8 @@ And provider constructors change from `MockAngleCalculator()` / `MockChainMapper
    - Remove `import 'package:firebase_auth/firebase_auth.dart';` (no longer needed at top level).
    - Keep `import 'package:cloud_firestore/cloud_firestore.dart';` and `import 'package:firebase_storage/firebase_storage.dart';` -- these are still needed for the lazy provider.
    - Update mock imports to story-1301 new paths:
-     - `import 'package:auralink/domain/mocks/mock_angle_calculator.dart';` -> `import 'package:auralink/domain/services/rule_based_angle_calculator.dart';`
-     - `import 'package:auralink/domain/mocks/mock_chain_mapper.dart';` -> `import 'package:auralink/domain/services/rule_based_chain_mapper.dart';`
+     - `import 'package:bioliminal/domain/mocks/mock_angle_calculator.dart';` -> `import 'package:bioliminal/domain/services/rule_based_angle_calculator.dart';`
+     - `import 'package:bioliminal/domain/mocks/mock_chain_mapper.dart';` -> `import 'package:bioliminal/domain/services/rule_based_chain_mapper.dart';`
    - Add `cloudSyncEnabledProvider`:
      ```dart
      final cloudSyncEnabledProvider = StateProvider<bool>((ref) => false);
@@ -170,13 +170,13 @@ And provider constructors change from `MockAngleCalculator()` / `MockChainMapper
      `'stored on external servers. You control whether to save or '`
      `'share your report.'`
    - Add a new `_section` after "Your Privacy" titled "Data & Cloud Sync" with body:
-     `'AuraLink works fully offline. Cloud backup is an optional '`
+     `'Bioliminal works fully offline. Cloud backup is an optional '`
      `'feature that requires creating an account and giving explicit '`
      `'consent. You can enable it later in Settings if you choose.'`
    - After the "Data & Cloud Sync" section, add tappable links for Privacy Policy and Terms of Service:
      ```dart
-     _linkRow('Privacy Policy', Uri.parse('https://auralink.app/privacy'), theme),
-     _linkRow('Terms of Service', Uri.parse('https://auralink.app/terms'), theme),
+     _linkRow('Privacy Policy', Uri.parse('https://bioliminal.app/privacy'), theme),
+     _linkRow('Terms of Service', Uri.parse('https://bioliminal.app/terms'), theme),
      ```
    - Add `_linkRow` helper method:
      ```dart
@@ -251,8 +251,8 @@ class DisclaimerView extends StatefulWidget { ... }
 - Given cloud sync is disabled, when any FirestoreService public method is called, then it throws `StateError('Cloud sync not enabled')`
 - Given the user opens the disclaimer screen, when they read the "Your Privacy" section, then it says "All data stays on your device by default"
 - Given the user is on the disclaimer screen, when they see the "Data & Cloud Sync" section, then it explains cloud backup is optional and requires explicit consent
-- Given the user taps "Privacy Policy" on the disclaimer screen, then `url_launcher` opens `https://auralink.app/privacy` in an external browser
-- Given the user taps "Terms of Service" on the disclaimer screen, then `url_launcher` opens `https://auralink.app/terms` in an external browser
+- Given the user taps "Privacy Policy" on the disclaimer screen, then `url_launcher` opens `https://bioliminal.app/privacy` in an external browser
+- Given the user taps "Terms of Service" on the disclaimer screen, then `url_launcher` opens `https://bioliminal.app/terms` in an external browser
 - Given the user scrolls to the bottom and taps "I Understand", then navigation proceeds to `/screening` as before (no auth call)
 - Given `cloudSyncEnabledProvider` is set to `true`, when `authServiceProvider` is read, then it returns a valid `AuthService` instance
 - Given `cloudSyncEnabledProvider` is set to `true`, when `firestoreServiceProvider` is read, then it returns a `FirestoreService` with `cloudSyncEnabled: true`

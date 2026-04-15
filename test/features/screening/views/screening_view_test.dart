@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/camera/controllers/camera_controller.dart';
-import 'package:auralink/features/camera/widgets/skeleton_overlay.dart';
-import 'package:auralink/features/screening/controllers/screening_controller.dart';
-import 'package:auralink/features/screening/models/movement.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/camera/controllers/camera_controller.dart';
+import 'package:bioliminal/features/camera/widgets/skeleton_overlay.dart';
+import 'package:bioliminal/features/screening/controllers/screening_controller.dart';
+import 'package:bioliminal/features/screening/models/movement.dart';
 
 void main() {
   // Helper: pump a ProviderScope with the screening view's active-movement
   // subtree, overriding providers as needed.
-  Widget buildActiveMovementScreen({required List<Landmark> landmarks}) {
+  Widget buildActiveMovementScreen({required List<PoseLandmark> landmarks}) {
     final activeState = ActiveMovement(
       movementIndex: 0,
       config: screeningMovements.first,
@@ -37,7 +37,13 @@ void main() {
     ) async {
       final landmarks = List.generate(
         33,
-        (i) => Landmark(x: i / 33, y: i / 33, z: 0, visibility: 0.9),
+        (i) => PoseLandmark(
+          x: i / 33,
+          y: i / 33,
+          z: 0,
+          visibility: 0.9,
+          presence: 0.9,
+        ),
       );
 
       await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks));
@@ -61,7 +67,13 @@ void main() {
     testWidgets('UI overlays render on top of skeleton', (tester) async {
       final landmarks = List.generate(
         33,
-        (i) => Landmark(x: i / 33, y: i / 33, z: 0, visibility: 0.9),
+        (i) => PoseLandmark(
+          x: i / 33,
+          y: i / 33,
+          z: 0,
+          visibility: 0.9,
+          presence: 0.9,
+        ),
       );
 
       await tester.pumpWidget(buildActiveMovementScreen(landmarks: landmarks));
@@ -77,11 +89,23 @@ void main() {
     ) async {
       final landmarks1 = List.generate(
         33,
-        (i) => const Landmark(x: 0.1, y: 0.1, z: 0, visibility: 0.9),
+        (i) => const PoseLandmark(
+          x: 0.1,
+          y: 0.1,
+          z: 0,
+          visibility: 0.9,
+          presence: 0.9,
+        ),
       );
       final landmarks2 = List.generate(
         33,
-        (i) => const Landmark(x: 0.5, y: 0.5, z: 0, visibility: 0.8),
+        (i) => const PoseLandmark(
+          x: 0.5,
+          y: 0.5,
+          z: 0,
+          visibility: 0.8,
+          presence: 0.8,
+        ),
       );
 
       // Pump with first set.
@@ -178,5 +202,5 @@ class _FakeScreeningController extends ScreeningController {
   void continueToNextMovement() {}
 
   @override
-  void onLandmarkFrame(List<Landmark> landmarks) {}
+  void onLandmarkFrame(List<PoseLandmark> landmarks) {}
 }

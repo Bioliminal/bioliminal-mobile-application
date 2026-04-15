@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:auralink/core/providers.dart';
-import 'package:auralink/core/services/local_storage_service.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/history/views/history_view.dart';
-import 'package:auralink/features/history/widgets/assessment_timeline.dart';
+import 'package:bioliminal/core/providers.dart';
+import 'package:bioliminal/core/services/local_storage_service.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/history/views/history_view.dart';
+import 'package:bioliminal/features/history/widgets/assessment_timeline.dart';
 
 const _testCitation = Citation(
   finding: 'test',
@@ -37,10 +37,10 @@ Widget _buildTestApp({required List<Assessment> assessments}) {
         builder: (context, state) => const HistoryView(),
       ),
       GoRoute(
-        path: '/screening',
+        path: '/hardware-setup',
         builder: (context, state) {
-          navigatedRoutes.add('/screening');
-          return const Scaffold(body: Text('Screening'));
+          navigatedRoutes.add('/hardware-setup');
+          return const Scaffold(body: Text('Hardware Setup'));
         },
       ),
       GoRoute(
@@ -156,14 +156,14 @@ void main() {
       },
     );
 
-    testWidgets('empty state button navigates to /screening', (tester) async {
+    testWidgets('empty state button navigates to /hardware-setup', (tester) async {
       await tester.pumpWidget(_buildTestApp(assessments: []));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Start Screening'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Screening'), findsOneWidget);
+      expect(find.text('Hardware Setup'), findsOneWidget);
     });
   });
 

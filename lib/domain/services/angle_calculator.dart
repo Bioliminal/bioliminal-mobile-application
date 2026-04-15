@@ -5,5 +5,5 @@ import '../models.dart';
 ///
 /// 3D upgrade path: same interface, swap implementation.
 abstract class AngleCalculator {
-  List<JointAngle> calculateAngles(List<Landmark> landmarks);
+  List<JointAngle> calculateAngles(List<PoseLandmark> landmarks);
 }

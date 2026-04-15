@@ -48,7 +48,7 @@ reports/{uid}/{assessmentId}.pdf     — uploaded PDF files
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md
+- presearch/bioliminal-product.md
 - lib/domain/models.dart (from story-1293 — Assessment, Report, Movement, Compensation, Finding, Citation classes + all enums)
 - lib/features/report/services/pdf_generator.dart (from story-1297 — generates PDF bytes from a Report)
 

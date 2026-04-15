@@ -43,7 +43,7 @@ The `AppCameraController` subscribes to the pose estimation stream and exposes `
 
 <!-- CODER_ONLY -->
 ## Read-only context
-- presearch/auralink-product.md
+- presearch/bioliminal-product.md
 - lib/domain/models.dart (from story-1293 — specifically `Landmark` with x, y, z, visibility fields)
 - lib/core/theme.dart (from story-1293 — `confidenceHigh`, `confidenceMedium`, `confidenceLow` color definitions)
 - lib/core/providers.dart (from story-1293 — `poseEstimationServiceProvider` registered here)

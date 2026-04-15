@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class AuraLinkTheme {
-  AuraLinkTheme._();
+class BioliminalTheme {
+  BioliminalTheme._();
 
-  static const Color _primary = Color(0xFF0D47A1); // Deep Indigo
-  static const Color _secondary = Color(0xFF64B5F6); // Light Blue
+  static const Color primary = Color(0xFF0D47A1); // Deep Indigo
+  static const Color secondary = Color(0xFF64B5F6); // Light Blue
 
   static const Color screenBackground = Color(0xFF0F172A); // Slate 900
   static const Color surface = Color(0xFF1E293B); // Slate 800
@@ -36,9 +36,9 @@ class AuraLinkTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: _primary,
-        primary: _primary,
-        secondary: _secondary,
+        seedColor: primary,
+        primary: primary,
+        secondary: secondary,
         surface: surface,
         onSurface: Colors.white,
         brightness: Brightness.dark,

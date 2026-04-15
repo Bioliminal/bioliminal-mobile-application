@@ -3,82 +3,83 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
-import '../controllers/camera_controller.dart';
+import '../../../core/services/hardware_controller.dart';
+import '../../../core/providers.dart';
 
 // ---------------------------------------------------------------------------
 // BlazePose topology — 33-landmark connections
 // ---------------------------------------------------------------------------
 
-/// Standard BlazePose 33-point landmark connections.
-/// Each tuple is (startIndex, endIndex).
 const List<(int, int)> blazePoseConnections = [
   // Face
-  (0, 1), // nose -> left eye inner
-  (1, 2), // left eye inner -> left eye
-  (2, 3), // left eye -> left eye outer
-  (3, 7), // left eye outer -> left ear
-  (0, 4), // nose -> right eye inner
-  (4, 5), // right eye inner -> right eye
-  (5, 6), // right eye -> right eye outer
-  (6, 8), // right eye outer -> right ear
-  (9, 10), // mouth left -> mouth right
+  (0, 1), (1, 2), (2, 3), (3, 7),
+  (0, 4), (4, 5), (5, 6), (6, 8),
+  (9, 10),
   // Torso
-  (11, 12), // left shoulder -> right shoulder
-  (11, 23), // left shoulder -> left hip
-  (12, 24), // right shoulder -> right hip
-  (23, 24), // left hip -> right hip
+  (11, 12), (11, 23), (12, 24), (23, 24),
   // Left arm
-  (11, 13), // left shoulder -> left elbow
-  (13, 15), // left elbow -> left wrist
-  (15, 17), // left wrist -> left pinky
-  (15, 19), // left wrist -> left index
-  (15, 21), // left wrist -> left thumb
+  (11, 13), (13, 15), (15, 17), (15, 19), (15, 21),
   // Right arm
-  (12, 14), // right shoulder -> right elbow
-  (14, 16), // right elbow -> right wrist
-  (16, 18), // right wrist -> right pinky
-  (16, 20), // right wrist -> right index
-  (16, 22), // right wrist -> right thumb
+  (12, 14), (14, 16), (16, 18), (16, 20), (16, 22),
   // Left leg
-  (23, 25), // left hip -> left knee
-  (25, 27), // left knee -> left ankle
-  (27, 29), // left ankle -> left heel
-  (27, 31), // left ankle -> left foot index
-  (29, 31), // left heel -> left foot index
+  (23, 25), (25, 27), (27, 29), (27, 31), (29, 31),
   // Right leg
-  (24, 26), // right hip -> right knee
-  (26, 28), // right knee -> right ankle
-  (28, 30), // right ankle -> right heel
-  (28, 32), // right ankle -> right foot index
-  (30, 32), // right heel -> right foot index
+  (24, 26), (26, 28), (28, 30), (28, 32), (30, 32),
 ];
+
+// ---------------------------------------------------------------------------
+// Anatomical Mapping: Connections -> sEMG Channels
+// ---------------------------------------------------------------------------
+
+/// Maps a connection index (in blazePoseConnections) to an EMG channel index.
+int? _mapConnectionToEMG(int connectionIdx) {
+  // connectionIdx is the index in blazePoseConnections list.
+  switch (connectionIdx) {
+    case 24: // (23, 25) Left Hip -> Left Knee (Lower Trunk/Upper Leg)
+      return 4; // Left VM
+    case 25: // (25, 27) Left Knee -> Left Ankle
+      return 1; // Left Soleus (Proxy for calf group)
+    case 29: // (24, 26) Right Hip -> Right Knee
+      return 5; // Right VM
+    case 30: // (26, 28) Right Knee -> Right Ankle
+      return 3; // Right Soleus
+    case 10: // (11, 23) Left Shoulder -> Left Hip
+      return 8; // Left Erector Spinae
+    case 11: // (12, 24) Right Shoulder -> Right Hip
+      return 9; // Right Erector Spinae
+    default:
+      return null;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Coordinate transform
 // ---------------------------------------------------------------------------
 
-/// Convert a normalized [0,1] landmark to canvas pixel coordinates.
-/// Mirrors horizontally when [mirror] is true (front camera).
-Offset transformLandmark(Landmark lm, Size canvasSize, bool mirror) {
+Offset transformLandmark(PoseLandmark lm, Size canvasSize, bool mirror) {
   final x = mirror ? (1.0 - lm.x) * canvasSize.width : lm.x * canvasSize.width;
   final y = lm.y * canvasSize.height;
   return Offset(x, y);
 }
 
 // ---------------------------------------------------------------------------
-// SkeletonPainter — CustomPainter for landmarks + connections
+// SkeletonPainter
 // ---------------------------------------------------------------------------
 
 class SkeletonPainter extends CustomPainter {
   const SkeletonPainter({
     required this.landmarks,
     required this.previewSize,
+    this.emgData,
     this.isFrontCamera = false,
+    this.isPremium = false,
   });
 
-  final List<Landmark> landmarks;
+  final List<PoseLandmark> landmarks;
   final Size previewSize;
+  final EMGData? emgData;
   final bool isFrontCamera;
+  final bool isPremium;
 
   static const double _landmarkRadius = 6.0;
   static const double _segmentStrokeWidth = 3.0;
@@ -87,58 +88,85 @@ class SkeletonPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (landmarks.isEmpty) return;
 
-    // Draw segments first (behind landmarks).
-    for (final (startIdx, endIdx) in blazePoseConnections) {
-      if (startIdx >= landmarks.length || endIdx >= landmarks.length) continue;
+    // Draw segments first
+    for (var i = 0; i < blazePoseConnections.length; i++) {
+      final connection = blazePoseConnections[i];
+      if (connection.$1 >= landmarks.length ||
+          connection.$2 >= landmarks.length) {
+        continue;
+      }
 
-      final startLm = landmarks[startIdx];
-      final endLm = landmarks[endIdx];
+      final startLm = landmarks[connection.$1];
+      final endLm = landmarks[connection.$2];
       final startPt = transformLandmark(startLm, size, isFrontCamera);
       final endPt = transformLandmark(endLm, size, isFrontCamera);
 
-      // Segment color = lower confidence of its two endpoints.
+      // Default color based on landmark visibility
       final minVisibility = startLm.visibility < endLm.visibility
           ? startLm.visibility
           : endLm.visibility;
-      final segmentColor = AuraLinkTheme.confidenceColor(minVisibility);
+      var segmentColor = BioliminalTheme.confidenceColor(minVisibility);
+      var strokeWidth = _segmentStrokeWidth;
+
+      // Premium Anatomical Heatmapping
+      if (isPremium && emgData != null) {
+        final emgIdx = _mapConnectionToEMG(i);
+        if (emgIdx != null) {
+          final intensity = emgData!.channels[emgIdx];
+          if (intensity > 0.1) {
+            // Apply heatglow
+            segmentColor = Color.lerp(
+              segmentColor,
+              const Color(0x00000000), // Bioliminal Aqua #00D4AA
+              intensity,
+            )!;
+            strokeWidth += (intensity * 4.0); // Thicker glow for active muscles
+
+            // Draw an outer glow
+            final glowPaint = Paint()
+              ..color = const Color(
+                0xFF00D4AA,
+              ).withValues(alpha: intensity * 0.3)
+              ..strokeWidth = strokeWidth + 6.0
+              ..style = PaintingStyle.stroke
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0);
+            canvas.drawLine(startPt, endPt, glowPaint);
+          }
+        }
+      }
 
       final paint = Paint()
         ..color = segmentColor
-        ..strokeWidth = _segmentStrokeWidth
-        ..style = PaintingStyle.stroke;
+        ..strokeWidth = strokeWidth
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
 
       canvas.drawLine(startPt, endPt, paint);
     }
 
-    // Draw landmark circles on top.
+    // Draw landmark circles on top
     for (final lm in landmarks) {
       final pt = transformLandmark(lm, size, isFrontCamera);
-      final color = AuraLinkTheme.confidenceColor(lm.visibility);
+      final color = BioliminalTheme.confidenceColor(lm.visibility);
 
       final fill = Paint()
         ..color = color
         ..style = PaintingStyle.fill;
 
-      final outline = Paint()
-        ..color = color.withValues(alpha: 0.4)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0;
-
       canvas.drawCircle(pt, _landmarkRadius, fill);
-      canvas.drawCircle(pt, _landmarkRadius + 2, outline);
     }
   }
 
   @override
   bool shouldRepaint(covariant SkeletonPainter oldDelegate) {
     return !identical(oldDelegate.landmarks, landmarks) ||
-        oldDelegate.previewSize != previewSize ||
-        oldDelegate.isFrontCamera != isFrontCamera;
+        oldDelegate.emgData != emgData ||
+        oldDelegate.isPremium != isPremium;
   }
 }
 
 // ---------------------------------------------------------------------------
-// SkeletonOverlay — ConsumerWidget wrapping the CustomPainter
+// SkeletonOverlay
 // ---------------------------------------------------------------------------
 
 class SkeletonOverlay extends ConsumerWidget {
@@ -149,6 +177,8 @@ class SkeletonOverlay extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final landmarks = ref.watch(currentLandmarksProvider);
+    final isPremium = ref.watch(isPremiumProvider);
+    final emgData = ref.watch(latestEMGDataProvider);
 
     if (landmarks.isEmpty) return const SizedBox.shrink();
 
@@ -160,7 +190,9 @@ class SkeletonOverlay extends ConsumerWidget {
           painter: SkeletonPainter(
             landmarks: landmarks,
             previewSize: size,
+            emgData: emgData,
             isFrontCamera: isFrontCamera,
+            isPremium: isPremium,
           ),
         );
       },

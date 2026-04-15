@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wearable Hardware Configurations — sEMG + TSA + Vibrotactile</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #141420;
+    --surface2: #1c1c2e;
+    --border: #2a2a40;
+    --text: #e0e0e8;
+    --text-dim: #8888a0;
+    --accent-emg: #00d4aa;
+    --accent-tsa: #ff6b35;
+    --accent-vibe: #7b68ee;
+    --accent-combo: #ffd700;
+    --danger: #ff4757;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; padding: 2rem; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, var(--accent-emg), var(--accent-vibe)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  h3 { font-size: 1.05rem; margin: 1.5rem 0 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+  .subtitle { color: var(--text-dim); margin-bottom: 2rem; font-size: 0.9rem; }
+  .tab-nav { display: flex; gap: 0.25rem; margin-bottom: 0; flex-wrap: wrap; }
+  .tab-btn { padding: 0.6rem 1rem; background: var(--surface); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; color: var(--text-dim); cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; }
+  .tab-btn:hover { background: var(--surface2); color: var(--text); }
+  .tab-btn.active { background: var(--surface2); color: var(--accent-emg); border-color: var(--accent-emg); border-bottom: 1px solid var(--surface2); }
+  .tab-content { display: none; background: var(--surface2); border: 1px solid var(--border); border-radius: 0 8px 8px 8px; padding: 2rem; }
+  .tab-content.active { display: block; }
+  .tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1rem 0; }
+  .tier-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; position: relative; overflow: hidden; }
+  .tier-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .tier-card.budget::before { background: var(--accent-emg); }
+  .tier-card.mid::before { background: var(--accent-tsa); }
+  .tier-card.stretch::before { background: var(--accent-vibe); }
+  .tier-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 0.5rem; }
+  .tier-card.budget .tier-label { color: var(--accent-emg); }
+  .tier-card.mid .tier-label { color: var(--accent-tsa); }
+  .tier-card.stretch .tier-label { color: var(--accent-vibe); }
+  .tier-card h4 { font-size: 1rem; margin-bottom: 0.5rem; }
+  .tier-card .price { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .tier-card ul { font-size: 0.8rem; color: var(--text-dim); padding-left: 1rem; }
+  .tier-card li { margin-bottom: 0.25rem; }
+  .tier-card .specs { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+  .config-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; transition: border-color 0.2s; }
+  .config-card:hover { border-color: var(--accent-emg); }
+  .config-card h4 { font-size: 0.95rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+  .badge { font-size: 0.65rem; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge-emg { background: rgba(0,212,170,0.15); color: var(--accent-emg); }
+  .badge-tsa { background: rgba(255,107,53,0.15); color: var(--accent-tsa); }
+  .badge-vibe { background: rgba(123,104,238,0.15); color: var(--accent-vibe); }
+  .badge-all { background: rgba(255,215,0,0.15); color: var(--accent-combo); }
+  .diagram-container { display: flex; justify-content: center; align-items: center; margin: 1rem 0; min-height: 200px; }
+  .diagram-container svg { max-width: 100%; }
+  .config-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.75rem; }
+  .config-desc strong { color: var(--text); }
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 1rem 0; padding: 0.75rem 1rem; background: var(--surface); border-radius: 8px; font-size: 0.8rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .form-factor-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+  .ff-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; }
+  .ff-card h4 { margin-bottom: 0.75rem; font-size: 0.95rem; }
+  .ff-card .ff-desc { font-size: 0.8rem; color: var(--text-dim); margin-top: 0.75rem; text-align: left; }
+  .matrix-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin: 1rem 0; }
+  .matrix-table th, .matrix-table td { padding: 0.75rem; border: 1px solid var(--border); text-align: left; }
+  .matrix-table th { background: var(--surface); color: var(--text-dim); font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; }
+  .matrix-table td { background: var(--surface2); }
+  .check { color: var(--accent-emg); font-weight: bold; }
+  .partial { color: var(--accent-tsa); }
+  .nope { color: var(--danger); opacity: 0.5; }
+  .bom-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin: 0.75rem 0; }
+  .bom-table th, .bom-table td { padding: 0.5rem 0.75rem; border: 1px solid var(--border); }
+  .bom-table th { background: var(--surface); color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; }
+  .bom-table .total { font-weight: 700; color: var(--accent-combo); }
+  .rationale-box { background: var(--surface); border-left: 3px solid var(--accent-tsa); padding: 1rem 1.25rem; margin: 1rem 0; border-radius: 0 8px 8px 0; font-size: 0.85rem; }
+  .rationale-box strong { color: var(--text); }
+  .question-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem 1.25rem; margin: 0.75rem 0; }
+  .question-card .q-num { color: var(--accent-combo); font-weight: 700; font-size: 0.8rem; margin-bottom: 0.25rem; }
+  .question-card .q-text { font-size: 0.9rem; color: var(--text); margin-bottom: 0.25rem; }
+  .question-card .q-context { font-size: 0.8rem; color: var(--text-dim); }
+  @media (max-width: 768px) { .tier-grid, .form-factor-grid { grid-template-columns: 1fr; } .config-grid { grid-template-columns: 1fr; } body { padding: 1rem; } }
+</style>
+</head>
+<body>
+
+<h1>Wearable Hardware Configurations</h1>
+<p class="subtitle">sEMG sensing + TSA squeeze + Vibrotactile cueing — compression shirt / torso vest form factor — budget-focused component specs, form factors, and assembly concepts for hardware specialist handover</p>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-emg)"></div> sEMG Electrode</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-tsa)"></div> TSA Squeeze Actuator</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-vibe)"></div> Vibrotactile Motor</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--accent-combo)"></div> MCU / Electronics Hub</div>
+</div>
+
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="showTab('rationale')">Design Rationale</button>
+  <button class="tab-btn" onclick="showTab('tiers')">Component Tiers</button>
+  <button class="tab-btn" onclick="showTab('configs')">Component Combos</button>
+  <button class="tab-btn" onclick="showTab('form')">Form Factors</button>
+  <button class="tab-btn" onclick="showTab('scope')">Wearability Scope</button>
+  <button class="tab-btn" onclick="showTab('bom')">BOM Estimates</button>
+  <button class="tab-btn" onclick="showTab('questions')">Specialist Questions</button>
+  <button class="tab-btn" onclick="showTab('sourcing')">Sourcing & Ordering</button>
+</nav>
+
+<!-- ==================== TAB 0: DESIGN RATIONALE ==================== -->
+<div id="rationale" class="tab-content active">
+  <h2>Why Hybrid Cueing: The Six-Dimension Analysis</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">A practitioner's hand does six things. No single actuator covers all six. This is why we run two types.</p>
+
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Cue Dimension</th><th>What It Encodes</th><th>Vibration</th><th>Pressure (TSA)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Location</strong></td><td>"This muscle, not that one"</td><td class="check">Good (60.7% localization — Deshpande 2021)</td><td class="partial">Slightly worse (54.6%)</td></tr>
+      <tr><td><strong>Pressure magnitude</strong></td><td>Awareness touch → "push into my hand"</td><td class="nope">Binary on/off feel</td><td class="check">Graduated 0.5–20N</td></tr>
+      <tr><td><strong>Pressure direction</strong></td><td>Most important — "press ribs down and in"</td><td class="nope">Radiates omnidirectionally</td><td class="partial">Partial (skin stretch does this better)</td></tr>
+      <tr><td><strong>Timing</strong></td><td>Before the error phase (anticipatory)</td><td class="check">Fast onset (5–100ms)</td><td class="partial">Slower (50–400ms for TSA)</td></tr>
+      <tr><td><strong>Duration</strong></td><td>Brief (attention) vs sustained (full rep)</td><td class="nope">Habituates in 5–15s (Pacinian)</td><td class="check">Sustained signal (Merkel/Ruffini)</td></tr>
+      <tr><td><strong>Release pattern</strong></td><td>Gradual = "maintain" / Abrupt = "test yourself"</td><td class="nope">Abrupt only</td><td class="check">Both gradual and abrupt</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>Bottom line:</strong> Vibration covers 2/6 dimensions well (location, timing). Pressure covers 4/6 (magnitude, duration, release, partial direction). Neither alone replicates a trainer's hand. The MVP tests both to find what matters most in practice.
+  </div>
+
+  <h2>Three-State Cueing Gradient</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">From practitioner behavior — not binary on/off, but a progression</p>
+
+  <div class="config-grid">
+    <div class="config-card" style="border-left: 3px solid var(--danger);">
+      <h4>1. Correction</h4>
+      <div class="config-desc">Strong signal — "you're off, shift activation here." <strong>Actuator:</strong> Vibration burst (fast, salient attention grab) + TSA squeeze onset (sustained directional pressure).</div>
+    </div>
+    <div class="config-card" style="border-left: 3px solid var(--accent-tsa);">
+      <h4>2. Reinforcement</h4>
+      <div class="config-desc">Light sustained signal — "stay here, you've got it." <strong>Actuator:</strong> TSA at low squeeze (Merkel/Ruffini stay active). Vibration would habituate here — useless for sustained reinforcement.</div>
+    </div>
+    <div class="config-card" style="border-left: 3px solid var(--accent-emg);">
+      <h4>3. Fade</h4>
+      <div class="config-desc">Signal off — "pattern ingrained, test independence." <strong>Actuator:</strong> Gradual TSA release. Abrupt release = "did you maintain without the cue?" This is the motor learning transfer test.</div>
+    </div>
+  </div>
+
+  <h2>Skin Spatial Resolution — The Binding Constraint</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">The skin can't resolve stimuli as finely as muscles are compartmentalized. Design to the skin's limits, not the muscle's. <strong>The torso has the worst spatial resolution of our target regions (40–60mm TPD)</strong> — this directly limits how many independent cue zones we can place per muscle group.</p>
+
+  <table class="matrix-table">
+    <thead><tr><th>Body Region</th><th>Two-Point Discrimination</th><th>Distinguishable Cue Zones</th><th>Implication for Vest</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Chest (pecs)</strong></td><td>40–50mm</td><td>2–3 zones per side</td><td>Upper vs lower pec distinction achievable. Sternal vs clavicular head — borderline</td></tr>
+      <tr><td><strong>Upper back (traps/rhomboids)</strong></td><td>50–60mm</td><td>2 zones per side</td><td>Upper trap vs mid trap achievable. Finer divisions unreliable</td></tr>
+      <tr><td><strong>Lats</strong></td><td>40–55mm</td><td>2–3 zones per side</td><td>Upper lat vs lower lat. Large muscle belly — EMG placement more forgiving</td></tr>
+      <tr><td><strong>Delts (shoulder cap)</strong></td><td>35–45mm</td><td>2–3 zones</td><td>Anterior vs posterior delt achievable. Lateral delt — 1 zone</td></tr>
+      <tr><td><strong>Core (obliques/rectus)</strong></td><td>40–55mm</td><td>2 zones per side</td><td>Upper vs lower abs. Oblique vs rectus — achievable with spacing</td></tr>
+      <tr><td>Upper arm (for reference)</td><td>~45mm</td><td>2 zones</td><td>Biceps vs brachioradialis — achievable. Arm channels optional on vest</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>Torso motor unit physiology:</strong> For torso muscles, between-muscle distinction is the primary target — pec vs anterior delt, lat vs lower trap, upper trap vs levator scapulae. These are large muscles with distinct bellies spaced well apart, making them well-suited for the torso's coarser spatial resolution. Within-muscle regional cueing (e.g., upper vs lower pec head) is borderline at 40-50mm TPD — achievable for larger muscles like pecs and lats, unreliable for compact muscles like rhomboids. <strong>The vest's advantage:</strong> torso has many more muscle groups to distinguish between, even if each group only supports 2–3 cue zones.
+  </div>
+
+  <div class="rationale-box">
+    <strong>Deshpande torso-specific finding:</strong> Vibrotactile localization was MORE accurate (60.7%) than force localization (54.6%) <strong>specifically studied on the torso</strong> (Deshpande 2021). This is directly relevant to our vest design — vibration is the better modality for spatial "where" cueing on the torso, while pressure (TSA) is better for sustained "how much / how long" cueing. The hybrid approach is especially justified on the torso where spatial discrimination is worst: vibration says WHERE to activate, pressure says HOW MUCH to engage and FOR HOW LONG to hold. <em>*[Accessed 2026-04-07]*</em>
+  </div>
+
+  <div class="rationale-box">
+    <strong>Dual-modality architecture:</strong> Each cue zone on the vest supports <strong>both</strong> a vibrotactile motor and a TSA contact pad, wired in parallel. The app selects which modality fires per cue event — vibration burst for spatial attention, TSA squeeze for sustained reinforcement, or both for correction. This lets us A/B test modality effectiveness per muscle group without hardware changes. For MVP, both are wired at 2–4 key zones; the user/app toggles which is active. Post-MVP, standardized pod connectors (4-pin: power, GND, SDA, SCL) enable physically swappable vibe-only, squeeze-only, or hybrid pods.
+  </div>
+</div>
+
+<!-- ==================== TAB 1: TIERS ==================== -->
+<div id="tiers" class="tab-content">
+  <h2>sEMG Sensor Options</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Emphasis on budget options. The specialist will source specific products — we provide the tech spec.</p>
+
+  <div class="tier-grid">
+    <div class="tier-card budget">
+      <div class="tier-label">Budget A — Bare Minimum</div>
+      <h4>DIY Instrumentation Amp</h4>
+      <div class="price">~$3–5 / channel</div>
+      <ul>
+        <li>INA128 or AD620 instrumentation amp IC (~$2–4)</li>
+        <li>Passive RC bandpass filter (20–450Hz)</li>
+        <li>Breadboard/perfboard build</li>
+        <li>Disposable Ag/AgCl snap electrodes ($0.20/ea)</li>
+        <li>Analog out to ESP32 ADC</li>
+      </ul>
+      <div class="specs">
+        <strong>SNR:</strong> Noisy — adequate for on/off only &bull; <strong>CMRR:</strong> ~80dB<br>
+        <strong>Build time:</strong> 2–4 hours &bull; <strong>Best for:</strong> "Does this concept work at all?" testing
+      </div>
+    </div>
+
+    <div class="tier-card budget">
+      <div class="tier-label">Budget B — Best Value MVP</div>
+      <h4>BioAmp EXG Pill</h4>
+      <div class="price">~$8–12 / channel</div>
+      <ul>
+        <li>Upside Down Labs — Crowd Supply / Mouser</li>
+        <li>Instrumentation amp, raw biopotential output</li>
+        <li>Open-source hardware (CERN-OHL-S)</li>
+        <li>25.4 x 10mm, &lt;2g — tiny enough for any wearable</li>
+        <li>Bandwidth 0.5–125Hz default (adjustable to ~500Hz)</li>
+      </ul>
+      <div class="specs">
+        <strong>SNR:</strong> ~5μV noise floor &bull; <strong>Output:</strong> Analog to any ADC<br>
+        <strong>Best for:</strong> Activation level, L/R balance, "wrong muscle first" detection. Our recommended MVP pick
+      </div>
+    </div>
+
+    <div class="tier-card budget">
+      <div class="tier-label">Budget C — Integrated</div>
+      <h4>MyoWare 2.0</h4>
+      <div class="price">~$38–42 / channel</div>
+      <ul>
+        <li>SparkFun SEN-21265 — widely stocked</li>
+        <li>Snap-on electrode board — no separate leads needed</li>
+        <li>Envelope + raw EMG mode switch</li>
+        <li>Optional wireless shield (SEN-21460, ESP32-based BLE)</li>
+        <li>52 x 20mm, ~5g with electrodes</li>
+      </ul>
+      <div class="specs">
+        <strong>Bandwidth:</strong> 25–450Hz &bull; <strong>Modes:</strong> Rectified envelope or raw<br>
+        <strong>Best for:</strong> Fastest path to demo — plug-and-play, extensive Arduino tutorials. More expensive per channel than BioAmp
+      </div>
+    </div>
+
+    <div class="tier-card mid">
+      <div class="tier-label">Mid — Frequency-Domain Capable</div>
+      <h4>ADS1292R Breakout</h4>
+      <div class="price">~$40–50 / 2 channels</div>
+      <ul>
+        <li>Protocentral PC-4126 — Mouser / direct</li>
+        <li>24-bit delta-sigma ADC, 2 differential channels</li>
+        <li>125–8,000 SPS per channel — full spectral analysis</li>
+        <li>SPI to ESP32/nRF52, 40 x 28mm, ~8g</li>
+        <li>Enables median frequency shift tracking (fatigue/RIR)</li>
+      </ul>
+      <div class="specs">
+        <strong>CMRR:</strong> >100dB &bull; <strong>Why upgrade:</strong> Unlocks the RIR-confidence feature<br>
+        <strong>Trade-off:</strong> More complex integration (SPI vs analog), but half the price of OpenBCI for 2ch
+      </div>
+    </div>
+  </div>
+
+  <h2>TSA Squeeze Actuator Options</h2>
+  <div class="tier-grid">
+    <div class="tier-card budget">
+      <div class="tier-label">Budget A — Weekend Hack</div>
+      <h4>Micro Servo + Fishing Line</h4>
+      <div class="price">~$5–8 / unit</div>
+      <ul>
+        <li>SG90 micro servo (~$2) — position control built-in</li>
+        <li>Monofilament fishing line, 30lb test ($0.25/m)</li>
+        <li>No encoder needed — servo has internal feedback</li>
+        <li>Wrap line around servo horn, route through band</li>
+        <li>PWM from any Arduino pin</li>
+      </ul>
+      <div class="specs">
+        <strong>Force:</strong> 1–3N (weak but perceptible) &bull; <strong>Latency:</strong> 100–300ms<br>
+        <strong>Dims:</strong> 23x12x22mm, 9g &bull; <strong>Caveat:</strong> Audible whine, low force<br>
+        <strong>Best for:</strong> "Can I feel anything at all?" test in an afternoon
+      </div>
+    </div>
+
+    <div class="tier-card budget">
+      <div class="tier-label">Budget B — Proper POC</div>
+      <h4>GA12-N20 Gearmotor + Spectra Line</h4>
+      <div class="price">~$12–18 / unit</div>
+      <ul>
+        <li>GA12-N20, 100RPM/6V, 0.3 kg·cm stall (~$3, AliExpress)</li>
+        <li>80lb Spectra braided line, 0.5mm ($0.50/m)</li>
+        <li>DRV8833 or L9110S H-bridge ($1–2)</li>
+        <li>Current sensing via 0.1Ω shunt resistor as force proxy</li>
+        <li>PTFE tube (1mm ID) string guides sewn into band</li>
+      </ul>
+      <div class="specs">
+        <strong>Motor:</strong> 10x12x24mm, ~10g &bull; <strong>Force:</strong> 5–15N (clearly perceptible)<br>
+        <strong>Latency:</strong> 200–400ms &bull; <strong>Fatigue:</strong> ~50 cycles (Spectra), swap line as needed<br>
+        <strong>Fail-safe:</strong> Motor freewheels on power loss → string untwists passively
+      </div>
+    </div>
+
+    <div class="tier-card budget">
+      <div class="tier-label">Budget C — Reliable Demo</div>
+      <h4>N20 + Dyneema + Hall Encoder</h4>
+      <div class="price">~$20–28 / unit</div>
+      <ul>
+        <li>N20 gearmotor with rear shaft ($5) + A3144 hall sensor ($0.50) + small magnet ($0.25)</li>
+        <li>Dyneema braided 0.5mm, 100lb test ($1/m) — >1000 cycles</li>
+        <li>DRV8833 driver ($2) + basic PID in firmware</li>
+        <li>Elastic return band for passive untwist</li>
+        <li>3D-printed motor housing snap-fit to neoprene band</li>
+      </ul>
+      <div class="specs">
+        <strong>Force:</strong> 5–15N with position feedback &bull; <strong>Latency:</strong> 150–250ms<br>
+        <strong>Key upgrade over Budget B:</strong> Dyneema doesn't fatigue, hall sensor enables repeatable squeeze levels<br>
+        <strong>Best for:</strong> A/B testing cue intensity with EMG verification
+      </div>
+    </div>
+
+    <div class="tier-card mid">
+      <div class="tier-label">Mid — Controlled Squeeze</div>
+      <h4>Pololu 25D + Encoder + Dyneema</h4>
+      <div class="price">~$45–55 / unit</div>
+      <ul>
+        <li>Pololu 25D 47:1 metal gearmotor (#4861, ~$20)</li>
+        <li>Pololu magnetic encoder pair (#4761, ~$9) — 2256 CPR</li>
+        <li>Dyneema SK78 0.8mm braided, 200lb rated</li>
+        <li>TB9051FTG driver with current sensing ($8)</li>
+        <li>Series-elastic spring element for safety</li>
+      </ul>
+      <div class="specs">
+        <strong>Force:</strong> 10–50N controllable &bull; <strong>Latency:</strong> 50–150ms<br>
+        <strong>Module:</strong> ~30x30x55mm, ~100g &bull; <strong>Fail-safe:</strong> Polyfuse + watchdog auto-untwist<br>
+        <strong>When to upgrade:</strong> When demo-day squeeze needs to feel "professional"
+      </div>
+    </div>
+  </div>
+
+  <h2>Vibrotactile Actuator Options</h2>
+  <div class="tier-grid">
+    <div class="tier-card budget">
+      <div class="tier-label">Budget A — Simplest Possible</div>
+      <h4>Flat Coin ERM (Pager Motor)</h4>
+      <div class="price">~$0.50–1.50 / unit</div>
+      <ul>
+        <li>Generic 8-10mm flat coin vibration motor (AliExpress bulk)</li>
+        <li>Drive: GPIO + 2N7002 MOSFET ($0.10)</li>
+        <li>On/off only — no intensity control</li>
+        <li>Self-adhesive backing, stick anywhere</li>
+        <li>20+ per MCU via direct GPIO</li>
+      </ul>
+      <div class="specs">
+        <strong>Dims:</strong> 8–10mm dia x 2.7–3.4mm &bull; <strong>Weight:</strong> 0.9–1.2g<br>
+        <strong>Response:</strong> 50–100ms spin-up &bull; <strong>Current:</strong> 60–85mA<br>
+        <strong>Best for:</strong> Cheapest possible "does vibration cueing do anything?" test
+      </div>
+    </div>
+
+    <div class="tier-card budget">
+      <div class="tier-label">Budget B — Named Parts</div>
+      <h4>Precision Microdrives 310-103</h4>
+      <div class="price">~$2–3 / unit</div>
+      <ul>
+        <li>10mm dia x 3.4mm — industry standard coin ERM</li>
+        <li>Alt: Vybronics VG0832014D (8mm, $1.50)</li>
+        <li>Drive via PWM for variable intensity</li>
+        <li>Frequency and amplitude coupled (can't separate)</li>
+        <li>Well-documented datasheets, reliable sourcing</li>
+      </ul>
+      <div class="specs">
+        <strong>Vibration:</strong> ~200Hz, 0.8G amplitude &bull; <strong>Current:</strong> 75mA<br>
+        <strong>Spacing:</strong> 30mm+ on upper arm, 20mm+ on forearm<br>
+        <strong>Best for:</strong> Reliable MVP with known specs. Our recommendation for MVP vibrotactile
+      </div>
+    </div>
+
+    <div class="tier-card mid">
+      <div class="tier-label">Mid — Crisp Haptics</div>
+      <h4>LRA + DRV2605L</h4>
+      <div class="price">~$8–15 / unit</div>
+      <ul>
+        <li>Jinlong Z-LRA-0825 (8mm, $5–8) — best value LRA</li>
+        <li>DRV2605L I2C haptic driver ($2–3) — auto-resonance</li>
+        <li>123 preset waveforms + custom registers</li>
+        <li>8–16 per MCU via I2C + TCA9548A mux</li>
+        <li>5–15ms response — dramatically crisper than ERM</li>
+      </ul>
+      <div class="specs">
+        <strong>Dims:</strong> 8mm x 2.5mm, 0.65g &bull; <strong>Current:</strong> 50–120mA<br>
+        <strong>Why upgrade:</strong> Users can distinguish haptic "words" (tap vs buzz vs ramp) — richer vocabulary<br>
+        <strong>When:</strong> If A/B testing shows ERM cues are too ambiguous to localize
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 2: COMPONENT COMBOS ==================== -->
+<div id="configs" class="tab-content">
+  <h2>Torso Placement: Front (Chest + Anterior Delts)</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Electrode + actuator placement for anterior torso muscle groups. Torso TPD = 40–60mm — between-muscle distinction is primary target, not within-muscle.</p>
+
+  <div class="config-grid">
+    <div class="config-card">
+      <h4><span class="badge badge-emg">sEMG</span> <span class="badge badge-tsa">TSA</span> <span class="badge badge-vibe">Vibe</span> Chest — Front View</h4>
+      <div class="diagram-container">
+        <svg width="340" height="280" viewBox="0 0 340 280">
+          <!-- Torso front outline -->
+          <path d="M120,20 L100,30 L65,55 L55,75 L70,80 L85,72 L85,250 L255,250 L255,72 L270,80 L285,75 L275,55 L240,30 L220,20 Q190,8 170,8 Q150,8 120,20 Z" fill="none" stroke="#2a2a40" stroke-width="2"/>
+          <ellipse cx="170" cy="18" rx="22" ry="10" fill="none" stroke="var(--border)" stroke-width="1"/>
+
+          <!-- LEFT PECS (viewer's left = anatomical right) -->
+          <ellipse cx="130" cy="80" rx="30" ry="20" fill="rgba(0,212,170,0.05)" stroke="rgba(0,212,170,0.15)" stroke-width="1"/>
+          <rect x="115" y="70" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="121" y="76" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">P1</text>
+          <rect x="135" y="85" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="141" y="91" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">P2</text>
+          <!-- TSA pad on pec -->
+          <rect x="118" y="82" width="14" height="10" rx="2" fill="var(--accent-tsa)" opacity="0.3" stroke="var(--accent-tsa)" stroke-width="1"/>
+          <text x="125" y="90" text-anchor="middle" fill="var(--accent-tsa)" font-size="4" font-weight="700">TSA</text>
+          <!-- Vibe on pec -->
+          <circle cx="148" cy="72" r="4" fill="var(--accent-vibe)" opacity="0.7"/>
+
+          <!-- RIGHT PECS -->
+          <ellipse cx="210" cy="80" rx="30" ry="20" fill="rgba(0,212,170,0.05)" stroke="rgba(0,212,170,0.15)" stroke-width="1"/>
+          <rect x="195" y="70" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="201" y="76" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">P3</text>
+          <rect x="215" y="85" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="221" y="91" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">P4</text>
+          <rect x="198" y="82" width="14" height="10" rx="2" fill="var(--accent-tsa)" opacity="0.3" stroke="var(--accent-tsa)" stroke-width="1"/>
+          <text x="205" y="90" text-anchor="middle" fill="var(--accent-tsa)" font-size="4" font-weight="700">TSA</text>
+          <circle cx="228" cy="72" r="4" fill="var(--accent-vibe)" opacity="0.7"/>
+
+          <!-- ANTERIOR DELTS -->
+          <rect x="88" y="48" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="94" y="54" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">AD</text>
+          <circle cx="82" cy="60" r="3" fill="var(--accent-vibe)" opacity="0.6"/>
+          <rect x="240" y="48" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="246" y="54" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">AD</text>
+          <circle cx="258" cy="60" r="3" fill="var(--accent-vibe)" opacity="0.6"/>
+
+          <!-- CORE / OBLIQUES -->
+          <rect x="120" y="170" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.6"/>
+          <text x="126" y="176" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">OB</text>
+          <rect x="208" y="170" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.6"/>
+          <text x="214" y="176" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">OB</text>
+
+          <!-- Motor pods (distributed) -->
+          <rect x="90" y="110" width="16" height="12" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="98" y="119" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M1</text>
+          <rect x="234" y="110" width="16" height="12" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="242" y="119" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M2</text>
+          <!-- String routes -->
+          <path d="M98,110 L125,92" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+          <path d="M242,110 L205,92" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+
+          <!-- MCU at waist -->
+          <rect x="140" y="225" width="60" height="20" rx="4" fill="var(--accent-combo)" opacity="0.15" stroke="var(--accent-combo)" stroke-width="1"/>
+          <text x="170" y="238" text-anchor="middle" fill="var(--accent-combo)" font-size="7" font-weight="600">MCU + Batt</text>
+
+          <!-- Annotations -->
+          <text x="170" y="145" text-anchor="middle" fill="var(--text-dim)" font-size="7">Strap-harness exposes skin</text>
+          <text x="170" y="157" text-anchor="middle" fill="var(--text-dim)" font-size="7">between zones for CV visibility</text>
+
+          <!-- Labels -->
+          <text x="130" y="60" text-anchor="middle" fill="var(--accent-emg)" font-size="7">L Pec</text>
+          <text x="210" y="60" text-anchor="middle" fill="var(--accent-emg)" font-size="7">R Pec</text>
+        </svg>
+      </div>
+      <div class="config-desc">
+        <strong>Front torso — 8-10 channels:</strong> 2 electrodes per pec (upper/lower or sternal/clavicular head — achievable at 40-50mm TPD), 1 per anterior delt, optional obliques. TSA motors mounted on lateral strap with short routes (&lt;15cm) to pec contact pads. Vibes co-located at each muscle group. <strong>Key advantage:</strong> pec vs delt distinction is a large between-muscle signal — easy to detect. <strong>Demo exercises:</strong> bench press, push-up, chest fly.
+      </div>
+    </div>
+
+    <div class="config-card">
+      <h4><span class="badge badge-emg">sEMG</span> <span class="badge badge-tsa">TSA</span> <span class="badge badge-vibe">Vibe</span> Back — Posterior View</h4>
+      <div class="diagram-container">
+        <svg width="340" height="280" viewBox="0 0 340 280">
+          <!-- Torso back outline -->
+          <path d="M120,20 L100,30 L65,55 L55,75 L70,80 L85,72 L85,250 L255,250 L255,72 L270,80 L285,75 L275,55 L240,30 L220,20 Q190,8 170,8 Q150,8 120,20 Z" fill="none" stroke="#2a2a40" stroke-width="2"/>
+          <ellipse cx="170" cy="18" rx="22" ry="10" fill="none" stroke="var(--border)" stroke-width="1"/>
+          <!-- Spine line -->
+          <line x1="170" y1="28" x2="170" y2="240" stroke="var(--border)" stroke-width="1" stroke-dasharray="4,3" opacity="0.3"/>
+
+          <!-- UPPER TRAPS -->
+          <rect x="130" y="35" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="136" y="41" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">UT</text>
+          <rect x="198" y="35" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="204" y="41" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">UT</text>
+          <circle cx="148" cy="38" r="3" fill="var(--accent-vibe)" opacity="0.7"/>
+          <circle cx="192" cy="38" r="3" fill="var(--accent-vibe)" opacity="0.7"/>
+
+          <!-- POSTERIOR DELTS -->
+          <rect x="88" y="52" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="94" y="58" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">PD</text>
+          <rect x="240" y="52" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="246" y="58" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">PD</text>
+
+          <!-- MID TRAPS / RHOMBOIDS -->
+          <rect x="140" y="78" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.8"/>
+          <text x="146" y="84" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">MT</text>
+          <rect x="188" y="78" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.8"/>
+          <text x="194" y="84" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">MT</text>
+          <rect x="143" y="88" width="14" height="10" rx="2" fill="var(--accent-tsa)" opacity="0.3" stroke="var(--accent-tsa)" stroke-width="1"/>
+          <text x="150" y="96" text-anchor="middle" fill="var(--accent-tsa)" font-size="4" font-weight="700">TSA</text>
+          <rect x="185" y="88" width="14" height="10" rx="2" fill="var(--accent-tsa)" opacity="0.3" stroke="var(--accent-tsa)" stroke-width="1"/>
+          <text x="192" y="96" text-anchor="middle" fill="var(--accent-tsa)" font-size="4" font-weight="700">TSA</text>
+
+          <!-- LATS -->
+          <ellipse cx="118" cy="140" rx="22" ry="35" fill="rgba(0,212,170,0.04)" stroke="rgba(0,212,170,0.12)" stroke-width="1"/>
+          <rect x="108" y="125" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="114" y="131" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">L1</text>
+          <rect x="112" y="155" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="118" y="161" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">L2</text>
+          <circle cx="100" cy="140" r="4" fill="var(--accent-vibe)" opacity="0.7"/>
+
+          <ellipse cx="222" cy="140" rx="22" ry="35" fill="rgba(0,212,170,0.04)" stroke="rgba(0,212,170,0.12)" stroke-width="1"/>
+          <rect x="218" y="125" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="224" y="131" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">L3</text>
+          <rect x="214" y="155" width="12" height="8" rx="2" fill="var(--accent-emg)" opacity="0.9"/>
+          <text x="220" y="161" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">L4</text>
+          <circle cx="240" cy="140" r="4" fill="var(--accent-vibe)" opacity="0.7"/>
+
+          <!-- Motor pods on lateral -->
+          <rect x="90" y="100" width="16" height="12" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="98" y="109" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M3</text>
+          <rect x="234" y="100" width="16" height="12" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="242" y="109" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M4</text>
+          <path d="M98,100 L150,98" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+          <path d="M242,100 L192,98" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+
+          <!-- MCU -->
+          <rect x="140" y="220" width="60" height="20" rx="4" fill="var(--accent-combo)" opacity="0.15" stroke="var(--accent-combo)" stroke-width="1"/>
+          <text x="170" y="233" text-anchor="middle" fill="var(--accent-combo)" font-size="7" font-weight="600">MCU + Batt</text>
+
+          <!-- Labels -->
+          <text x="136" y="30" fill="var(--accent-emg)" font-size="7">Upper Trap</text>
+          <text x="204" y="30" fill="var(--accent-emg)" font-size="7">Upper Trap</text>
+          <text x="118" y="115" fill="var(--accent-emg)" font-size="7">L Lat</text>
+          <text x="222" y="115" fill="var(--accent-emg)" font-size="7">R Lat</text>
+          <text x="170" y="200" text-anchor="middle" fill="var(--text-dim)" font-size="7">Back TPD: 50-60mm — 2 zones per side</text>
+        </svg>
+      </div>
+      <div class="config-desc">
+        <strong>Posterior torso — 10-12 channels:</strong> 2 per lat (upper/lower — large muscle belly, achievable at 40-55mm TPD), 1-2 per trap (upper vs mid), 1 per posterior delt, optional lower trap/rhomboid. TSA motors on lateral straps with short routes to mid-back contact pads. <strong>Key challenge:</strong> scapular movement shifts electrode position during rows/pulldowns — straps anchored to shoulder straps reduce this. <strong>Demo exercises:</strong> row, pulldown, face pull.
+      </div>
+    </div>
+  </div>
+
+  <h2>Full Vest: Combined Front + Back</h2>
+  <div class="config-grid">
+    <div class="config-card" style="grid-column: 1 / -1;">
+      <h4><span class="badge badge-emg">sEMG</span> <span class="badge badge-tsa">TSA</span> <span class="badge badge-vibe">Vibe</span> Strap-Harness Architecture + Signal Flow</h4>
+      <div class="diagram-container">
+        <svg width="560" height="300" viewBox="0 0 560 300">
+          <!-- Harness front outline (minimal straps, max skin exposure) -->
+          <text x="110" y="15" text-anchor="middle" fill="var(--text)" font-size="10" font-weight="700">Front</text>
+          <!-- Shoulder straps -->
+          <path d="M80,35 L95,25 Q110,18 125,25 L125,70" fill="none" stroke="var(--accent-combo)" stroke-width="4" opacity="0.4"/>
+          <path d="M140,35 L125,25" fill="none" stroke="var(--accent-combo)" stroke-width="4" opacity="0.4"/>
+          <path d="M80,35 L95,25" fill="none" stroke="var(--accent-combo)" stroke-width="4" opacity="0.4"/>
+          <!-- Chest strap -->
+          <path d="M60,75 L160,75" fill="none" stroke="var(--accent-combo)" stroke-width="6" opacity="0.3"/>
+          <!-- Ribcage strap -->
+          <path d="M65,125 L155,125" fill="none" stroke="var(--accent-combo)" stroke-width="6" opacity="0.3"/>
+          <!-- Waist strap -->
+          <path d="M70,180 L150,180" fill="none" stroke="var(--accent-combo)" stroke-width="6" opacity="0.3"/>
+
+          <!-- Exposed skin areas (the point!) -->
+          <text x="110" y="105" text-anchor="middle" fill="rgba(255,200,150,0.4)" font-size="8">Bare skin</text>
+          <text x="110" y="155" text-anchor="middle" fill="rgba(255,200,150,0.4)" font-size="8">Bare skin</text>
+          <text x="110" y="215" text-anchor="middle" fill="rgba(255,200,150,0.3)" font-size="7">CV can see torso</text>
+
+          <!-- Pod positions on straps -->
+          <rect x="73" y="68" width="14" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <text x="80" y="76" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Pec</text>
+          <rect x="133" y="68" width="14" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <text x="140" y="76" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Pec</text>
+
+          <rect x="60" y="118" width="14" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <text x="67" y="126" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Lat</text>
+          <rect x="146" y="118" width="14" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <text x="153" y="126" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Lat</text>
+
+          <!-- Shoulder pods -->
+          <rect x="68" y="30" width="12" height="8" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1"/>
+          <text x="74" y="36" text-anchor="middle" fill="var(--accent-emg)" font-size="4">Dlt</text>
+          <rect x="140" y="30" width="12" height="8" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1"/>
+          <text x="146" y="36" text-anchor="middle" fill="var(--accent-emg)" font-size="4">Dlt</text>
+
+          <!-- MCU on waist strap -->
+          <rect x="88" y="173" width="44" height="12" rx="3" fill="var(--accent-combo)" opacity="0.2" stroke="var(--accent-combo)" stroke-width="1"/>
+          <text x="110" y="182" text-anchor="middle" fill="var(--accent-combo)" font-size="6" font-weight="600">MCU</text>
+
+          <!-- Adjustable buckles -->
+          <rect x="55" y="72" width="6" height="6" rx="1" fill="var(--text-dim)" opacity="0.5"/>
+          <rect x="159" y="72" width="6" height="6" rx="1" fill="var(--text-dim)" opacity="0.5"/>
+          <rect x="55" y="122" width="6" height="6" rx="1" fill="var(--text-dim)" opacity="0.5"/>
+          <rect x="159" y="122" width="6" height="6" rx="1" fill="var(--text-dim)" opacity="0.5"/>
+          <text x="52" y="92" fill="var(--text-dim)" font-size="5">Buckle</text>
+
+          <!-- ===== Signal flow (right side) ===== -->
+          <text x="380" y="25" fill="var(--text)" font-size="11" font-weight="700">Closed-Loop Signal Flow</text>
+          <text x="380" y="40" fill="var(--text-dim)" font-size="8">Torso vest with distributed pods</text>
+
+          <!-- Vest MCU box -->
+          <rect x="300" y="65" width="70" height="55" rx="4" fill="var(--accent-combo)" opacity="0.1" stroke="var(--accent-combo)" stroke-width="1.5"/>
+          <text x="335" y="82" text-anchor="middle" fill="var(--accent-combo)" font-size="8" font-weight="600">Vest MCU</text>
+          <text x="335" y="95" text-anchor="middle" fill="var(--text-dim)" font-size="6">ESP32-S3</text>
+          <text x="335" y="107" text-anchor="middle" fill="var(--text-dim)" font-size="6">8-14ch mux</text>
+
+          <!-- sEMG inputs -->
+          <text x="275" y="72" text-anchor="end" fill="var(--accent-emg)" font-size="7">Pec L/R</text>
+          <line x1="278" y1="70" x2="300" y2="75" stroke="var(--accent-emg)" stroke-width="1"/>
+          <text x="275" y="84" text-anchor="end" fill="var(--accent-emg)" font-size="7">Lat L/R</text>
+          <line x1="278" y1="82" x2="300" y2="82" stroke="var(--accent-emg)" stroke-width="1"/>
+          <text x="275" y="96" text-anchor="end" fill="var(--accent-emg)" font-size="7">Trap L/R</text>
+          <line x1="278" y1="94" x2="300" y2="90" stroke="var(--accent-emg)" stroke-width="1"/>
+          <text x="275" y="108" text-anchor="end" fill="var(--accent-emg)" font-size="7">Delt L/R</text>
+          <line x1="278" y1="106" x2="300" y2="100" stroke="var(--accent-emg)" stroke-width="1"/>
+
+          <!-- Phone -->
+          <rect x="420" y="65" width="80" height="110" rx="8" fill="var(--surface)" stroke="var(--border)" stroke-width="2"/>
+          <text x="460" y="88" text-anchor="middle" fill="var(--text)" font-size="9" font-weight="600">Phone</text>
+          <text x="460" y="103" text-anchor="middle" fill="var(--text-dim)" font-size="7">MediaPipe CV</text>
+          <text x="460" y="115" text-anchor="middle" fill="var(--text-dim)" font-size="7">LLM Reasoning</text>
+          <text x="460" y="127" text-anchor="middle" fill="var(--text-dim)" font-size="7">Muscle Heatmap</text>
+          <text x="460" y="139" text-anchor="middle" fill="var(--text-dim)" font-size="7">L/R Symmetry</text>
+          <text x="460" y="151" text-anchor="middle" fill="var(--text-dim)" font-size="7">Cue Engine</text>
+          <text x="460" y="163" text-anchor="middle" fill="var(--text-dim)" font-size="7">Data Logging</text>
+
+          <!-- BLE arrows -->
+          <line x1="370" y1="85" x2="420" y2="85" stroke="var(--accent-combo)" stroke-width="1.5"/>
+          <text x="395" y="80" text-anchor="middle" fill="var(--text-dim)" font-size="6">BLE 8-14ch</text>
+          <text x="395" y="72" text-anchor="middle" fill="var(--text-dim)" font-size="6">sEMG →</text>
+          <line x1="420" y1="130" x2="370" y2="130" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="395" y="143" text-anchor="middle" fill="var(--text-dim)" font-size="6">← Cue cmds</text>
+
+          <!-- Actuator outputs -->
+          <text x="395" y="165" text-anchor="end" fill="var(--accent-tsa)" font-size="7">TSA (4-6 zones)</text>
+          <line x1="335" y1="120" x2="335" y2="155" stroke="var(--accent-tsa)" stroke-width="1"/>
+          <text x="395" y="178" text-anchor="end" fill="var(--accent-vibe)" font-size="7">Vibe (6-8 zones)</text>
+          <line x1="335" y1="155" x2="335" y2="170" stroke="var(--accent-vibe)" stroke-width="1"/>
+
+          <!-- Loop label -->
+          <rect x="290" y="210" width="220" height="65" rx="4" fill="rgba(255,215,0,0.08)" stroke="var(--accent-combo)" stroke-width="0.5"/>
+          <text x="400" y="228" text-anchor="middle" fill="var(--accent-combo)" font-size="8" font-weight="600">Sense → Reason → Cue (~50-200ms loop)</text>
+          <text x="400" y="242" text-anchor="middle" fill="var(--text-dim)" font-size="7">Software toggles modality per zone:</text>
+          <text x="400" y="254" text-anchor="middle" fill="var(--accent-vibe)" font-size="7">Vibe burst = "activate this muscle"</text>
+          <text x="400" y="266" text-anchor="middle" fill="var(--accent-tsa)" font-size="7">TSA squeeze = "hold engagement here"</text>
+        </svg>
+      </div>
+      <div class="config-desc">
+        <strong>Strap-harness design:</strong> Adjustable straps at chest, ribcage, and waist levels with shoulder Y-harness. Pods mount on straps at muscle zones via snap/velcro. <strong>CV compatibility:</strong> bare skin visible between straps — MediaPipe can track shoulder, elbow, hip keypoints without occlusion. Adjustable buckles accommodate wide range of body sizes without garment sizing. <strong>Dual-modality per zone:</strong> each pod position supports both vibe motor and TSA contact pad, software selects which fires per cue event. <strong>Distributed motors:</strong> TSA motors sit on straps near target muscle (&lt;15-20cm route), avoiding the 30-40cm friction limit. One motor per squeeze zone. <strong>BLE data rate:</strong> 14ch x 500Hz x 2 bytes = 14 kB/s — within BLE 4.2 practical throughput (20-30 kB/s) but uses ~50-70%. Consider batched transmission at 200Hz envelope for reliability.
+      </div>
+    </div>
+  </div>
+
+  <h2>Modality Selection Per Zone</h2>
+  <div class="rationale-box">
+    <strong>Software-switchable cueing:</strong> Both a vibrotactile motor and a TSA contact pad are wired at each primary zone. The app decides per cue event: <strong>Correction</strong> = vibe burst (spatial attention) + TSA onset (sustained pressure). <strong>Reinforcement</strong> = TSA only at low intensity (slow-adapting receptors maintain signal). <strong>Fade</strong> = gradual TSA release. This lets us A/B test "vibration-only vs pressure-only vs hybrid" per muscle group per user — the key experiment to run during MVP. Post-MVP, standardized 4-pin pod connectors enable physically swappable vibe-only / squeeze-only / hybrid pods.
+  </div>
+</div>
+
+<!-- ==================== TAB 3: FORM FACTORS ==================== -->
+<div id="form" class="tab-content">
+  <h2>Torso Vest / Shirt Form Factors</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Converting from single-arm compression sleeve to torso garment. Target muscle groups: pecs, lats, traps, delts, upper back, core. Key constraints: TSA string routing on torso can exceed 30-40cm practical max — distributed motors required. CV needs bare skin visible for pose estimation — minimal-coverage harness preferred over full shirt.</p>
+
+  <div class="rationale-box" style="border-left-color: var(--accent-combo); margin-bottom: 1.5rem;">
+    <strong>Key design tension: sEMG needs skin contact via compression. CV needs bare skin visible.</strong> A full compression shirt gives best electrode contact but occludes the torso from the camera. An adjustable strap-harness (like a climbing harness) exposes maximum skin for CV while providing localized compression at each pod zone. <strong>Recommended MVP: strap-harness with adjustable buckles at chest, ribcage, and waist levels + shoulder Y-harness.</strong> Adjustable buckles also solve the body-sizing problem — one harness fits a wide range of torso sizes vs needing XS-XXL garment SKUs.
+  </div>
+
+  <div class="form-factor-grid">
+    <div class="ff-card">
+      <h4>A. Full Compression Shirt (Athos-Style)</h4>
+      <div class="diagram-container">
+        <svg width="220" height="200" viewBox="0 0 220 200">
+          <!-- Torso outline - front view -->
+          <path d="M70,25 L55,35 L30,55 L25,70 L35,75 L50,70 L50,180 L170,180 L170,70 L185,75 L195,70 L190,55 L165,35 L150,25 Q130,15 110,15 Q90,15 70,25 Z" fill="rgba(255,255,255,0.03)" stroke="var(--border)" stroke-width="2"/>
+          <!-- Neck -->
+          <ellipse cx="110" cy="20" rx="18" ry="8" fill="none" stroke="var(--border)" stroke-width="1"/>
+          <!-- Fixed electrode positions -->
+          <rect x="72" y="55" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="138" y="55" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="72" y="75" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="138" y="75" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="58" y="95" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="152" y="95" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="62" y="120" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <rect x="148" y="120" width="10" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <!-- Labels -->
+          <text x="78" y="50" fill="var(--accent-emg)" font-size="6">Pec L</text>
+          <text x="138" y="50" fill="var(--accent-emg)" font-size="6">Pec R</text>
+          <text x="57" y="92" fill="var(--accent-emg)" font-size="6">Lat</text>
+          <text x="155" y="92" fill="var(--accent-emg)" font-size="6">Lat</text>
+          <!-- MCU hub at waist -->
+          <rect x="85" y="160" width="50" height="16" rx="3" fill="var(--accent-combo)" opacity="0.2" stroke="var(--accent-combo)" stroke-width="1"/>
+          <text x="110" y="171" text-anchor="middle" fill="var(--accent-combo)" font-size="6">MCU Hub</text>
+          <text x="110" y="195" text-anchor="middle" fill="var(--text-dim)" font-size="7">~$20–30 base garment</text>
+        </svg>
+      </div>
+      <div class="ff-desc">
+        <strong>Pros:</strong> Best electrode contact via compression. Single garment covers all torso groups. Professional appearance. Textile electrodes woven at fixed positions (Athos: ~14 channels for pecs, delts, lats, traps, biceps, triceps).<br>
+        <strong>Cons:</strong> Fixed electrode positions — can't adjust for anatomy. Size-specific (XS–XXL range needed). Harder to iterate. Not washable with electronics attached.<br>
+        <strong>Best for:</strong> Post-MVP polished product. <strong>Base: ~$20–30 off-the-shelf compression shirt</strong>
+      </div>
+    </div>
+
+    <div class="ff-card">
+      <h4>B. Modular Vest + Snap-Grid Pods</h4>
+      <div class="diagram-container">
+        <svg width="220" height="200" viewBox="0 0 220 200">
+          <!-- Vest outline (sleeveless) -->
+          <path d="M75,25 L60,35 L55,50 L55,180 L165,180 L165,50 L160,35 L145,25 Q130,15 110,15 Q90,15 75,25 Z" fill="rgba(255,255,255,0.02)" stroke="var(--border)" stroke-width="1.5"/>
+          <ellipse cx="110" cy="20" rx="16" ry="7" fill="none" stroke="var(--border)" stroke-width="1"/>
+          <!-- Snap grid points (open circles = available slots) -->
+          <circle cx="80" cy="55" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="100" cy="55" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="120" cy="55" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="140" cy="55" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="70" cy="80" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="90" cy="80" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="130" cy="80" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <circle cx="150" cy="80" r="4" fill="none" stroke="var(--border)" stroke-width="1" stroke-dasharray="2,1"/>
+          <!-- Populated pod slots (filled) -->
+          <rect x="75" y="50" width="12" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <rect x="134" y="50" width="12" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <rect x="64" y="75" width="12" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <rect x="144" y="75" width="12" height="10" rx="2" fill="rgba(0,212,170,0.15)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <!-- Labels -->
+          <text x="81" y="45" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Pod</text>
+          <text x="140" y="45" text-anchor="middle" fill="var(--accent-emg)" font-size="5">Pod</text>
+          <text x="110" y="110" text-anchor="middle" fill="var(--text)" font-size="8" font-weight="600">Snap-grid: populate</text>
+          <text x="110" y="122" text-anchor="middle" fill="var(--text)" font-size="8" font-weight="600">only needed zones</text>
+          <text x="110" y="140" text-anchor="middle" fill="var(--text-dim)" font-size="7">Open circles = available slots</text>
+          <text x="110" y="152" text-anchor="middle" fill="var(--text-dim)" font-size="7">Filled = active pods</text>
+          <text x="110" y="195" text-anchor="middle" fill="var(--text-dim)" font-size="7">~$15–25 vest + $3–5/pod housing</text>
+        </svg>
+      </div>
+      <div class="ff-desc">
+        <strong>Pros:</strong> Maximum modularity. Populate only the zones you need per exercise. Pods relocatable. Electronics fully removable for washing. Conductive snap buttons at grid points connect electrode pads through fabric windows to skin.<br>
+        <strong>Cons:</strong> Vest provides less compression than shirt — may need supplemental adhesive electrodes for consistent contact. More complex wiring harness.<br>
+        <strong>Best for:</strong> Development iteration, A/B testing muscle group configurations. <strong>Recommended for MVP.</strong>
+      </div>
+    </div>
+
+    <div class="ff-card">
+      <h4>C. Hybrid Shirt + Distributed Motor Pods</h4>
+      <div class="diagram-container">
+        <svg width="220" height="200" viewBox="0 0 220 200">
+          <!-- Compression shirt outline -->
+          <path d="M70,25 L55,35 L30,55 L25,70 L35,75 L50,70 L50,180 L170,180 L170,70 L185,75 L195,70 L190,55 L165,35 L150,25 Q130,15 110,15 Q90,15 70,25 Z" fill="rgba(255,255,255,0.02)" stroke="var(--border)" stroke-width="1.5"/>
+          <ellipse cx="110" cy="20" rx="18" ry="8" fill="none" stroke="var(--border)" stroke-width="1"/>
+          <!-- Electrode windows (dashed outlines = skin windows) -->
+          <rect x="72" y="52" width="16" height="12" rx="2" fill="rgba(0,212,170,0.08)" stroke="var(--accent-emg)" stroke-width="1" stroke-dasharray="3,2"/>
+          <rect x="132" y="52" width="16" height="12" rx="2" fill="rgba(0,212,170,0.08)" stroke="var(--accent-emg)" stroke-width="1" stroke-dasharray="3,2"/>
+          <!-- TSA motor pods (velcro-mounted on shirt exterior) -->
+          <rect x="56" y="88" width="18" height="14" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="65" y="98" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M1</text>
+          <rect x="146" y="88" width="18" height="14" rx="3" fill="var(--accent-tsa)" opacity="0.25" stroke="var(--accent-tsa)" stroke-width="1.5"/>
+          <text x="155" y="98" text-anchor="middle" fill="var(--accent-tsa)" font-size="5" font-weight="700">M2</text>
+          <!-- String routes from motors to pads -->
+          <path d="M65,88 L65,70 L80,64" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+          <path d="M155,88 L155,70 L140,64" fill="none" stroke="var(--accent-tsa)" stroke-width="0.75" stroke-dasharray="2,2"/>
+          <!-- Vibe motors co-located -->
+          <circle cx="92" cy="58" r="3" fill="var(--accent-vibe)" opacity="0.7"/>
+          <circle cx="128" cy="58" r="3" fill="var(--accent-vibe)" opacity="0.7"/>
+          <!-- MCU -->
+          <rect x="85" y="155" width="50" height="18" rx="3" fill="var(--accent-combo)" opacity="0.15" stroke="var(--accent-combo)" stroke-width="1"/>
+          <text x="110" y="167" text-anchor="middle" fill="var(--accent-combo)" font-size="6">MCU + Battery</text>
+          <text x="110" y="195" text-anchor="middle" fill="var(--text-dim)" font-size="7">Short string routes (&lt;20cm)</text>
+        </svg>
+      </div>
+      <div class="ff-desc">
+        <strong>Pros:</strong> Compression shirt for electrode contact + velcro-mounted motor pods on exterior. Short string routes (motor near target muscle, &lt;20cm) avoid friction budget issues. Motors removable for washing.<br>
+        <strong>Cons:</strong> External pods visible on shirt. Heavier than pure sensing.<br>
+        <strong>Best for:</strong> Post-MVP when TSA squeeze is validated and needs to feel polished.
+      </div>
+    </div>
+
+    <div class="ff-card">
+      <h4>D. Electrode Skin Contact Detail</h4>
+      <div class="diagram-container">
+        <svg width="220" height="200" viewBox="0 0 220 200">
+          <text x="110" y="15" text-anchor="middle" fill="var(--text-dim)" font-size="9" font-style="italic">Cross-section: pod-through-fabric electrode contact</text>
+          <!-- Skin layer -->
+          <rect x="20" y="140" width="180" height="8" rx="2" fill="rgba(255,200,150,0.15)" stroke="rgba(255,200,150,0.3)" stroke-width="1"/>
+          <text x="110" y="165" text-anchor="middle" fill="rgba(255,200,150,0.5)" font-size="7">Skin surface</text>
+          <!-- Fabric layer -->
+          <rect x="20" y="120" width="70" height="12" rx="1" fill="rgba(255,255,255,0.05)" stroke="var(--border)" stroke-width="1"/>
+          <rect x="130" y="120" width="70" height="12" rx="1" fill="rgba(255,255,255,0.05)" stroke="var(--border)" stroke-width="1"/>
+          <text x="55" y="129" text-anchor="middle" fill="var(--text-dim)" font-size="6">Fabric</text>
+          <text x="165" y="129" text-anchor="middle" fill="var(--text-dim)" font-size="6">Fabric</text>
+          <!-- Window gap in fabric -->
+          <text x="110" y="129" text-anchor="middle" fill="var(--accent-emg)" font-size="6">Window</text>
+          <!-- Pod on exterior -->
+          <rect x="82" y="85" width="56" height="30" rx="4" fill="rgba(0,212,170,0.1)" stroke="var(--accent-emg)" stroke-width="1.5"/>
+          <text x="110" y="98" text-anchor="middle" fill="var(--accent-emg)" font-size="7" font-weight="600">Sensor Pod</text>
+          <text x="110" y="108" text-anchor="middle" fill="var(--text-dim)" font-size="6">sEMG + Vibe + TSA</text>
+          <!-- Electrode protruding through window -->
+          <rect x="97" y="115" width="26" height="25" rx="2" fill="var(--accent-emg)" opacity="0.3"/>
+          <rect x="100" y="135" width="20" height="6" rx="1" fill="var(--accent-emg)" opacity="0.8"/>
+          <text x="110" y="141" text-anchor="middle" fill="var(--bg)" font-size="5" font-weight="700">Ag/AgCl</text>
+          <!-- Compression arrows -->
+          <text x="45" y="85" fill="var(--text-dim)" font-size="7">Compression</text>
+          <line x1="55" y1="87" x2="55" y2="118" stroke="var(--text-dim)" stroke-width="1" marker-end="url(#arrow)"/>
+          <text x="160" y="85" fill="var(--text-dim)" font-size="7">Compression</text>
+          <line x1="170" y1="87" x2="170" y2="118" stroke="var(--text-dim)" stroke-width="1"/>
+          <!-- Snap connector -->
+          <circle cx="110" cy="115" r="3" fill="var(--accent-combo)" opacity="0.6"/>
+          <text x="155" y="52" fill="var(--text)" font-size="8" font-weight="600">Snap-through design:</text>
+          <text x="155" y="63" fill="var(--text-dim)" font-size="7">Pod mounts on exterior,</text>
+          <text x="155" y="74" fill="var(--text-dim)" font-size="7">electrode protrudes through</text>
+          <text x="155" y="85" fill="var(--text-dim)" font-size="7">fabric window to skin.</text>
+          <text x="155" y="100" fill="var(--text-dim)" font-size="7">Compression holds contact.</text>
+        </svg>
+      </div>
+      <div class="ff-desc">
+        <strong>sEMG requires direct skin contact.</strong> Two approaches: (1) <strong>MVP:</strong> User applies adhesive Ag/AgCl electrode on skin, puts on shirt, pod snaps onto shirt over electrode via conductive snap stud. (2) <strong>Post-MVP:</strong> Pod has integrated dry electrode that protrudes through a ~25mm fabric window, held against skin by compression. Either way, modularity and skin contact are compatible.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 4: WEARABILITY SCOPE ==================== -->
+<div id="scope" class="tab-content">
+  <h2>Torso Vest — Muscle Group Coverage Matrix</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Which muscle groups to instrument per exercise type. Strap-harness form factor with modular pods at each zone.</p>
+
+  <table class="matrix-table">
+    <thead>
+      <tr><th>Muscle Group</th><th>sEMG Channels</th><th>TSA Zones</th><th>Vibe Zones</th><th>TPD (mm)</th><th>Key Exercises</th><th>Priority</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>Pecs (L/R)</strong></td><td>2 per side (4 total)</td><td>1 per side</td><td>1 per side</td><td>40–50</td><td>Bench, push-up, fly</td><td class="check">MVP</td></tr>
+      <tr><td><strong>Lats (L/R)</strong></td><td>1–2 per side (2–4 total)</td><td>1 per side</td><td>1 per side</td><td>40–55</td><td>Row, pulldown, pullup</td><td class="check">MVP</td></tr>
+      <tr><td><strong>Upper Traps (L/R)</strong></td><td>1 per side (2 total)</td><td>—</td><td>1 per side</td><td>50–60</td><td>Shrug, OHP, deadlift</td><td class="check">MVP</td></tr>
+      <tr><td><strong>Mid Traps / Rhomboids</strong></td><td>1 per side (2 total)</td><td>1 per side</td><td>1 per side</td><td>50–60</td><td>Row, face pull, rear fly</td><td class="partial">Post-MVP</td></tr>
+      <tr><td><strong>Anterior Delts (L/R)</strong></td><td>1 per side (2 total)</td><td>—</td><td>1 per side</td><td>35–45</td><td>OHP, front raise, bench</td><td class="check">MVP</td></tr>
+      <tr><td><strong>Posterior Delts (L/R)</strong></td><td>1 per side (2 total)</td><td>—</td><td>1 per side</td><td>35–45</td><td>Face pull, rear fly, row</td><td class="partial">Post-MVP</td></tr>
+      <tr><td><strong>Core / Obliques</strong></td><td>1 per side (2 total)</td><td>—</td><td>1 per side</td><td>40–55</td><td>Squat (bracing), deadlift</td><td class="partial">Post-MVP</td></tr>
+      <tr><td><strong>Lower Trap</strong></td><td>1 per side (2 total)</td><td>—</td><td>—</td><td>55–60</td><td>Overhead press, pullup</td><td class="nope">V2</td></tr>
+      <tr><td><strong>Serratus Anterior</strong></td><td>1 per side (2 total)</td><td>—</td><td>—</td><td>45–55</td><td>Push-up plus, OHP</td><td class="nope">V2</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>CV compatibility note:</strong> The strap-harness exposes bare skin between instrumented zones. MediaPipe tracks joint keypoints (shoulders, elbows, hips) — these remain visible between straps. Minimal skin coverage = maximum CV accuracy. The vest is optimized for the camera to see the user's form while the harness senses and cues muscle activation.
+  </div>
+
+  <h2>Recommended Build Phases — Torso Vest</h2>
+  <div class="config-grid">
+    <div class="config-card">
+      <h4>MVP (2 weeks) — ~$120–180</h4>
+      <div class="config-desc">
+        <strong>Form:</strong> Adjustable strap-harness (shoulder Y-harness + chest strap + ribcage strap)<br>
+        <strong>Scope:</strong> 4 muscle groups: pecs (L/R), lats (L/R), upper traps (L/R), anterior delts (L/R)<br>
+        <strong>sEMG:</strong> 8x BioAmp EXG Pill (~$80) — or start with 4ch and add<br>
+        <strong>TSA:</strong> 2x N20 + Dyneema (pec zones only, ~$50)<br>
+        <strong>Vibe:</strong> 6x Precision Microdrives 310-103 (~$15)<br>
+        <strong>MCU:</strong> ESP32-S3 DevKit + analog mux (~$15)<br>
+        <strong>Demo exercises:</strong> Bench press, barbell row, overhead press — "your right lat isn't firing" / "traps are compensating"<br>
+        <strong>Hedging:</strong> Order extra BioAmp + vibes immediately (cheap). TSA at 2 zones only — expand if validated
+      </div>
+    </div>
+    <div class="config-card">
+      <h4>Post-MVP (3–6 months) — ~$250–400</h4>
+      <div class="config-desc">
+        <strong>Form:</strong> Compression shirt with snap-grid + distributed motor pods<br>
+        <strong>Scope:</strong> 8–14 channels covering all major torso groups (Athos-equivalent coverage)<br>
+        <strong>sEMG:</strong> 4x ADS1292R (8ch) — frequency-domain fatigue tracking (~$180)<br>
+        <strong>TSA:</strong> 4x Pololu mid-tier with encoder (~$200) — pecs, lats, mid traps, posterior delts<br>
+        <strong>Vibe:</strong> 8x LRA + DRV2605L (~$100) — crisp haptic vocabulary per zone<br>
+        <strong>MCU:</strong> nRF52840 Feather (~$25)<br>
+        <strong>Modality:</strong> Physically swappable pods via standardized 4-pin connectors. Vibe-only, squeeze-only, or hybrid pods per zone<br>
+        <strong>Demo:</strong> Full upper-body session with real-time muscle heatmap + L/R symmetry + fatigue detection
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== TAB 5: BOM ==================== -->
+<div id="bom" class="tab-content">
+  <h2>Torso Vest BOM Estimates</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Scaled from single-arm to torso coverage. Budget-first emphasis. More channels = higher cost, but the modular architecture lets you start small and add pods. Order extras of cheap items for immediate testing while iterating on form factor.</p>
+
+  <h3>MVP Vest: 4-Zone Starter (Pecs + Lats) — Sensing + Dual-Modality Cueing</h3>
+  <table class="bom-table">
+    <thead><tr><th>Component</th><th>Option A (bare min)</th><th>Option B (recommended)</th><th>Option C (best signal)</th></tr></thead>
+    <tbody>
+      <tr><td>sEMG (8ch: 2/pec + 2/lat)</td><td>8x DIY INA128 — $32</td><td>8x BioAmp EXG Pill — $80</td><td>4x ADS1292R (8ch) — $180</td></tr>
+      <tr><td>Analog multiplexer</td><td>CD4051 — $1</td><td>2x CD4051 8:1 mux — $2</td><td>Integrated (ADS SPI) — $0</td></tr>
+      <tr><td>TSA (2 zones: pec L/R)</td><td>2x SG90 servo — $4</td><td>2x N20 + Dyneema + hall — $50</td><td>2x Pololu 25D + encoder — $100</td></tr>
+      <tr><td>Vibrotactile (6 zones)</td><td>6x generic coin — $4</td><td>6x PM 310-103 — $15</td><td>6x LRA + DRV2605L — $90</td></tr>
+      <tr><td>Motor drivers</td><td>—</td><td>2x DRV8833 — $4</td><td>2x TB9051FTG — $16</td></tr>
+      <tr><td>MCU</td><td>Arduino Mega — $8</td><td>ESP32-S3 DevKit — $10</td><td>nRF52840 Feather — $25</td></tr>
+      <tr><td>Battery + charger</td><td>9V battery — $2</td><td>1200mAh LiPo + TP4056 — $10</td><td>2000mAh LiPo — $15</td></tr>
+      <tr><td>Electrodes</td><td>Ag/AgCl 100-pack — $8</td><td>Ag/AgCl 100-pack — $8</td><td>Ag/AgCl 100-pack — $8</td></tr>
+      <tr><td>Harness / mechanical</td><td>Elastic straps + velcro — $10</td><td>Adjustable nylon straps + buckles + PTFE guides — $25</td><td>Compression shirt + snap pods — $40</td></tr>
+      <tr><td>Wiring / connectors</td><td>Breadboard + jumpers — $5</td><td>Shielded 30AWG + snap studs + PCB — $15</td><td>Custom flex PCB — $30</td></tr>
+      <tr class="total"><td>Total</td><td>~$75</td><td>~$220</td><td>~$505</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>Hedging strategy:</strong> Order Option B recommended parts PLUS extras: 4 additional BioAmp EXG Pills (~$40), 6 extra coin vibes (~$4), extra Dyneema spool (~$8), extra PTFE tubing (~$5). Total hedge cost: ~$57. This lets you start bench-testing individual channels immediately while the full harness build progresses. If a BioAmp dies or a motor burns out, you have spares without waiting for reorder.
+  </div>
+
+  <h3>Minimal Sensing-Only Vest (Testing sEMG First) — ~$100</h3>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:0.5rem">Start here if you want to validate electrode placement and signal quality before adding actuators.</p>
+  <table class="bom-table">
+    <thead><tr><th>Component</th><th>Qty</th><th>Part</th><th>Price</th></tr></thead>
+    <tbody>
+      <tr><td>sEMG</td><td>4–8</td><td>BioAmp EXG Pill</td><td>$40–80</td></tr>
+      <tr><td>MCU</td><td>1</td><td>ESP32-S3 DevKit</td><td>$10</td></tr>
+      <tr><td>Mux</td><td>1</td><td>CD4051 8:1</td><td>$1</td></tr>
+      <tr><td>Electrodes</td><td>100</td><td>Ag/AgCl disposable</td><td>$8</td></tr>
+      <tr><td>Battery</td><td>1</td><td>800mAh LiPo + TP4056</td><td>$8</td></tr>
+      <tr><td>Harness</td><td>1</td><td>Elastic straps + velcro</td><td>$10</td></tr>
+      <tr class="total"><td colspan="3">Total</td><td>~$80–115</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Post-MVP Full Torso Vest: 8-Zone (All Major Groups)</h3>
+  <table class="bom-table">
+    <thead><tr><th>Component</th><th>Qty</th><th>Part</th><th>Price</th></tr></thead>
+    <tbody>
+      <tr><td>sEMG</td><td>14ch</td><td>7x ADS1292R breakout</td><td>$315</td></tr>
+      <tr><td>TSA</td><td>4 zones</td><td>4x Pololu 25D + encoder + Dyneema</td><td>$200</td></tr>
+      <tr><td>Vibrotactile</td><td>8 zones</td><td>8x LRA + DRV2605L + TCA9548A mux</td><td>$130</td></tr>
+      <tr><td>MCU</td><td>1</td><td>nRF52840 Feather</td><td>$25</td></tr>
+      <tr><td>Battery</td><td>1</td><td>2000mAh LiPo</td><td>$15</td></tr>
+      <tr><td>Garment</td><td>1</td><td>Compression shirt + snap-grid + motor pods</td><td>$50</td></tr>
+      <tr><td>Electrodes</td><td>100</td><td>Ag/AgCl disposable</td><td>$8</td></tr>
+      <tr><td>Wiring / misc</td><td>—</td><td>Shielded wire, connectors, PTFE tubing</td><td>$25</td></tr>
+      <tr class="total"><td colspan="3">Total</td><td>~$770</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>Upgrade path from MVP vest:</strong> Start with 4-zone harness ($220). If sEMG signal quality validates → add 2 more BioAmp channels for traps/delts (+$20). If TSA squeeze validates on pecs → add 2 more N20 motors for lats (+$50). If demo day needs crisp haptics → swap coin vibes for LRA + DRV2605L at key zones (+$15/zone). Don't buy the full $770 kit until the concept is proven at $220.
+  </div>
+</div>
+
+<!-- ==================== TAB 6: SPECIALIST QUESTIONS ==================== -->
+<div id="questions" class="tab-content">
+  <h2>Open Questions for Hardware Specialist</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Questions from prior sessions (Q1–Q5) updated for torso vest context, plus new torso-specific questions (Q6–Q12).</p>
+
+  <div class="question-card">
+    <div class="q-num">Q1 — TSA on Torso: Distributed Motors vs Central Hub</div>
+    <div class="q-text">How should we place TSA motors on a torso vest where routing distances exceed the 30-40cm practical limit?</div>
+    <div class="q-context">On an arm sleeve, a single wrist hub with 25cm string routes worked. On a torso, pec-to-spine is 40-50cm with curves — too much friction loss (&gt;50%). Our proposal: distributed motors on lateral straps with short routes (&lt;15-20cm) to nearby contact pads. One N20 motor per squeeze zone. <strong>Trade-off:</strong> more motors = more weight, wiring, cost. But each route stays within friction budget. Is this the right call, or is there a clever central-hub solution we're missing?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q2 — Electrode Contact on Curved Torso Surfaces</div>
+    <div class="q-text">Flat Ag/AgCl electrodes on ribcage, scapula, and curved pec surfaces — how much does contact quality degrade?</div>
+    <div class="q-context">Arms are roughly cylindrical — electrodes lie flat. The torso has concave (between scapulae), convex (pecs, ribcage), and mixed surfaces. Adhesive Ag/AgCl pads conform somewhat, but large curvature may cause edge lift. <strong>Options:</strong> (a) Standard flat electrodes + extra adhesive, (b) pre-curved flexible electrodes, (c) smaller electrodes that conform better, (d) compression from harness strap provides contact force. Which approach works best for budget EMG on the torso?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q3 — Calibration at Scale</div>
+    <div class="q-text">The staircase auto-calibration algorithm works for 2 channels. How does it scale to 8-14?</div>
+    <div class="q-context">Original algorithm: ramp TSA squeeze, detect EMG RMS change &gt;10-15% above baseline. Converges in 10-20 steps, ~200-500ms per step. For 8+ channels, running sequentially takes 30-60 seconds. Running in parallel risks inter-channel artifact. <strong>Question:</strong> Can we calibrate all channels simultaneously if squeeze zones are spatially separated? Or must we serialize? What's the user experience if calibration takes 60+ seconds?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q4 — String Material & Fatigue (unchanged)</div>
+    <div class="q-text">Spectra vs Dyneema braid for torso routing — longer runs, more bends.</div>
+    <div class="q-context">Same question as before but with torso context: routes are shorter (15-20cm) but may have tighter bends around strap-to-body transitions. Dyneema SK78 (&gt;1000 cycles) is recommended. Spectra braided (~50 cycles) may suffice for MVP testing if we're iterating fast. Is pre-stretching necessary for either material? Any concerns about string routing through adjustable buckle points?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q5 — Latency Budget (unchanged)</div>
+    <div class="q-text">TSA onset is 150–400ms at budget tier. Is that fast enough for torso exercises?</div>
+    <div class="q-context">Bench press rep duration ~2-4s, row ~2-3s. Pre-rep cueing (before the movement starts) only needs 400ms. Mid-rep correction during bench press would need &lt;200ms to be useful. For MVP: pre-rep and inter-rep cueing only? Or do we need mid-rep capability for exercises like rows where form breaks down during the pull?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q6 — Strap-Harness vs Compression Shirt for Torso</div>
+    <div class="q-text">Our current proposal is an adjustable strap-harness (like a climbing harness). Does this provide sufficient electrode contact vs a full compression shirt?</div>
+    <div class="q-context">The strap-harness maximizes bare skin exposure for CV tracking and adjusts to many body sizes. But electrode contact depends on strap tension at each pod location — inconsistent if straps loosen during exercise. A compression shirt provides uniform contact but occludes more skin and requires size-specific garments. <strong>Hybrid option:</strong> strap-harness with local compression patches (small neoprene pads under each electrode zone, held by strap tension). Would this give adequate contact?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q7 — Garment Sizing for Torso</div>
+    <div class="q-text">How many size variants do we need for a torso strap-harness to fit most adult bodies?</div>
+    <div class="q-context">Arms have relatively small circumference variance (~25-40cm). Torsos vary much more: chest circumference 80-130cm+, significant body composition variation, breast tissue in women changes chest geometry. Adjustable buckle straps help, but strap length and electrode-to-muscle alignment still vary. <strong>Proposal:</strong> S/M/L strap sets with 15cm adjustment range per buckle. Is that sufficient, or do we need more granularity?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q8 — Scapular Movement During Back Exercises</div>
+    <div class="q-text">How do we handle electrode shift when the scapula moves during rows, pulldowns, and overhead press?</div>
+    <div class="q-context">Mid-trap and rhomboid electrodes sit over the scapula region. During protraction/retraction (rowing movements), the scapula slides 5-10cm laterally. Electrodes on a strap-harness may not track this movement — the strap stays put while the scapula slides underneath. This could produce motion artifact or lose contact. <strong>Options:</strong> (a) Accept the limitation and interpret signal cautiously, (b) mount electrodes on shoulder strap (moves with scapula), (c) use adhesive electrodes at those positions instead of strap-mounted pods.</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q9 — Washability & Sweat Management</div>
+    <div class="q-text">Torso generates significantly more sweat than arms. How does this affect electrode signal and harness durability?</div>
+    <div class="q-context">Sweat actually improves Ag/AgCl electrode conductivity (temporarily), but excess moisture can bridge between electrode pairs and create short circuits or crosstalk. Nylon/polyester straps absorb less sweat than cotton but still get saturated. <strong>Questions:</strong> (1) Do we need hydrophobic treatment on strap fabric near electrodes? (2) How often do disposable electrodes need replacement during a sweaty session? (3) Electronics in pods — conformal coating or potting for sweat protection?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q10 — MVP Exercise Selection for Torso</div>
+    <div class="q-text">Which torso exercise is the best MVP demo? Bench press, barbell row, or overhead press?</div>
+    <div class="q-context"><strong>Bench press:</strong> Universally known. "Your right pec is lazy" narrative is relatable. Supine position = less electrode shift. But requires a bench.<br><strong>Barbell row:</strong> "Your traps are compensating for your lats" is a strong narrative. Standing = more electrode shift. Requires barbell.<br><strong>Push-up:</strong> Zero equipment. Can be done anywhere (demo floor). Pec + delt + core activation all measurable. Less load = subtler signal differences. <strong>Question for specialist:</strong> Which exercise gives cleanest multi-channel torso EMG signal (least motion artifact, most distinct between-muscle activation patterns)?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q11 — 8+ Channel Analog Multiplexing</div>
+    <div class="q-text">Can the ESP32-S3 ADC handle 8-14 channels of sEMG via CD4051 multiplexers at adequate sampling rates?</div>
+    <div class="q-context">ESP32-S3 ADC is 12-bit, up to ~20kSPS. With 8:1 mux, each channel gets sampled at 20k/8 = 2500 Hz — sufficient for sEMG (needs &gt;1000 Hz for full spectrum, ~500 Hz for envelope). At 14 channels via two muxes, rate drops to ~1400 Hz/channel — still adequate for envelope but marginal for spectral analysis. <strong>Question:</strong> Is ESP32 ADC noise floor acceptable for sEMG (&lt;10μV needed), or do we need external ADCs (ADS1292R) even at MVP to get usable signal on the torso where muscle-to-electrode distance is greater?</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-num">Q12 — Dual-Modality Pod Wiring</div>
+    <div class="q-text">Wiring both a vibe motor and TSA motor at each zone — how complex is the harness wiring?</div>
+    <div class="q-context">Each dual-modality zone needs: 2 wires for sEMG (differential pair), 2 wires for vibe motor (PWM + GND), 2 wires for TSA motor (H-bridge pair), plus shared power rail. That's 6-7 wires per zone, 8 zones = 48-56 wires routed through the harness. <strong>Options:</strong> (a) Per-pod local driver PCB with I2C daisy chain (only 4 wires to each pod: VCC, GND, SDA, SCL), (b) central wiring harness with ribbon cable along straps, (c) start with vibe-only at most zones and TSA only at 2 zones to reduce wiring. What's most practical for a 2-week build?</div>
+  </div>
+</div>
+
+<!-- ==================== TAB 7: SOURCING & ORDERING ==================== -->
+<div id="sourcing" class="tab-content">
+  <h2>Expedited Sourcing Strategy — Austin, TX</h2>
+  <p style="color:var(--text-dim);font-size:0.85rem;margin-bottom:1rem">Priority: get components in hand ASAP so testing can begin while the harness form factor is being built. Order cheap items in multiples. Accept budget-tier parts for immediate testing; upgrade specific components later if needed.</p>
+
+  <h3>Same-Day / Next-Day Sources</h3>
+  <table class="matrix-table">
+    <thead><tr><th>Source</th><th>Location / Delivery</th><th>What They Stock</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Micro Center Austin</strong></td>
+        <td>10900 Domain Dr (N Austin) — in-store pickup</td>
+        <td>Arduino Nano/Mega, ESP32 DevKits, breadboards, jumper wires, basic sensors, LiPo batteries, soldering supplies, 3D printer filament</td>
+        <td class="check">Best for MCU + prototyping supplies. Check online stock before driving. Open 10am-9pm</td>
+      </tr>
+      <tr>
+        <td><strong>Amazon Same-Day / Next-Day</strong></td>
+        <td>Delivery to Austin address</td>
+        <td>ESP32-S3 DevKit, generic coin vibration motors (bulk packs), Ag/AgCl electrode pads (100-pack), LiPo batteries, TP4056 chargers, neoprene fabric, velcro strips, elastic straps, buckles, DRV8833 breakouts, CD4051 mux breakouts</td>
+        <td class="check">Order immediately. Most budget components available same-day or next-day Prime. Sort by delivery speed, not price</td>
+      </tr>
+      <tr>
+        <td><strong>Mouser Electronics</strong></td>
+        <td>HQ in Mansfield, TX (~3hr drive). Ground ships overnight to Austin. Will-call pickup available</td>
+        <td>BioAmp EXG Pill, ADS1292R breakouts, INA128/AD620 ICs, DRV2605L, TB9051FTG, precision resistors, connectors, Jinlong LRA motors</td>
+        <td class="partial">Best for specialty EMG/haptic ICs. Check stock online — some items drop-ship from manufacturer (longer lead). Will-call: order online, select "Will Call" at checkout, drive to Mansfield</td>
+      </tr>
+      <tr>
+        <td><strong>DigiKey</strong></td>
+        <td>Ships from Thief River Falls, MN. Next-day to Austin via FedEx (order by ~7pm CT)</td>
+        <td>Same IC selection as Mouser. Sometimes better stock on specific breakouts. Pololu items cross-listed</td>
+        <td class="partial">Backup for anything Mouser is out of stock on. Slightly slower than Mouser ground</td>
+      </tr>
+      <tr>
+        <td><strong>Pololu Robotics</strong></td>
+        <td>Ships from Las Vegas. 2-3 day ground to Austin. Expedited available</td>
+        <td>Pololu 25D gearmotors, magnetic encoders, TB9051FTG drivers, motor brackets</td>
+        <td class="partial">Mid-tier TSA motors. Only order if upgrading from N20 budget motors. Not needed for MVP Day 1</td>
+      </tr>
+      <tr>
+        <td><strong>Adafruit</strong></td>
+        <td>Ships from NYC. 2-3 day to Austin. Express available</td>
+        <td>nRF52840 Feather, DRV2605L breakout, NeoPixel (debug LEDs), STEMMA/Qwiic connectors</td>
+        <td class="partial">Post-MVP MCU + haptic driver. Not needed Day 1 if starting with ESP32</td>
+      </tr>
+      <tr>
+        <td><strong>SparkFun</strong></td>
+        <td>Ships from Boulder, CO. 2-3 day ground</td>
+        <td>MyoWare 2.0 ($38), MyoWare Wireless Shield, Qwiic ecosystem, misc breakouts</td>
+        <td class="nope">MyoWare is expensive per channel. Only if you want plug-and-play for 1-2 channels to test quickly while BioAmp ships</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>AliExpress is OUT for time-sensitive items.</strong> Typical ship time: 2-4 weeks. Only use for bulk orders of commodity parts (generic coin motors, N20 gearmotors, DRV8833 breakouts) if you're planning ahead. For the next 2 weeks, stick to domestic sources.
+  </div>
+
+  <h3>Recommended Order Sequence — "Start Testing in 48 Hours"</h3>
+
+  <div class="config-grid">
+    <div class="config-card" style="border-left: 3px solid var(--accent-emg);">
+      <h4>Wave 1: Order TODAY (arrives tomorrow)</h4>
+      <div class="config-desc">
+        <strong>Amazon Same-Day / Next-Day:</strong><br>
+        - 2x ESP32-S3 DevKit (~$10 ea) — one spare<br>
+        - 10x generic 10mm coin vibration motors (~$6 for 10-pack) — test immediately<br>
+        - Ag/AgCl snap electrodes 100-pack (~$8)<br>
+        - 2x 800mAh LiPo + 2x TP4056 charger (~$16)<br>
+        - 2x CD4051 8:1 mux breakout (~$4)<br>
+        - Jumper wires, breadboard, headers (~$10)<br>
+        - Elastic adjustable straps + buckles (assorted pack ~$12)<br>
+        - Industrial velcro strips (~$8)<br>
+        - Neoprene sheet (for local compression patches ~$10)<br>
+        <strong>Subtotal: ~$85</strong><br><br>
+
+        <strong>Micro Center pickup (same day):</strong><br>
+        - Soldering iron + solder (if not owned)<br>
+        - Extra breadboards, wire strippers<br>
+        - 3D printer filament (PLA for pod housings, if you have printer access)<br>
+        <strong>Subtotal: ~$30–50</strong>
+      </div>
+    </div>
+
+    <div class="config-card" style="border-left: 3px solid var(--accent-tsa);">
+      <h4>Wave 2: Order TODAY (arrives 2-3 days)</h4>
+      <div class="config-desc">
+        <strong>Mouser (overnight ground to Austin):</strong><br>
+        - 10x BioAmp EXG Pill (~$100) — 8 for vest + 2 spares<br>
+        - 4x DRV8833 dual H-bridge breakout (~$8)<br>
+        - 2x INA219 current monitor (~$4) — for TSA force sensing<br>
+        - Precision 0.1-ohm shunt resistors 10-pack (~$3)<br>
+        - Conductive snap buttons / press studs (~$5 for 20)<br>
+        <strong>Subtotal: ~$120</strong><br><br>
+
+        <strong>Amazon 2-day:</strong><br>
+        - Dyneema braided line 0.5mm spool (~$8)<br>
+        - PTFE tubing 1.5mm ID, 5m (~$5)<br>
+        - 4x GA12-N20 gearmotors 100RPM 6V (~$12) — buy 4, use 2<br>
+        - A3144 hall sensor + small magnets pack (~$5)<br>
+        - Compression athletic shirt (1 each S/M/L for testing ~$30)<br>
+        <strong>Subtotal: ~$60</strong>
+      </div>
+    </div>
+
+    <div class="config-card" style="border-left: 3px solid var(--accent-vibe);">
+      <h4>Wave 3: Order AFTER initial testing validates</h4>
+      <div class="config-desc">
+        <strong>Only order these once you've confirmed sEMG signal quality and basic vibe cueing work:</strong><br><br>
+        - Precision Microdrives 310-103 (6x ~$15) — upgrade from generic coins<br>
+        - Pololu 25D 47:1 gearmotors + encoders ($30/ea) — if N20 force is insufficient<br>
+        - DRV2605L + Jinlong LRA combo ($12/ea) — if ERM localization proves insufficient<br>
+        - nRF52840 Feather ($25) — if ESP32 BLE stack is unreliable<br>
+        - ADS1292R breakouts ($45/ea) — if BioAmp SNR is insufficient for torso<br>
+        <strong>Don't pre-buy these.</strong> Budget-tier will answer most questions.
+      </div>
+    </div>
+  </div>
+
+  <h3>Hedging: What to Over-Order</h3>
+  <table class="matrix-table">
+    <thead><tr><th>Item</th><th>Need</th><th>Order</th><th>Why Over-Order</th><th>Extra Cost</th></tr></thead>
+    <tbody>
+      <tr><td>BioAmp EXG Pill</td><td>8</td><td>10</td><td>Fragile boards, easy to fry with wrong voltage. 2 spares</td><td>+$20</td></tr>
+      <tr><td>Coin vibration motors</td><td>6</td><td>20</td><td>$0.50 each. Test different positions, sizes. Some will die</td><td>+$7</td></tr>
+      <tr><td>N20 gearmotors</td><td>2</td><td>4</td><td>$3 each. Stall current can burn them. Spares</td><td>+$6</td></tr>
+      <tr><td>Ag/AgCl electrodes</td><td>50</td><td>200</td><td>Disposable, go through them fast during placement iteration</td><td>+$12</td></tr>
+      <tr><td>ESP32-S3 DevKit</td><td>1</td><td>2</td><td>One for bench testing, one for vest integration</td><td>+$10</td></tr>
+      <tr><td>Dyneema line</td><td>5m</td><td>25m spool</td><td>Cheap per meter. Lots of cutting and re-routing during iteration</td><td>+$5</td></tr>
+      <tr><td>DRV8833 breakout</td><td>2</td><td>4</td><td>$2 each. One per bench-test rig + vest</td><td>+$4</td></tr>
+      <tr class="total"><td colspan="4">Total hedge cost</td><td>+$64</td></tr>
+    </tbody>
+  </table>
+
+  <div class="rationale-box">
+    <strong>Total Day 1 spend (Wave 1 + Wave 2 + hedging): ~$330.</strong> This gets you all components for the full MVP vest (8ch sEMG + 2 TSA zones + 6 vibe zones) plus spares for iteration, arriving within 1-3 days. Wave 3 upgrades are held back until you know which subsystems need improvement — saves $100-200 vs buying everything upfront.
+  </div>
+
+  <h3>Mouser Will-Call Option</h3>
+  <div class="rationale-box">
+    <strong>If BioAmp lead time is a blocker:</strong> Mouser's warehouse is in Mansfield, TX (~3 hours from Austin). You can order online, select "Will Call" at checkout, and drive up to pick up the same day. This saves 1-2 days on specialty components. Worth it only if the BioAmp EXG Pills or other specialty ICs are the critical path. For everything else, Amazon next-day or Mouser ground overnight is sufficient. <strong>Uber budget: ~$200 round trip vs $0 for overnight ground.</strong> Only do this if you need to start bench-testing EMG channels TODAY.
+  </div>
+</div>
+
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+
+</body>
+</html>

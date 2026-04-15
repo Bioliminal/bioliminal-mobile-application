@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:auralink/core/theme.dart';
-import 'package:auralink/domain/models.dart';
-import 'package:auralink/features/history/widgets/assessment_timeline.dart';
+import 'package:bioliminal/core/theme.dart';
+import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/history/widgets/assessment_timeline.dart';
 
 const _testCitation = Citation(
   finding: 'test',
@@ -212,7 +212,7 @@ void main() {
       // The chip background uses confidenceHigh (green) at 10% alpha.
       expect(
         decoration.color,
-        AuraLinkTheme.confidenceHigh.withValues(alpha: 0.1),
+        BioliminalTheme.confidenceHigh.withValues(alpha: 0.1),
       );
     });
 

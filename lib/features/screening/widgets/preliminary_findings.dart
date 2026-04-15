@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:auralink/core/theme.dart';
+import 'package:bioliminal/core/theme.dart';
 import '../models/movement.dart';
 
 class PreliminaryFindings extends StatelessWidget {
@@ -22,7 +22,7 @@ class PreliminaryFindings extends StatelessWidget {
     final isFinalNext = completedMovementIndex == screeningMovements.length - 2;
 
     return Scaffold(
-      backgroundColor: AuraLinkTheme.screenBackground,
+      backgroundColor: BioliminalTheme.screenBackground,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),

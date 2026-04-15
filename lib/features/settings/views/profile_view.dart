@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:auralink/core/providers.dart';
+import 'package:bioliminal/core/providers.dart';
 
 class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
