@@ -6,7 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../core/providers.dart';
 import '../features/camera/views/hardware_setup_view.dart';
 import '../features/history/views/history_view.dart';
+import '../features/landing/views/code_view.dart';
+import '../features/landing/views/demo_view.dart';
 import '../features/landing/views/landing_page_view.dart';
+import '../features/landing/views/science_view.dart';
+import '../features/landing/views/system_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
 import '../features/rep_capture/views/rep_capture_view.dart';
@@ -46,6 +50,26 @@ final goRouter = GoRouter(
       path: '/',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const LandingPageView(),
+    ),
+    GoRoute(
+      path: '/system',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SystemView(),
+    ),
+    GoRoute(
+      path: '/science',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const ScienceView(),
+    ),
+    GoRoute(
+      path: '/demo',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const DemoView(),
+    ),
+    GoRoute(
+      path: '/code',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const CodeView(),
     ),
     GoRoute(
       path: '/disclaimer',
