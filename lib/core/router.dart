@@ -14,6 +14,7 @@ import '../features/landing/views/science_view.dart';
 import '../features/landing/views/system_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
+import '../features/waitlist/views/waitlist_view.dart';
 import '../features/rep_capture/views/rep_capture_view.dart';
 import '../features/report/views/report_view.dart';
 import '../features/screening/views/screening_view.dart';
@@ -76,6 +77,12 @@ final goRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: CodeView()),
+    ),
+    GoRoute(
+      path: '/waitlist',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) =>
+          const NoTransitionPage(child: WaitlistView()),
     ),
     GoRoute(
       path: '/disclaimer',
