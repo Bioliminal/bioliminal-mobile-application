@@ -1,0 +1,61 @@
+{
+  "metadata": {
+    "movement": "bicep_curl",
+    "device": "Pixel 8 Pro",
+    "model": "mediapipe_blazepose_full",
+    "frame_rate": 30.0,
+    "captured_at": "2026-04-16T15:00:00.000000Z"
+  },
+  "frames": [
+    {
+      "timestamp_ms": 0,
+      "landmarks": [
+        {"x": 0.5, "y": 0.12, "z": -0.3, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.508, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.516, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.524, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.48, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.472, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.464, "y": 0.113, "z": -0.29, "visibility": 0.97, "presence": 0.98},
+        {"x": 0.55, "y": 0.13, "z": -0.2, "visibility": 0.96, "presence": 0.97},
+        {"x": 0.45, "y": 0.13, "z": -0.2, "visibility": 0.96, "presence": 0.97},
+        {"x": 0.53, "y": 0.14, "z": -0.2, "visibility": 0.95, "presence": 0.97},
+        {"x": 0.47, "y": 0.14, "z": -0.2, "visibility": 0.95, "presence": 0.97},
+        {"x": 0.58, "y": 0.25, "z": -0.1, "visibility": 0.95, "presence": 0.98},
+        {"x": 0.42, "y": 0.25, "z": -0.1, "visibility": 0.95, "presence": 0.98},
+        {"x": 0.62, "y": 0.38, "z": -0.05, "visibility": 0.93, "presence": 0.97},
+        {"x": 0.38, "y": 0.38, "z": -0.05, "visibility": 0.93, "presence": 0.97},
+        {"x": 0.65, "y": 0.5, "z": 0.0, "visibility": 0.9, "presence": 0.96},
+        {"x": 0.35, "y": 0.5, "z": 0.0, "visibility": 0.9, "presence": 0.96},
+        {"x": 0.67, "y": 0.53, "z": 0.0, "visibility": 0.88, "presence": 0.95},
+        {"x": 0.33, "y": 0.53, "z": 0.0, "visibility": 0.88, "presence": 0.95},
+        {"x": 0.68, "y": 0.55, "z": 0.0, "visibility": 0.87, "presence": 0.95},
+        {"x": 0.32, "y": 0.55, "z": 0.0, "visibility": 0.87, "presence": 0.95},
+        {"x": 0.66, "y": 0.53, "z": 0.0, "visibility": 0.88, "presence": 0.95},
+        {"x": 0.34, "y": 0.53, "z": 0.0, "visibility": 0.88, "presence": 0.95},
+        {"x": 0.55, "y": 0.55, "z": 0.05, "visibility": 0.92, "presence": 0.97},
+        {"x": 0.45, "y": 0.55, "z": 0.05, "visibility": 0.92, "presence": 0.97},
+        {"x": 0.56, "y": 0.72, "z": 0.1, "visibility": 0.9, "presence": 0.96},
+        {"x": 0.44, "y": 0.72, "z": 0.1, "visibility": 0.9, "presence": 0.96},
+        {"x": 0.57, "y": 0.9, "z": 0.15, "visibility": 0.85, "presence": 0.94},
+        {"x": 0.43, "y": 0.9, "z": 0.15, "visibility": 0.85, "presence": 0.94},
+        {"x": 0.58, "y": 0.92, "z": 0.15, "visibility": 0.83, "presence": 0.93},
+        {"x": 0.42, "y": 0.92, "z": 0.15, "visibility": 0.83, "presence": 0.93},
+        {"x": 0.6, "y": 0.95, "z": 0.18, "visibility": 0.8, "presence": 0.92},
+        {"x": 0.4, "y": 0.95, "z": 0.18, "visibility": 0.8, "presence": 0.92}
+      ]
+    }
+  ],
+  "emg": [
+    {"channel": 0, "timestamp_ms": 0, "value": 0.12, "encoding": "normalized_0_1"},
+    {"channel": 1, "timestamp_ms": 0, "value": 0.08, "encoding": "normalized_0_1"},
+    {"channel": 0, "timestamp_ms": 10, "value": 0.15, "encoding": "normalized_0_1"},
+    {"channel": 1, "timestamp_ms": 10, "value": 0.09, "encoding": "normalized_0_1"}
+  ],
+  "consent": {
+    "consent_version": "bioliminal-privacy-v1",
+    "consent_jurisdiction": "US-other",
+    "consent_timestamp": "2026-04-16T14:59:55.000000Z",
+    "data_retention_days": 90
+  }
+}

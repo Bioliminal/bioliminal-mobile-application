@@ -1,5 +1,49 @@
 {
   "$defs": {
+    "ConsentMetadata": {
+      "additionalProperties": true,
+      "description": "Session-level consent fingerprint. Required when emg is present; see\nSession.validate_consent_for_emg.",
+      "properties": {
+        "consent_version": {
+          "title": "Consent Version",
+          "type": "string"
+        },
+        "consent_jurisdiction": {
+          "enum": [
+            "US-WA",
+            "US-other",
+            "EU",
+            "other"
+          ],
+          "title": "Consent Jurisdiction",
+          "type": "string"
+        },
+        "consent_timestamp": {
+          "format": "date-time",
+          "title": "Consent Timestamp",
+          "type": "string"
+        },
+        "data_retention_days": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data Retention Days"
+        }
+      },
+      "required": [
+        "consent_version",
+        "consent_jurisdiction",
+        "consent_timestamp"
+      ],
+      "title": "ConsentMetadata",
+      "type": "object"
+    },
     "Frame": {
       "description": "A single captured frame with 33 BlazePose landmarks in canonical order.",
       "properties": {
@@ -68,7 +112,8 @@
             "overhead_squat",
             "single_leg_squat",
             "push_up",
-            "rollup"
+            "rollup",
+            "bicep_curl"
           ],
           "title": "Movement",
           "type": "string"
@@ -100,6 +145,44 @@
       ],
       "title": "SessionMetadata",
       "type": "object"
+    },
+    "sEMGSample": {
+      "additionalProperties": true,
+      "description": "Single sEMG reading. Schema is intentionally minimal pending gitlab\nML_RandD_Server#13 (sEMG in SessionPayload decision); extra fields permitted\nvia extra='allow' for forward compatibility with channel metadata, windowing,\nand feature-extraction parameters.",
+      "properties": {
+        "channel": {
+          "minimum": 0,
+          "title": "Channel",
+          "type": "integer"
+        },
+        "timestamp_ms": {
+          "minimum": 0,
+          "title": "Timestamp Ms",
+          "type": "integer"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "encoding": {
+          "default": "normalized_0_1",
+          "enum": [
+            "raw_mv",
+            "normalized_0_1",
+            "feature_rms",
+            "feature_mdf"
+          ],
+          "title": "Encoding",
+          "type": "string"
+        }
+      },
+      "required": [
+        "channel",
+        "timestamp_ms",
+        "value"
+      ],
+      "title": "sEMGSample",
+      "type": "object"
     }
   },
   "properties": {
@@ -112,6 +195,32 @@
       },
       "title": "Frames",
       "type": "array"
+    },
+    "emg": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/sEMGSample"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Emg"
+    },
+    "consent": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ConsentMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     }
   },
   "required": [
