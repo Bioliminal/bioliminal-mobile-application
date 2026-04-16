@@ -1,0 +1,10 @@
+<svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <!-- Bioliminal mark: lowercase b with fascial-chain S-wave in the bowl.
+       currentColor-driven so parents can tint via CSS or fill attr. -->
+  <line x1="42" y1="18" x2="42" y2="92" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="60" cy="74" r="18" stroke="currentColor" stroke-width="3"/>
+  <path d="M44 76 Q 52 62, 60 74 T 76 72" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="44" cy="76" r="2" fill="currentColor"/>
+  <circle cx="60" cy="74" r="2" fill="currentColor"/>
+  <circle cx="76" cy="72" r="2" fill="currentColor"/>
+</svg>

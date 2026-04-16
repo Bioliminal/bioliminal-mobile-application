@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bioliminal — Logo Exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;800&family=Outfit:wght@400;500;600&family=Nunito:wght@300;400;500;600;700;800&family=Quicksand:wght@300;400;500;600;700&family=Varela+Round&family=Comfortaa:wght@300;400;600;700&family=Mulish:wght@300;400;500;600&family=Rubik:wght@300;400;500;600&family=Fredoka:wght@300;400;500;600&family=Baloo+2:wght@400;500;600&family=M+PLUS+Rounded+1c:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0F1A;
+    --surface: #121A2A;
+    --surface-2: #1A2438;
+    --ink: #E6EEFB;
+    --ink-dim: #8FA2C4;
+    --line: #23314D;
+    --primary: #0D47A1;
+    --secondary: #64B5F6;
+    --accent: #38BDF8;
+    --emerald: #10B981;
+    --amber: #F59E0B;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(56,189,248,0.08), transparent 60%),
+      radial-gradient(1000px 500px at 90% 110%, rgba(13,71,161,0.22), transparent 55%),
+      var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 64px 32px 96px;
+  }
+  header { margin-bottom: 48px; }
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 700;
+    margin: 0 0 16px;
+    letter-spacing: -0.02em;
+    background: linear-gradient(180deg, #FFFFFF 0%, #B9C8E6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .lede {
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--ink-dim);
+    max-width: 720px;
+    margin: 0;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 24px;
+    margin-top: 48px;
+  }
+  .card {
+    background: linear-gradient(180deg, rgba(26,36,56,0.7) 0%, rgba(18,26,42,0.85) 100%);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: transform 180ms ease, border-color 180ms ease;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(56,189,248,0.4);
+  }
+  .card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .num {
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.18em;
+    font-weight: 600;
+  }
+  .title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .stage-dark {
+    background: radial-gradient(circle at 50% 40%, #162238 0%, #0A0F1A 100%);
+    padding: 28px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+  }
+  .stage-light {
+    background: radial-gradient(circle at 50% 40%, #FFFFFF 0%, #E9EEF6 100%);
+    padding: 28px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 160px;
+  }
+  .lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(10,15,26,0.55);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+  }
+  .lockup .word {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .lockup .word span { color: var(--accent); }
+  .idea {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--ink-dim);
+    margin: 0;
+  }
+  .idea strong { color: var(--ink); font-weight: 600; }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(56,189,248,0.08);
+    color: var(--accent);
+    border: 1px solid rgba(56,189,248,0.2);
+    letter-spacing: 0.02em;
+  }
+  footer {
+    margin-top: 72px;
+    padding-top: 32px;
+    border-top: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  footer code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: rgba(56,189,248,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Bioliminal · Mark Exploration v1</p>
+    <h1>Six directions for the Bioliminal logo</h1>
+    <p class="lede">
+      Bioliminal sits at the intersection of computer vision, surface EMG, and fascial chain
+      biomechanics — revealing what lives beneath the surface of movement. Each mark below
+      explores a different metaphor: <em>threshold, chain, pulse, figure, spine, fusion</em>.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 01 — THRESHOLD WAVE                           -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">01 / THRESHOLD</span>
+      </div>
+      <h3 class="title">Threshold Wave</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Threshold Wave mark">
+            <defs>
+              <linearGradient id="tw1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="50%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#10B981"/>
+              </linearGradient>
+            </defs>
+            <!-- baseline (the threshold) -->
+            <line x1="14" y1="60" x2="106" y2="60" stroke="rgba(255,255,255,0.18)" stroke-width="1.25" stroke-dasharray="2 3"/>
+            <!-- sEMG-style waveform crossing the line -->
+            <path d="M14 60 L28 60 L34 60 L38 44 L44 74 L50 36 L56 82 L62 52 L68 60 L82 60 L86 52 L92 68 L98 60 L106 60"
+                  fill="none" stroke="url(#tw1)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- pulse accent dot at the emergence point -->
+            <circle cx="50" cy="36" r="3.4" fill="#10B981"/>
+            <circle cx="50" cy="36" r="7" fill="none" stroke="#10B981" stroke-width="1" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <line x1="6" y1="30" x2="54" y2="30" stroke="rgba(255,255,255,0.2)" stroke-width="1" stroke-dasharray="2 3"/>
+              <path d="M6 30 L16 30 L19 22 L22 38 L26 18 L30 42 L34 26 L38 30 L48 30 L50 25 L54 34"
+                    fill="none" stroke="#38BDF8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="26" cy="18" r="2" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> An sEMG waveform crosses a dotted baseline — the literal
+        "liminal" threshold between subconscious and observable movement. The emerald pulse
+        marks the moment a pattern emerges. Technical, clinical, alive.
+      </p>
+      <div class="tags">
+        <span class="tag">sEMG</span><span class="tag">threshold</span><span class="tag">clinical</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 02 — FASCIAL CHAIN                            -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">02 / CHAIN</span>
+      </div>
+      <h3 class="title">Fascial Chain</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Fascial Chain mark">
+            <defs>
+              <linearGradient id="fc1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#0D47A1"/>
+              </linearGradient>
+            </defs>
+            <!-- flowing S-curve representing a fascial chain through the body -->
+            <path d="M30 18 C 75 30, 25 60, 70 72 S 35 108, 90 102"
+                  fill="none" stroke="url(#fc1)" stroke-width="2.25" stroke-linecap="round" opacity="0.7"/>
+            <!-- landmark nodes along the chain -->
+            <circle cx="30" cy="18" r="4" fill="#64B5F6"/>
+            <circle cx="52" cy="32" r="3" fill="#38BDF8"/>
+            <circle cx="40" cy="52" r="3" fill="#38BDF8"/>
+            <circle cx="64" cy="66" r="3.5" fill="#38BDF8"/>
+            <circle cx="52" cy="86" r="3" fill="#38BDF8"/>
+            <circle cx="78" cy="96" r="3.5" fill="#10B981"/>
+            <circle cx="90" cy="102" r="4" fill="#10B981"/>
+            <!-- faint glow on anchor node -->
+            <circle cx="30" cy="18" r="8" fill="none" stroke="#64B5F6" stroke-width="1" opacity="0.35"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 10 C 40 18, 12 32, 38 40 S 20 54, 48 54"
+                    fill="none" stroke="#64B5F6" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/>
+              <circle cx="16" cy="10" r="2.3" fill="#64B5F6"/>
+              <circle cx="28" cy="22" r="1.8" fill="#38BDF8"/>
+              <circle cx="22" cy="32" r="1.8" fill="#38BDF8"/>
+              <circle cx="38" cy="40" r="1.8" fill="#38BDF8"/>
+              <circle cx="32" cy="48" r="1.8" fill="#38BDF8"/>
+              <circle cx="48" cy="54" r="2.3" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Seven pose landmarks connected along a flowing fascial
+        pathway — visualizing the Back Functional Line from shoulder to opposite heel. This
+        is the core IP made visible: same-symptom, different-body traced to its root.
+      </p>
+      <div class="tags">
+        <span class="tag">landmarks</span><span class="tag">fascia</span><span class="tag">root-cause</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 03 — PULSE B                                  -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">03 / PULSE</span>
+      </div>
+      <h3 class="title">Pulse B (Monogram)</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Pulse B monogram">
+            <defs>
+              <linearGradient id="pb1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+            </defs>
+            <!-- Vertical stem -->
+            <rect x="34" y="22" width="6" height="76" rx="3" fill="url(#pb1)"/>
+            <!-- Top bowl as a pulse arc -->
+            <path d="M40 30 Q 78 30, 78 46 Q 78 62, 40 62"
+                  fill="none" stroke="url(#pb1)" stroke-width="6" stroke-linecap="round"/>
+            <!-- Bottom bowl as a second pulse arc -->
+            <path d="M40 58 Q 86 58, 86 76 Q 86 94, 40 94"
+                  fill="none" stroke="url(#pb1)" stroke-width="6" stroke-linecap="round"/>
+            <!-- Signal pulse ring radiating from bottom -->
+            <circle cx="37" cy="94" r="10" fill="none" stroke="#10B981" stroke-width="1.5" opacity="0.7"/>
+            <circle cx="37" cy="94" r="16" fill="none" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+            <circle cx="37" cy="94" r="3.5" fill="#10B981"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <rect x="16" y="12" width="3.5" height="36" rx="1.75" fill="#38BDF8"/>
+              <path d="M19.5 16 Q 38 16, 38 24 Q 38 32, 19.5 32" fill="none" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M19.5 30 Q 42 30, 42 40 Q 42 48, 19.5 48" fill="none" stroke="#38BDF8" stroke-width="3.5" stroke-linecap="round"/>
+              <circle cx="18" cy="48" r="1.8" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A geometric B whose bowls read as signal pulses — the
+        sensor heartbeat of the product. Strong app-icon geometry at every size.
+        The emerald ring grounds it as a living sensor, not a static logotype.
+      </p>
+      <div class="tags">
+        <span class="tag">monogram</span><span class="tag">app-icon</span><span class="tag">geometric</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 04 — FIGURE IN MOTION                         -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">04 / FIGURE</span>
+      </div>
+      <h3 class="title">Figure in Motion</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Figure in Motion mark">
+            <defs>
+              <linearGradient id="fm1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#10B981"/>
+              </linearGradient>
+            </defs>
+            <!-- Overhead squat silhouette as connected landmarks -->
+            <!-- head -->
+            <circle cx="60" cy="22" r="6" fill="none" stroke="#64B5F6" stroke-width="2"/>
+            <!-- torso / spine -->
+            <line x1="60" y1="28" x2="60" y2="58" stroke="url(#fm1)" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- arms overhead -->
+            <path d="M60 34 L40 18 M60 34 L80 18" stroke="#64B5F6" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+            <!-- hips -->
+            <line x1="48" y1="58" x2="72" y2="58" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- legs in squat -->
+            <path d="M48 58 L38 78 L44 98 M72 58 L82 78 L76 98" stroke="url(#fm1)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <!-- highlighted knee (finding node) -->
+            <circle cx="38" cy="78" r="4" fill="#10B981"/>
+            <circle cx="82" cy="78" r="4" fill="#10B981"/>
+            <!-- confidence highlight ring on left knee -->
+            <circle cx="38" cy="78" r="8.5" fill="none" stroke="#10B981" stroke-width="1" opacity="0.5"/>
+            <!-- joint dots -->
+            <circle cx="60" cy="58" r="2.5" fill="#64B5F6"/>
+            <circle cx="44" cy="98" r="2.5" fill="#38BDF8"/>
+            <circle cx="76" cy="98" r="2.5" fill="#38BDF8"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="30" cy="13" r="3" fill="none" stroke="#38BDF8" stroke-width="1.4"/>
+              <line x1="30" y1="16" x2="30" y2="30" stroke="#38BDF8" stroke-width="1.6"/>
+              <path d="M30 19 L22 11 M30 19 L38 11" stroke="#38BDF8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <line x1="24" y1="30" x2="36" y2="30" stroke="#38BDF8" stroke-width="1.6"/>
+              <path d="M24 30 L20 42 L23 52 M36 30 L40 42 L37 52" stroke="#38BDF8" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+              <circle cx="20" cy="42" r="1.8" fill="#10B981"/>
+              <circle cx="40" cy="42" r="1.8" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A stylized pose-landmark figure mid overhead-squat —
+        the flagship assessment. Emerald knee nodes signal the clinical focus (valgus
+        detection). Instantly communicates <em>what the app does</em>.
+      </p>
+      <div class="tags">
+        <span class="tag">pose</span><span class="tag">assessment</span><span class="tag">literal</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 05 — NODE SPINE                               -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">05 / SPINE</span>
+      </div>
+      <h3 class="title">Node Spine</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Node Spine mark">
+            <defs>
+              <linearGradient id="ns1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="50%" stop-color="#38BDF8"/>
+                <stop offset="100%" stop-color="#0D47A1"/>
+              </linearGradient>
+            </defs>
+            <!-- vertebral stack: 7 linked nodes with offset pairs (lateral processes) -->
+            <g stroke="url(#ns1)" stroke-width="2" fill="none" stroke-linecap="round">
+              <line x1="60" y1="16" x2="60" y2="104"/>
+            </g>
+            <!-- segments -->
+            <g>
+              <!-- top (cranial) -->
+              <circle cx="60" cy="18" r="4.5" fill="#64B5F6"/>
+              <line x1="50" y1="30" x2="70" y2="30" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="60" cy="30" r="3.5" fill="#38BDF8"/>
+              <line x1="48" y1="44" x2="72" y2="44" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="60" cy="44" r="3.5" fill="#38BDF8"/>
+              <!-- articulation active (highlight) -->
+              <line x1="46" y1="60" x2="74" y2="60" stroke="#10B981" stroke-width="2.25" stroke-linecap="round"/>
+              <circle cx="60" cy="60" r="4" fill="#10B981"/>
+              <circle cx="60" cy="60" r="9" fill="none" stroke="#10B981" stroke-width="1" opacity="0.45"/>
+              <line x1="48" y1="76" x2="72" y2="76" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="60" cy="76" r="3.5" fill="#38BDF8"/>
+              <line x1="50" y1="90" x2="70" y2="90" stroke="#38BDF8" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="60" cy="90" r="3.5" fill="#38BDF8"/>
+              <circle cx="60" cy="102" r="4.5" fill="#0D47A1" stroke="#38BDF8" stroke-width="1.5"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <line x1="30" y1="10" x2="30" y2="50" stroke="#38BDF8" stroke-width="1.3"/>
+              <g>
+                <circle cx="30" cy="11" r="2.3" fill="#64B5F6"/>
+                <circle cx="30" cy="20" r="1.8" fill="#38BDF8"/>
+                <circle cx="30" cy="28" r="1.8" fill="#38BDF8"/>
+                <circle cx="30" cy="36" r="2.4" fill="#10B981"/>
+                <circle cx="30" cy="44" r="1.8" fill="#38BDF8"/>
+                <circle cx="30" cy="50" r="2.3" fill="#0D47A1" stroke="#38BDF8" stroke-width="1"/>
+              </g>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Segmental spinal articulation — a direct nod to the Rollup
+        assessment and the core clinical vocabulary. Each node is a vertebra; the emerald
+        segment is the one <em>currently articulating</em>. Feels like an instrument.
+      </p>
+      <div class="tags">
+        <span class="tag">spine</span><span class="tag">rollup</span><span class="tag">segments</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 06 — FUSION                                   -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">06 / FUSION</span>
+      </div>
+      <h3 class="title">Vision × Sensing Fusion</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Vision x Sensing Fusion mark">
+            <defs>
+              <linearGradient id="fu1" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+              <linearGradient id="fu2" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" stop-color="#10B981"/>
+                <stop offset="100%" stop-color="#F59E0B"/>
+              </linearGradient>
+            </defs>
+            <!-- Two intertwined strands: vision (cool, smooth) + sensing (warm, waveform) -->
+            <!-- Vision strand -->
+            <path d="M18 42 Q 40 20, 60 42 T 102 42"
+                  fill="none" stroke="url(#fu1)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Sensing strand (waveform-ish) -->
+            <path d="M18 78 Q 30 70, 36 82 T 52 78 Q 60 66, 68 82 T 88 78 T 102 78"
+                  fill="none" stroke="url(#fu2)" stroke-width="3" stroke-linecap="round"/>
+            <!-- Fusion nodes where strands converge visually -->
+            <circle cx="60" cy="42" r="4" fill="#64B5F6"/>
+            <circle cx="60" cy="78" r="4" fill="#10B981"/>
+            <!-- Vertical connector suggesting data fusion -->
+            <line x1="60" y1="46" x2="60" y2="74" stroke="rgba(255,255,255,0.4)" stroke-width="1.25" stroke-dasharray="2 3"/>
+            <!-- center fusion dot -->
+            <circle cx="60" cy="60" r="5" fill="#FFFFFF"/>
+            <circle cx="60" cy="60" r="10" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M8 22 Q 20 10, 30 22 T 52 22" fill="none" stroke="#38BDF8" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M8 40 Q 16 34, 20 42 T 30 40 Q 36 32, 40 42 T 52 40" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round"/>
+              <line x1="30" y1="24" x2="30" y2="38" stroke="rgba(255,255,255,0.4)" stroke-width="1" stroke-dasharray="1 2"/>
+              <circle cx="30" cy="31" r="2.2" fill="#FFFFFF"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Two data streams — a smooth pose-vision curve and a jagged
+        sEMG waveform — converging on a single fusion point. This is the product thesis in
+        one mark: <em>vision alone can't; sensing alone can't; together they can</em>.
+      </p>
+      <div class="tags">
+        <span class="tag">fusion</span><span class="tag">thesis</span><span class="tag">dual-stream</span>
+      </div>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v2</p>
+    <h1>Six more directions — different metaphors</h1>
+    <p class="lede">
+      Pivoting away from waveforms, landmarks, and monograms. These explore
+      <em>aperture, resonance, topography, threshold, single-stroke figure,</em>
+      and <em>woven chain</em> — quieter, more iconic, more brand-first.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 07 — APERTURE                                 -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">07 / APERTURE</span>
+      </div>
+      <h3 class="title">Aperture</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Aperture mark">
+            <defs>
+              <linearGradient id="ap1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#0D47A1"/>
+              </linearGradient>
+            </defs>
+            <!-- six aperture blades forming an iris -->
+            <g transform="translate(60 60)">
+              <g fill="url(#ap1)" stroke="#0A0F1A" stroke-width="1.25" stroke-linejoin="round">
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(0)"/>
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(60)"/>
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(120)"/>
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(180)"/>
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(240)"/>
+                <path d="M0 -34 L22 -22 L0 0 Z" transform="rotate(300)"/>
+              </g>
+              <!-- outer hair-ring -->
+              <circle r="34" fill="none" stroke="#38BDF8" stroke-width="1.25" opacity="0.55"/>
+              <!-- center pupil -->
+              <circle r="5.5" fill="#10B981"/>
+              <circle r="10" fill="none" stroke="#10B981" stroke-width="1" opacity="0.45"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(30 30)">
+                <g fill="#38BDF8" stroke="#0A0F1A" stroke-width="0.8" stroke-linejoin="round">
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(0)"/>
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(60)"/>
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(120)"/>
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(180)"/>
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(240)"/>
+                  <path d="M0 -18 L12 -12 L0 0 Z" transform="rotate(300)"/>
+                </g>
+                <circle r="2.8" fill="#10B981"/>
+              </g>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A camera aperture opening to reveal what's beneath —
+        directly evoking the phone-camera capture loop, and a clinician's "eye for
+        movement." Clean, premium, distinctive at icon scale.
+      </p>
+      <div class="tags">
+        <span class="tag">vision</span><span class="tag">reveal</span><span class="tag">iconic</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 08 — RESONANCE                                -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">08 / RESONANCE</span>
+      </div>
+      <h3 class="title">Resonance</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Resonance mark">
+            <defs>
+              <linearGradient id="rs1" x1="0" y1="1" x2="0" y2="0">
+                <stop offset="0%" stop-color="#0D47A1"/>
+                <stop offset="100%" stop-color="#64B5F6"/>
+              </linearGradient>
+            </defs>
+            <!-- tuning-fork silhouette -->
+            <g stroke="url(#rs1)" stroke-width="5" stroke-linecap="round" fill="none">
+              <!-- stem -->
+              <line x1="60" y1="102" x2="60" y2="78"/>
+              <!-- U-bend -->
+              <path d="M40 78 Q 40 66, 60 66 Q 80 66, 80 78"/>
+              <!-- tines -->
+              <line x1="40" y1="78" x2="40" y2="34"/>
+              <line x1="80" y1="78" x2="80" y2="34"/>
+            </g>
+            <!-- resonant pulse arcs at the tine tips -->
+            <g fill="none" stroke="#10B981" stroke-linecap="round">
+              <path d="M30 28 Q 60 14, 90 28" stroke-width="1.75" opacity="0.85"/>
+              <path d="M22 20 Q 60 2, 98 20" stroke-width="1.25" opacity="0.55"/>
+              <path d="M14 14 Q 60 -8, 106 14" stroke-width="1" opacity="0.3"/>
+            </g>
+            <!-- tine-tip dots -->
+            <circle cx="40" cy="34" r="3" fill="#64B5F6"/>
+            <circle cx="80" cy="34" r="3" fill="#64B5F6"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" fill="none">
+                <line x1="30" y1="50" x2="30" y2="40"/>
+                <path d="M20 40 Q 20 34, 30 34 Q 40 34, 40 40"/>
+                <line x1="20" y1="40" x2="20" y2="18"/>
+                <line x1="40" y1="40" x2="40" y2="18"/>
+              </g>
+              <path d="M15 14 Q 30 6, 45 14" fill="none" stroke="#10B981" stroke-width="1.2" opacity="0.8"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A tuning fork — precision, calibration, resonance.
+        Directly embodies the "Sync Stomp" calibration step that time-aligns vision and
+        sensing. Clinical gravitas without any medical cliché.
+      </p>
+      <div class="tags">
+        <span class="tag">calibration</span><span class="tag">sync-stomp</span><span class="tag">precision</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 09 — TOPOGRAPHY                               -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">09 / TOPOGRAPHY</span>
+      </div>
+      <h3 class="title">Body Topography</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Body Topography mark">
+            <defs>
+              <linearGradient id="tp1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#0D47A1"/>
+              </linearGradient>
+            </defs>
+            <!-- nested body-silhouette contours, like a topographic map of a torso -->
+            <g fill="none" stroke="url(#tp1)" stroke-linecap="round" stroke-linejoin="round">
+              <!-- outermost -->
+              <path d="M42 18 Q 60 10, 78 18 Q 84 34, 80 50 Q 90 72, 84 96 Q 60 104, 36 96 Q 30 72, 40 50 Q 36 34, 42 18 Z"
+                    stroke-width="2.25"/>
+              <!-- 2nd -->
+              <path d="M46 26 Q 60 20, 74 26 Q 78 38, 74 52 Q 82 70, 78 90 Q 60 96, 42 90 Q 38 70, 46 52 Q 42 38, 46 26 Z"
+                    stroke-width="1.75" opacity="0.85"/>
+              <!-- 3rd -->
+              <path d="M50 34 Q 60 30, 70 34 Q 72 42, 68 54 Q 74 68, 70 84 Q 60 88, 50 84 Q 46 68, 52 54 Q 48 42, 50 34 Z"
+                    stroke-width="1.25" opacity="0.6"/>
+              <!-- innermost -->
+              <path d="M54 44 Q 60 40, 66 44 Q 66 56, 60 66 Q 54 56, 54 44 Z"
+                    stroke-width="1" opacity="0.45"/>
+            </g>
+            <!-- core heat dot (the root) -->
+            <circle cx="60" cy="54" r="4" fill="#10B981"/>
+            <circle cx="60" cy="54" r="9" fill="none" stroke="#10B981" stroke-width="1" opacity="0.35"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#38BDF8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10 Q 30 6, 39 10 Q 42 18, 40 26 Q 45 38, 42 50 Q 30 54, 18 50 Q 15 38, 20 26 Q 18 18, 21 10 Z" stroke-width="1.3"/>
+                <path d="M24 18 Q 30 15, 36 18 Q 37 26, 35 34 Q 38 44, 35 50 Q 30 51, 25 50 Q 22 44, 25 34 Q 23 26, 24 18 Z" stroke-width="0.9" opacity="0.7"/>
+              </g>
+              <circle cx="30" cy="30" r="2" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Nested body contours — a topographic map of a torso.
+        Communicates <em>depth</em>: what you see on the surface is only one layer.
+        The emerald core = the root-cause reveal that lives under every finding.
+      </p>
+      <div class="tags">
+        <span class="tag">depth</span><span class="tag">root-cause</span><span class="tag">cartographic</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 10 — THRESHOLD GATE                           -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">10 / GATE</span>
+      </div>
+      <h3 class="title">Liminal Gate</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Liminal Gate mark">
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#0D47A1"/>
+              </linearGradient>
+            </defs>
+            <!-- an archway / doorway — the threshold -->
+            <path d="M30 100 L30 54 Q 30 26, 60 26 Q 90 26, 90 54 L90 100"
+                  fill="none" stroke="url(#lg1)" stroke-width="6" stroke-linecap="round"/>
+            <!-- the liminal line — the threshold itself -->
+            <line x1="22" y1="100" x2="98" y2="100" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- echo of the arch (the state on the other side) -->
+            <path d="M38 100 L38 58 Q 38 36, 60 36 Q 82 36, 82 58 L82 100"
+                  fill="none" stroke="#38BDF8" stroke-width="1.25" stroke-dasharray="2 3" opacity="0.7"/>
+            <!-- passing through: emerald pulse stepping across the threshold -->
+            <circle cx="60" cy="100" r="4.5" fill="#10B981"/>
+            <circle cx="60" cy="100" r="10" fill="none" stroke="#10B981" stroke-width="1" opacity="0.4"/>
+            <circle cx="60" cy="100" r="16" fill="none" stroke="#10B981" stroke-width="0.8" opacity="0.2"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M14 50 L14 26 Q 14 12, 30 12 Q 46 12, 46 26 L46 50"
+                    fill="none" stroke="#38BDF8" stroke-width="3" stroke-linecap="round"/>
+              <line x1="10" y1="50" x2="50" y2="50" stroke="#38BDF8" stroke-width="1.5" stroke-linecap="round"/>
+              <circle cx="30" cy="50" r="2.2" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> The literal <em>limen</em> — a threshold you cross.
+        A simple arch, a baseline, a pulse stepping through. Most ownable mark of the
+        bunch; reads as a brand symbol, not a data visualization.
+      </p>
+      <div class="tags">
+        <span class="tag">brand-first</span><span class="tag">iconic</span><span class="tag">ownable</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 11 — SINGLE STROKE                            -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">11 / STROKE</span>
+      </div>
+      <h3 class="title">Single-Stroke Figure</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Single Stroke Figure mark">
+            <defs>
+              <linearGradient id="ss1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#10B981"/>
+              </linearGradient>
+            </defs>
+            <!-- one continuous stroke: head loop → torso arc → reaching arm → leg curl -->
+            <path d="M60 24
+                     C 74 24, 74 42, 60 42
+                     C 50 42, 46 52, 50 62
+                     C 56 74, 78 68, 86 58
+                     M 50 62
+                     C 48 80, 40 90, 34 98"
+                  fill="none"
+                  stroke="url(#ss1)"
+                  stroke-width="5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"/>
+            <!-- terminal accent dot -->
+            <circle cx="86" cy="58" r="3.5" fill="#10B981"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 12
+                       C 37 12, 37 21, 30 21
+                       C 25 21, 23 27, 25 32
+                       C 29 38, 39 35, 43 30
+                       M 25 32
+                       C 24 42, 20 48, 17 52"
+                    fill="none" stroke="#38BDF8" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="43" cy="30" r="1.8" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Matisse-style single-line figure reaching. Warm, human,
+        unmistakably about <em>bodies in motion</em> — not a sensor company logo. Works
+        as a brand signature on marketing surfaces; flexes well as animation.
+      </p>
+      <div class="tags">
+        <span class="tag">human</span><span class="tag">warm</span><span class="tag">signature</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 12 — WOVEN                                    -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">12 / WOVEN</span>
+      </div>
+      <h3 class="title">Woven Chain</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Woven Chain mark">
+            <defs>
+              <linearGradient id="wv1" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#64B5F6"/>
+                <stop offset="100%" stop-color="#38BDF8"/>
+              </linearGradient>
+            </defs>
+            <!-- Borromean-style three interlocking rings (fascia as weave) -->
+            <g fill="none" stroke-width="4.5" stroke-linecap="round">
+              <!-- ring 1 (top) -->
+              <circle cx="60" cy="42" r="22" stroke="url(#wv1)"/>
+              <!-- ring 2 (bottom-left) -->
+              <circle cx="42" cy="74" r="22" stroke="#38BDF8"/>
+              <!-- ring 3 (bottom-right) -->
+              <circle cx="78" cy="74" r="22" stroke="#0D47A1"/>
+            </g>
+            <!-- weave "over/under" accents (tiny gap tricks) -->
+            <g fill="#0A0F1A">
+              <!-- small masks at crossings to suggest interlock -->
+              <circle cx="60" cy="64" r="3"/>
+              <circle cx="38" cy="52" r="3"/>
+              <circle cx="82" cy="52" r="3"/>
+            </g>
+            <!-- central convergence node -->
+            <circle cx="60" cy="60" r="4" fill="#10B981"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#0A0F1A;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke-width="2.2" stroke-linecap="round">
+                <circle cx="30" cy="21" r="11" stroke="#64B5F6"/>
+                <circle cx="21" cy="37" r="11" stroke="#38BDF8"/>
+                <circle cx="39" cy="37" r="11" stroke="#0D47A1"/>
+              </g>
+              <g fill="#0A0F1A">
+                <circle cx="30" cy="32" r="1.6"/>
+                <circle cx="19" cy="26" r="1.6"/>
+                <circle cx="41" cy="26" r="1.6"/>
+              </g>
+              <circle cx="30" cy="30" r="1.8" fill="#10B981"/>
+            </svg>
+            <div class="word">bio<span>liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> Three interlocking rings — the three validated fascial
+        chains (Superficial Back Line, Back Functional Line, Front Functional Line).
+        Ancient symbol of interdependence; encodes the product's clinical thesis.
+      </p>
+      <div class="tags">
+        <span class="tag">three-chains</span><span class="tag">weave</span><span class="tag">timeless</span>
+      </div>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v3 — Minimal</p>
+    <h1>Six minimal marks</h1>
+    <p class="lede">
+      One idea each. Single weight. Monochrome-capable. Readable at 16px.
+      Thinking Linear, Arc, Rive — restraint as the product signal.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 13 — THRESHOLD DOT                            -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">13 / THRESHOLD</span>
+      </div>
+      <h3 class="title">Dot on Line</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="Dot on Line mark">
+            <line x1="28" y1="64" x2="92" y2="64" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="60" cy="56" r="4.5" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="10" y1="34" x2="50" y2="34" stroke="#0A0F1A" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="30" cy="30" r="2.8" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A dot hovering just above a horizontal line — poised at
+        the threshold. The whole brand in two elements. Wildly ownable; wordmark carries
+        the weight.
+      </p>
+      <div class="tags">
+        <span class="tag">threshold</span><span class="tag">brand-first</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 14 — ARCH                                     -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">14 / ARCH</span>
+      </div>
+      <h3 class="title">Open Arch</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="Open Arch mark">
+            <path d="M36 86 L36 58 Q 36 34, 60 34 Q 84 34, 84 58 L84 86"
+                  fill="none" stroke="#E6EEFB" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M16 46 L16 30 Q 16 16, 30 16 Q 44 16, 44 30 L44 46"
+                    fill="none" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A single archway — the <em>limen</em>, a portal. One
+        open stroke. Nothing else. Carries quiet authority at every size.
+      </p>
+      <div class="tags">
+        <span class="tag">portal</span><span class="tag">iconic</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 15 — B MONOGRAM                               -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">15 / MONOGRAM</span>
+      </div>
+      <h3 class="title">B — Geometric</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="B monogram">
+            <g fill="none" stroke="#E6EEFB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="42" y1="28" x2="42" y2="92"/>
+              <path d="M42 28 L60 28 A 16 16 0 0 1 60 60 L42 60"/>
+              <path d="M42 60 L64 60 A 16 16 0 0 1 64 92 L42 92"/>
+            </g>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <g fill="none" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="20" y1="14" x2="20" y2="46"/>
+                <path d="M20 14 L29 14 A 8 8 0 0 1 29 30 L20 30"/>
+                <path d="M20 30 L31 30 A 8 8 0 0 1 31 46 L20 46"/>
+              </g>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A strict, single-weight B — all curves, one gesture.
+        The safest choice: instant recognition, no metaphor required, scales effortlessly.
+      </p>
+      <div class="tags">
+        <span class="tag">monogram</span><span class="tag">app-icon</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 16 — EMERGE                                   -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">16 / EMERGE</span>
+      </div>
+      <h3 class="title">Half Sun</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="Half Sun mark">
+            <line x1="24" y1="74" x2="96" y2="74" stroke="#E6EEFB" stroke-width="2" stroke-linecap="round"/>
+            <path d="M38 74 Q 38 42, 60 42 Q 82 42, 82 74"
+                  fill="none" stroke="#E6EEFB" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="10" y1="40" x2="50" y2="40" stroke="#0A0F1A" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M18 40 Q 18 22, 30 22 Q 42 22, 42 40" fill="none" stroke="#0A0F1A" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A dome emerging from a baseline — sunrise, emergence,
+        what was hidden now visible. Warmer and softer than the Arch; same clarity.
+      </p>
+      <div class="tags">
+        <span class="tag">emergence</span><span class="tag">calm</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 17 — RETICLE                                  -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">17 / RETICLE</span>
+      </div>
+      <h3 class="title">Calibration Cross</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="Calibration Cross mark">
+            <g stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round" fill="none">
+              <line x1="60" y1="28" x2="60" y2="52"/>
+              <line x1="60" y1="68" x2="60" y2="92"/>
+              <line x1="28" y1="60" x2="52" y2="60"/>
+              <line x1="68" y1="60" x2="92" y2="60"/>
+            </g>
+            <circle cx="60" cy="60" r="3.5" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#0A0F1A" stroke-width="1.5" stroke-linecap="round" fill="none">
+                <line x1="30" y1="12" x2="30" y2="24"/>
+                <line x1="30" y1="36" x2="30" y2="48"/>
+                <line x1="12" y1="30" x2="24" y2="30"/>
+                <line x1="36" y1="30" x2="48" y2="30"/>
+              </g>
+              <circle cx="30" cy="30" r="2.2" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A broken crosshair with a center dot — a surveyor's
+        mark, a calibration reticle. Precision without being cold. Feels like
+        an instrument, not a consumer app.
+      </p>
+      <div class="tags">
+        <span class="tag">precision</span><span class="tag">instrument</span>
+      </div>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 18 — GESTURE                                  -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">18 / GESTURE</span>
+      </div>
+      <h3 class="title">Single Arc</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="100" height="100" xmlns="http://www.w3.org/2000/svg" aria-label="Single Arc mark">
+            <path d="M28 80 Q 60 24, 92 80"
+                  fill="none" stroke="#E6EEFB" stroke-width="2.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <path d="M10 42 Q 30 14, 50 42"
+                    fill="none" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bio<span style="color:#0D47A1;">liminal</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Concept.</strong> A single clean arc — a gesture, a range of motion,
+        a breath. The most reduced expression of the product. Reads as pure brand,
+        not a data mark.
+      </p>
+      <div class="tags">
+        <span class="tag">gesture</span><span class="tag">pure-brand</span>
+      </div>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v4 — From Your Reference</p>
+    <h1>The `b` + signal construction — made yours</h1>
+    <p class="lede">
+      Same construction as the reference you shared: lowercase <code style="background:rgba(56,189,248,0.08);color:var(--accent);padding:2px 6px;border-radius:4px;">b</code> with a
+      signal line running through the bowl. But the inner line is what gives the mark
+      meaning — so each variant swaps the generic EKG for a signal
+      that specifically <em>is</em> Bioliminal.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 19 — b + sEMG BURST                           -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">19 / sEMG</span>
+      </div>
+      <h3 class="title">b + Muscle Burst</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="b + sEMG burst">
+            <!-- stem -->
+            <line x1="42" y1="18" x2="42" y2="92" stroke="#E6EEFB" stroke-width="3" stroke-linecap="round"/>
+            <!-- bowl -->
+            <circle cx="60" cy="74" r="18" fill="none" stroke="#E6EEFB" stroke-width="3"/>
+            <!-- sEMG-style burst: dense, jagged, envelope-shaped (not cardiac) -->
+            <path d="M44 74 L48 74 L50 70 L52 78 L54 64 L56 84 L58 62 L60 86 L62 60 L64 84 L66 66 L68 80 L70 72 L72 76 L76 74"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="10" x2="20" y2="48" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="30" cy="38" r="10" fill="none" stroke="#0A0F1A" stroke-width="2"/>
+              <path d="M21 38 L24 38 L25 34 L26 42 L27 32 L28 44 L29 30 L30 44 L31 32 L32 42 L33 36 L35 38 L39 38"
+                    fill="none" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Meaning.</strong> The jagged, envelope-shaped burst is what sEMG
+        <em>actually looks like</em> when a muscle fires — chaotic, non-periodic, unlike a
+        cardiac beat. The signal inside the `b` is literally the data Bioliminal captures.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 20 — b + FASCIAL CHAIN                        -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">20 / CHAIN</span>
+      </div>
+      <h3 class="title">b + Fascial Chain</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="b + fascial chain">
+            <line x1="42" y1="18" x2="42" y2="92" stroke="#E6EEFB" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="60" cy="74" r="18" fill="none" stroke="#E6EEFB" stroke-width="3"/>
+            <!-- flowing chain curve with nodes — the Back Functional Line, in miniature -->
+            <path d="M44 76 Q 52 62, 60 74 T 76 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="44" cy="76" r="2" fill="#E6EEFB"/>
+            <circle cx="60" cy="74" r="2" fill="#E6EEFB"/>
+            <circle cx="76" cy="72" r="2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="10" x2="20" y2="48" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="30" cy="38" r="10" fill="none" stroke="#0A0F1A" stroke-width="2"/>
+              <path d="M21 39 Q 26 32, 30 38 T 39 37" fill="none" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="21" cy="39" r="1.2" fill="#0A0F1A"/>
+              <circle cx="30" cy="38" r="1.2" fill="#0A0F1A"/>
+              <circle cx="39" cy="37" r="1.2" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Meaning.</strong> Three connected nodes along a flowing curve — the product's
+        actual IP: fascial chain mapping. The reason Bioliminal can say <em>why</em> where
+        other apps only say <em>what</em>.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 21 — b + THRESHOLD                            -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">21 / THRESHOLD</span>
+      </div>
+      <h3 class="title">b + Liminal Line</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="b + threshold mark">
+            <line x1="42" y1="18" x2="42" y2="92" stroke="#E6EEFB" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="60" cy="74" r="18" fill="none" stroke="#E6EEFB" stroke-width="3"/>
+            <!-- the threshold line + the crossing dot -->
+            <line x1="44" y1="78" x2="76" y2="78" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="60" cy="70" r="3" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="10" x2="20" y2="48" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="30" cy="38" r="10" fill="none" stroke="#0A0F1A" stroke-width="2"/>
+              <line x1="22" y1="40" x2="38" y2="40" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="30" cy="35.5" r="1.6" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Meaning.</strong> Literal rendering of the word: a dot poised above a line —
+        on the <em>limen</em>, the threshold. Inside the `b`, the brand name draws itself.
+        Nothing extra. Nothing that isn't doing work.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 22 — b + EMERGENCE                            -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">22 / EMERGE</span>
+      </div>
+      <h3 class="title">b + Crossing Pulse</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="b + crossing pulse">
+            <line x1="42" y1="18" x2="42" y2="92" stroke="#E6EEFB" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="60" cy="74" r="18" fill="none" stroke="#E6EEFB" stroke-width="3"/>
+            <!-- flat baseline broken by a single muscle activation spike that crosses above it -->
+            <line x1="44" y1="78" x2="54" y2="78" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M54 78 Q 58 78, 60 62 Q 62 78, 66 78"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="66" y1="78" x2="76" y2="78" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="32" height="32" xmlns="http://www.w3.org/2000/svg">
+              <line x1="20" y1="10" x2="20" y2="48" stroke="#0A0F1A" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="30" cy="38" r="10" fill="none" stroke="#0A0F1A" stroke-width="2"/>
+              <line x1="22" y1="40" x2="27" y2="40" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+              <path d="M27 40 Q 29 40, 30 32 Q 31 40, 33 40" fill="none" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="33" y1="40" x2="38" y2="40" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Meaning.</strong> A baseline with one pulse spike breaking through it —
+        muscle activation emerging above threshold. Combines the two ideas:
+        sEMG signal <em>and</em> the liminal moment of detection.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v5 — `b` typography</p>
+    <h1>b + fascial chain — four typographic weights</h1>
+    <p class="lede">
+      Same concept across all four: the `b` holds the fascial-chain signal in its bowl.
+      Only the letterform changes — weight, cap style, proportion. Pick the one that
+      feels like Bioliminal, and I'll refine that one to production.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 23 — GEOMETRIC GROTESK                        -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">23 / GROTESK</span>
+      </div>
+      <h3 class="title">Geometric Grotesk</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Geometric Grotesk b + chain">
+            <!-- b: flat caps, medium-heavy weight, perfect circle bowl -->
+            <g stroke="#E6EEFB" stroke-width="4" stroke-linecap="butt" fill="none">
+              <line x1="42" y1="18" x2="42" y2="92"/>
+              <circle cx="60" cy="74" r="18"/>
+            </g>
+            <!-- fascial chain -->
+            <path d="M46 76 Q 53 62, 60 72 T 74 70" fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="46" cy="76" r="2.2" fill="#E6EEFB"/>
+            <circle cx="60" cy="72" r="2.2" fill="#E6EEFB"/>
+            <circle cx="74" cy="70" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#0A0F1A" stroke-width="2.5" stroke-linecap="butt" fill="none">
+                <line x1="20" y1="10" x2="20" y2="48"/>
+                <circle cx="30" cy="38" r="10"/>
+              </g>
+              <path d="M22 39 Q 26 32, 30 37 T 38 36" fill="none" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="22" cy="39" r="1.3" fill="#0A0F1A"/>
+              <circle cx="30" cy="37" r="1.3" fill="#0A0F1A"/>
+              <circle cx="38" cy="36" r="1.3" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Manrope', sans-serif; font-weight:700;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Circular Std / Gotham. Flat caps, balanced weight,
+        optically rational. Confident without being loud. Pairs with Manrope.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 24 — HUMANIST ROUNDED                         -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">24 / HUMANIST</span>
+      </div>
+      <h3 class="title">Humanist Rounded</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Humanist b + chain">
+            <g stroke="#E6EEFB" stroke-width="3.25" stroke-linecap="round" fill="none">
+              <line x1="42" y1="24" x2="42" y2="92"/>
+              <circle cx="60" cy="74" r="18"/>
+            </g>
+            <path d="M46 76 Q 53 62, 60 72 T 74 70" fill="none" stroke="#E6EEFB" stroke-width="1.6" stroke-linecap="round"/>
+            <circle cx="46" cy="76" r="2" fill="#E6EEFB"/>
+            <circle cx="60" cy="72" r="2" fill="#E6EEFB"/>
+            <circle cx="74" cy="70" r="2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#0A0F1A" stroke-width="2.2" stroke-linecap="round" fill="none">
+                <line x1="20" y1="14" x2="20" y2="48"/>
+                <circle cx="30" cy="38" r="10"/>
+              </g>
+              <path d="M22 39 Q 26 32, 30 37 T 38 36" fill="none" stroke="#0A0F1A" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="22" cy="39" r="1.3" fill="#0A0F1A"/>
+              <circle cx="30" cy="37" r="1.3" fill="#0A0F1A"/>
+              <circle cx="38" cy="36" r="1.3" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Inter', sans-serif; font-weight:600;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Inter / SF Pro. Rounded caps warm up the stem;
+        the mark feels more human. Best if Bioliminal wants to read approachable, not
+        clinical. Pairs with Inter.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 25 — DISPLAY BOLD                             -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">25 / DISPLAY</span>
+      </div>
+      <h3 class="title">Display Bold</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Display Bold b + chain">
+            <!-- filled b as a single compound path for true display weight -->
+            <path d="
+              M34 18
+              L48 18
+              L48 58
+              A 20 20 0 1 1 48 90
+              L34 90
+              Z
+              M48 68
+              A 10 10 0 1 0 48 80
+              L48 68
+              Z
+            " fill="#E6EEFB" fill-rule="evenodd"/>
+            <!-- fascial chain sits in the counter — slightly smaller for bold letter -->
+            <path d="M51 74 Q 56 68, 60 73 T 68 71" fill="none" stroke="#0A0F1A" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="51" cy="74" r="1.6" fill="#0A0F1A"/>
+            <circle cx="60" cy="73" r="1.6" fill="#0A0F1A"/>
+            <circle cx="68" cy="71" r="1.6" fill="#0A0F1A"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <path d="
+                M16 10
+                L24 10
+                L24 30
+                A 10 10 0 1 1 24 46
+                L16 46
+                Z
+                M24 34
+                A 5 5 0 1 0 24 42
+                L24 34
+                Z
+              " fill="#0A0F1A" fill-rule="evenodd"/>
+              <path d="M26 38 Q 29 35, 31 38 T 35 37" fill="none" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="26" cy="38" r="0.8" fill="#FFFFFF"/>
+              <circle cx="31" cy="38" r="0.8" fill="#FFFFFF"/>
+              <circle cx="35" cy="37" r="0.8" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Plus Jakarta Sans', sans-serif; font-weight:800;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Satoshi / Plus Jakarta. Filled letterform — the strongest
+        app-icon read. The fascial chain lives inside the counter as negative-space
+        inversion. Highest contrast, highest presence.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 26 — HAIRLINE                                 -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">26 / HAIRLINE</span>
+      </div>
+      <h3 class="title">Architectural Hairline</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Hairline b + chain">
+            <g stroke="#E6EEFB" stroke-width="2" stroke-linecap="butt" fill="none">
+              <line x1="42" y1="18" x2="42" y2="92"/>
+              <circle cx="60" cy="74" r="18"/>
+            </g>
+            <path d="M46 76 Q 53 62, 60 72 T 74 70" fill="none" stroke="#E6EEFB" stroke-width="1.25" stroke-linecap="round"/>
+            <circle cx="46" cy="76" r="1.75" fill="#E6EEFB"/>
+            <circle cx="60" cy="72" r="1.75" fill="#E6EEFB"/>
+            <circle cx="74" cy="70" r="1.75" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
+              <g stroke="#0A0F1A" stroke-width="1.4" stroke-linecap="butt" fill="none">
+                <line x1="20" y1="10" x2="20" y2="48"/>
+                <circle cx="30" cy="38" r="10"/>
+              </g>
+              <path d="M22 39 Q 26 32, 30 37 T 38 36" fill="none" stroke="#0A0F1A" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="22" cy="39" r="1.1" fill="#0A0F1A"/>
+              <circle cx="30" cy="37" r="1.1" fill="#0A0F1A"/>
+              <circle cx="38" cy="36" r="1.1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Outfit', sans-serif; font-weight:400; letter-spacing: 0.01em;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Söhne / Neue Haas Grotesk. Thin weight, flat caps,
+        Swiss precision. Reads as instrument-grade — the chart on a lab monitor.
+        Pairs with Outfit at regular weight.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v6 — Rounded typefaces</p>
+    <h1>Softer letterforms — real rounded fonts</h1>
+    <p class="lede">
+      Dropping my hand-drawn `b` and rendering from actual rounded typefaces. Each
+      variant uses a different typeface so you can pick the one whose <em>b</em>
+      feels right. The fascial chain sits inside the bowl in every version.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 27 — NUNITO                                   -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">27 / NUNITO</span>
+      </div>
+      <h3 class="title">Nunito — Humanist Rounded</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Nunito b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Nunito', sans-serif" font-size="108" font-weight="700"
+                  fill="#E6EEFB">b</text>
+            <!-- fascial chain in bowl -->
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#0A0F1A" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="2.2" fill="#0A0F1A"/>
+            <circle cx="66" cy="74" r="2.2" fill="#0A0F1A"/>
+            <circle cx="80" cy="72" r="2.2" fill="#0A0F1A"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Nunito', sans-serif" font-size="54" font-weight="700"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1.1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1.1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Nunito', sans-serif; font-weight:700;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Nunito — warm, humanist, clearly rounded terminals without
+        being childlike. Most balanced of the rounded options. Reads "approachable health tech."
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 28 — QUICKSAND                                -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">28 / QUICKSAND</span>
+      </div>
+      <h3 class="title">Quicksand — Geometric Rounded</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Quicksand b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Quicksand', sans-serif" font-size="108" font-weight="600"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="2.2" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Quicksand', sans-serif" font-size="54" font-weight="600"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#0A0F1A" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.1" fill="#0A0F1A"/>
+              <circle cx="33" cy="37" r="1.1" fill="#0A0F1A"/>
+              <circle cx="40" cy="36" r="1.1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Quicksand', sans-serif; font-weight:600;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Quicksand — rounded but built on a strict geometric skeleton.
+        Cleaner and more "product" than Nunito. Favors function over warmth.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 29 — VARELA ROUND                             -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">29 / VARELA</span>
+      </div>
+      <h3 class="title">Varela Round — Max Softness</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Varela Round b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Varela Round', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="2.2" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Varela Round', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1.1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1.1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Varela Round', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Varela Round — the softest of the four. Every corner
+        rounded, nothing sharp. Risks "consumer wellness" territory if the
+        brand wants to stay clinical-adjacent.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 30 — COMFORTAA                                -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">30 / COMFORTAA</span>
+      </div>
+      <h3 class="title">Comfortaa — Rounded Display</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="700"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="2.2" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="700"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1.1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1.1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:700;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Comfortaa — rounded with a slightly more distinctive,
+        geometric character. Bowl is nearly a perfect circle. Great personality
+        at display sizes; a touch eccentric in body copy.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v7 — Rounded + Lighter</p>
+    <h1>Rounded, but thinner</h1>
+    <p class="lede">
+      Same rounded-letterform approach, lighter weights. Regular (400) and medium (500)
+      instead of bold. Includes two new rounded families — Mulish and Rubik — to widen
+      the range.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 31 — NUNITO LIGHT                             -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">31 / NUNITO 400</span>
+      </div>
+      <h3 class="title">Nunito Regular</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Nunito 400 b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Nunito', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Nunito', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#0A0F1A" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#0A0F1A"/>
+              <circle cx="33" cy="37" r="1" fill="#0A0F1A"/>
+              <circle cx="40" cy="36" r="1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Nunito', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Nunito at 400 — still rounded humanist but breathable.
+        Less shouty than the 700 weight. Wordmark sits at 500 for presence.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 32 — QUICKSAND LIGHT                          -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">32 / QUICKSAND 400</span>
+      </div>
+      <h3 class="title">Quicksand Regular</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Quicksand 400 b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Quicksand', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Quicksand', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#0A0F1A" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#0A0F1A"/>
+              <circle cx="33" cy="37" r="1" fill="#0A0F1A"/>
+              <circle cx="40" cy="36" r="1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Quicksand', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Quicksand at 400 — airy, geometric, precise.
+        Feels like a product company, not a pharma company. Strong candidate.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 33 — MULISH                                   -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">33 / MULISH</span>
+      </div>
+      <h3 class="title">Mulish — Rounded Humanist</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Mulish b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Mulish', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Mulish', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#0A0F1A" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#0A0F1A"/>
+              <circle cx="33" cy="37" r="1" fill="#0A0F1A"/>
+              <circle cx="40" cy="36" r="1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Mulish', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Mulish at 400 — humanist with softly rounded terminals, but
+        narrower and more grown-up than Nunito. Reads literate, clinical-adjacent.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 34 — RUBIK                                    -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">34 / RUBIK</span>
+      </div>
+      <h3 class="title">Rubik — Rounded Corners</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Rubik b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Rubik', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Rubik', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#0A0F1A" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#0A0F1A"/>
+              <circle cx="33" cy="37" r="1" fill="#0A0F1A"/>
+              <circle cx="40" cy="36" r="1" fill="#0A0F1A"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Rubik', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Rubik at 400 — geometric sans with softly rounded corners
+        on otherwise-sharp strokes. The rounding is subtle; the mark feels modern,
+        considered, neither too soft nor too rigid.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v8 — Structurally Round</p>
+    <h1>Rounded <em>and</em> thin — structural roundness</h1>
+    <p class="lede">
+      These typefaces are built from circles, not just capped with rounded terminals.
+      Their <em>b</em> stays visibly round even at light weights because the bowl
+      <em>is</em> a circle and the stem meets it organically — roundness is baked in,
+      not painted on.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 35 — FREDOKA                                  -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">35 / FREDOKA</span>
+      </div>
+      <h3 class="title">Fredoka — Structural Round</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Fredoka b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Fredoka', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Fredoka', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Fredoka', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Fredoka at 400 — bowl is an actual circle, stem has rounded
+        caps baked into the skeleton. Stays round at every weight. Warm but modern.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 36 — BALOO 2                                  -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">36 / BALOO 2</span>
+      </div>
+      <h3 class="title">Baloo 2 — Rounded Display</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Baloo 2 b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Baloo 2', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Baloo 2', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Baloo 2', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Baloo 2 at 400 — structurally rounded, with a softer,
+        slightly bouncier personality than Fredoka. A bit more playful, a bit
+        less technical.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 37 — M PLUS ROUNDED                           -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">37 / M+ ROUNDED</span>
+      </div>
+      <h3 class="title">M PLUS Rounded 1c</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="M PLUS Rounded b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'M PLUS Rounded 1c', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 76 Q 58 64, 66 74 T 80 72"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.4" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="1.8" fill="#E6EEFB"/>
+            <circle cx="66" cy="74" r="1.8" fill="#E6EEFB"/>
+            <circle cx="80" cy="72" r="1.8" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'M PLUS Rounded 1c', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 33, 33 37 T 40 36" fill="none" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1" fill="#FFFFFF"/>
+              <circle cx="33" cy="37" r="1" fill="#FFFFFF"/>
+              <circle cx="40" cy="36" r="1" fill="#FFFFFF"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'M PLUS Rounded 1c', sans-serif; font-weight:500;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> M PLUS Rounded at 400 — Japanese-designed, engineered for
+        consistent rounding at every weight. The most neutral-round of the bunch:
+        premium, considered, not cutesy.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 38 — COMFORTAA LIGHT                          -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">38 / COMFORTAA 400</span>
+      </div>
+      <h3 class="title">Comfortaa Regular</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa 400 b + chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <!-- chain tuned to Comfortaa bowl: center ~(62,70), r~25 -->
+            <path d="M50 74 Q 62 56, 74 74"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="62" cy="65" r="2.2" fill="#E6EEFB"/>
+            <circle cx="74" cy="74" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <!-- chain tuned to small bowl: center ~(31,35), r~12 -->
+              <path d="M25 38 Q 31 29, 37 38" fill="none" stroke="#0D47A1" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.2" fill="#0D47A1"/>
+              <circle cx="31" cy="33.5" r="1.2" fill="#0D47A1"/>
+              <circle cx="37" cy="38" r="1.2" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Feel.</strong> Comfortaa at 400 — bowl is a near-perfect circle built
+        from geometry, not terminals. Chain coordinates now tuned to Comfortaa's
+        actual bowl position. Most architectural of the round options.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v9 — Chain Placement</p>
+    <h1>Comfortaa — chain shape variants</h1>
+    <p class="lede">
+      Locking in Comfortaa 400 as the letterform. Now tuning the chain inside the bowl —
+      three placement/shape options, all properly centered in the counter.
+      Pick the chain that feels most like Bioliminal.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 39 — ARCH CHAIN                               -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">39 / ARCH</span>
+      </div>
+      <h3 class="title">Symmetric Arch</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + arch chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M50 74 Q 62 56, 74 74"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="62" cy="65" r="2.2" fill="#E6EEFB"/>
+            <circle cx="74" cy="74" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 31 29, 37 38" fill="none" stroke="#0D47A1" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.2" fill="#0D47A1"/>
+              <circle cx="31" cy="33.5" r="1.2" fill="#0D47A1"/>
+              <circle cx="37" cy="38" r="1.2" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> Clean symmetric arch — three nodes, one peak. Reads as a
+        posture/chain in its most neutral form. Safest, most balanced.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 40 — WAVE CHAIN                               -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">40 / WAVE</span>
+      </div>
+      <h3 class="title">Gentle Wave</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + wave chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <!-- S-wave: up then down -->
+            <path d="M50 74 Q 56 60, 62 70 T 74 68"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="74" r="2.2" fill="#E6EEFB"/>
+            <circle cx="62" cy="70" r="2.2" fill="#E6EEFB"/>
+            <circle cx="74" cy="68" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 28 31, 31 36 T 37 35" fill="none" stroke="#0D47A1" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.2" fill="#0D47A1"/>
+              <circle cx="31" cy="36" r="1.2" fill="#0D47A1"/>
+              <circle cx="37" cy="35" r="1.2" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> Shallow S-curve — node rises, node rises again. Suggests
+        propagation along a chain (symptom→compensation→root). More anatomically literal.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 41 — RISING CHAIN                             -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">41 / RISING</span>
+      </div>
+      <h3 class="title">Rising Chain</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + rising chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <!-- three nodes on a smooth rising curve (knee-hip-shoulder feel) -->
+            <path d="M50 76 Q 58 70, 62 66 T 74 60"
+                  fill="none" stroke="#E6EEFB" stroke-width="1.75" stroke-linecap="round"/>
+            <circle cx="50" cy="76" r="2.2" fill="#E6EEFB"/>
+            <circle cx="62" cy="66" r="2.2" fill="#E6EEFB"/>
+            <circle cx="74" cy="60" r="2.2" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 38 Q 29 35, 31 33 T 37 30" fill="none" stroke="#0D47A1" stroke-width="1.1" stroke-linecap="round"/>
+              <circle cx="25" cy="38" r="1.2" fill="#0D47A1"/>
+              <circle cx="31" cy="33" r="1.2" fill="#0D47A1"/>
+              <circle cx="37" cy="30" r="1.2" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> Three nodes climbing diagonally — evokes a fascial pathway
+        running from ankle up to shoulder. Most literal to the "chain mapping" thesis;
+        slightly more energetic than the arch.
+      </p>
+    </article>
+
+  </section>
+
+  <header style="margin-top: 96px;">
+    <p class="eyebrow">Bioliminal · Mark Exploration v10 — Faithful to reference</p>
+    <h1>S-wave chain, properly sized</h1>
+    <p class="lede">
+      Matching the reference you picked (variant 20): the S-wave <em>is</em> the chain.
+      Nodes are small and subtle — the curve does the work. Three variants vary only
+      node prominence so you can pick the level of emphasis.
+    </p>
+  </header>
+
+  <section class="grid">
+
+    <!-- ============================================ -->
+    <!-- 42 — S-WAVE + SUBTLE NODES                    -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">42 / S-WAVE</span>
+      </div>
+      <h3 class="title">S-Wave with Subtle Nodes</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + S-wave chain with subtle nodes">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <!-- S-wave centered in bowl ~(62, 70) -->
+            <path d="M49 70 Q 55 57, 62 70 T 75 70"
+                  fill="none" stroke="#E6EEFB" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="49" cy="70" r="1.5" fill="#E6EEFB"/>
+            <circle cx="62" cy="70" r="1.5" fill="#E6EEFB"/>
+            <circle cx="75" cy="70" r="1.5" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 35 Q 28 29, 31 35 T 37 35" fill="none" stroke="#0D47A1" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="25" cy="35" r="0.9" fill="#0D47A1"/>
+              <circle cx="31" cy="35" r="0.9" fill="#0D47A1"/>
+              <circle cx="37" cy="35" r="0.9" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> Proper S-wave filling the bowl — curve dominates, nodes
+        are accent. Matches your reference. Stroke 2px, nodes r=1.5.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 43 — S-WAVE, NO NODES                         -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">43 / WAVE-ONLY</span>
+      </div>
+      <h3 class="title">Pure S-Wave</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + pure S-wave chain">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M49 70 Q 55 57, 62 70 T 75 70"
+                  fill="none" stroke="#E6EEFB" stroke-width="2.25" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 35 Q 28 29, 31 35 T 37 35" fill="none" stroke="#0D47A1" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> Just the curve, no nodes. Cleanest possible read — the
+        wave IS the chain. Best at small sizes; most premium.
+      </p>
+    </article>
+
+    <!-- ============================================ -->
+    <!-- 44 — S-WAVE + TINY NODES                      -->
+    <!-- ============================================ -->
+    <article class="card">
+      <div class="card-head">
+        <span class="num">44 / ACCENTED</span>
+      </div>
+      <h3 class="title">S-Wave with Tiny Nodes</h3>
+      <div class="stage">
+        <div class="stage-dark">
+          <svg viewBox="0 0 120 120" width="120" height="120" xmlns="http://www.w3.org/2000/svg" aria-label="Comfortaa + S-wave with tiny nodes">
+            <text x="60" y="96" text-anchor="middle"
+                  font-family="'Comfortaa', sans-serif" font-size="108" font-weight="400"
+                  fill="#E6EEFB">b</text>
+            <path d="M49 70 Q 55 57, 62 70 T 75 70"
+                  fill="none" stroke="#E6EEFB" stroke-width="2" stroke-linecap="round"/>
+            <!-- tiny node dots only at endpoints -->
+            <circle cx="49" cy="70" r="1.1" fill="#E6EEFB"/>
+            <circle cx="75" cy="70" r="1.1" fill="#E6EEFB"/>
+          </svg>
+        </div>
+        <div class="stage-light">
+          <div class="lockup" style="background:#FFFFFF; border-color:#D6DEEB;">
+            <svg viewBox="0 0 60 60" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+              <text x="30" y="48" text-anchor="middle"
+                    font-family="'Comfortaa', sans-serif" font-size="54" font-weight="400"
+                    fill="#0A0F1A">b</text>
+              <path d="M25 35 Q 28 29, 31 35 T 37 35" fill="none" stroke="#0D47A1" stroke-width="1.2" stroke-linecap="round"/>
+              <circle cx="25" cy="35" r="0.7" fill="#0D47A1"/>
+              <circle cx="37" cy="35" r="0.7" fill="#0D47A1"/>
+            </svg>
+            <div class="word" style="color:#0A0F1A; font-family:'Comfortaa', sans-serif; font-weight:400;">bioliminal</div>
+          </div>
+        </div>
+      </div>
+      <p class="idea">
+        <strong>Chain.</strong> S-wave with tiny node-caps only at the endpoints — retains
+        the "chain terminates here" semantic without the middle dot cluttering the curve.
+      </p>
+    </article>
+
+  </section>
+
+  <footer>
+    <p>
+      <strong style="color:var(--ink);">Next steps.</strong> Pick one or two directions; I can refine proportions,
+      produce app-icon masks (iOS/Android), export <code>favicon</code> set, and build a full wordmark
+      with matched typography. All six marks scale cleanly to 16px and render as monochrome where needed.
+    </p>
+    <p style="margin-top:8px;">
+      Palette anchored to the app theme: primary <code>#0D47A1</code>, secondary <code>#64B5F6</code>,
+      accent <code>#38BDF8</code>, signal <code>#10B981</code>.
+    </p>
+  </footer>
+</div>
+</body>
+</html>
