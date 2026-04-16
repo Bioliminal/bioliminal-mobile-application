@@ -8,6 +8,10 @@
 	<string>Bioliminal uses your camera to analyze movement patterns during screening.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Required by the camera framework.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bioliminal connects to the Bioliminal sEMG sensor array over Bluetooth.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bioliminal connects to the Bioliminal sEMG sensor array over Bluetooth.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

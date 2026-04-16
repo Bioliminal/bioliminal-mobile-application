@@ -69,6 +69,13 @@ class SettingsView extends ConsumerWidget {
                 }
               },
             ),
+            _item(
+              Icons.bluetooth_searching,
+              'BLE Debug',
+              'Scan, inspect services, send/receive',
+              theme,
+              onTap: () => context.push('/ble-debug'),
+            ),
             const SizedBox(height: 32),
             _sectionHeader(theme, 'ANALYSIS'),
             _item(

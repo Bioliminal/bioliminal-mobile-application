@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
 import '../features/camera/views/hardware_setup_view.dart';
+import '../features/dev/views/ble_debug_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/landing/views/code_view.dart';
 import '../features/landing/views/demo_view.dart';
@@ -126,6 +127,11 @@ final goRouter = GoRouter(
       path: '/calibration',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CalibrationView(),
+    ),
+    GoRoute(
+      path: '/ble-debug',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const BleDebugView(),
     ),
 
     // Shell routes for bottom nav
