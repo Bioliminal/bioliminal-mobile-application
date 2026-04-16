@@ -38,7 +38,7 @@ service cloud.firestore {
         && request.resource.data.email.size() < 255
         && request.resource.data.email.matches('^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$')
         && request.resource.data.source is string
-        && request.resource.data.source in ['home', 'system', 'science', 'demo']
+        && request.resource.data.source in ['home', 'system', 'science', 'demo', 'waitlist']
         && request.resource.data.createdAt is timestamp;
     }
   }

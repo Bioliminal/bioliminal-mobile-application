@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
-enum WaitlistSource { home, system, science, demo }
+enum WaitlistSource { home, system, science, demo, waitlist }
 
 extension WaitlistSourceX on WaitlistSource {
   String get wire => switch (this) {
@@ -9,6 +9,7 @@ extension WaitlistSourceX on WaitlistSource {
         WaitlistSource.system => 'system',
         WaitlistSource.science => 'science',
         WaitlistSource.demo => 'demo',
+        WaitlistSource.waitlist => 'waitlist',
       };
 }
 
