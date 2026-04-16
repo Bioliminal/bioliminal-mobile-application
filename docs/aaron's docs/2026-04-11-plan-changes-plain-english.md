@@ -1,5 +1,11 @@
 # Plan Changes — Plain English Summary
 
+> ⚠️ **STALE SCOPE — DO NOT TREAT AS CURRENT.** This doc describes the **post-demo full product** (4-movement protocol, WHAM+OpenCap pipeline, 20–30 subject calibration dataset). It is **not** the 4/20 demo scope. The demo is a single bicep curl with BlazePose + 2-ch sEMG + rule YAML — see `projects/bioliminal/CLAUDE.md` § Current Focus and `bioliminal/bioliminal/README.md` (group README) for authoritative demo definition.
+>
+> The WHAM+OpenCap pipeline choice is also contested and unconfirmed by Aaron. Reconciliation deferred until after 4/20.
+
+---
+
 **Date:** 2026-04-11
 **For:** Bioliminal team + anyone catching up on the project.
 **Source documents (if you want the long versions):**
