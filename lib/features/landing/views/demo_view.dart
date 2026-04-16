@@ -116,9 +116,9 @@ class _HeroSplit extends StatelessWidget {
                 delay: const Duration(milliseconds: 220),
                 child: Text(
                   'Live demo ships with v1 — scope-frozen to a single bicep curl. '
-                  'The full 4-movement screen (overhead squat, single-leg balance, '
-                  'overhead reach, forward fold) follows in v2. Join the waitlist '
-                  'to hear when it lands.',
+                  'The full 4-movement screen (overhead squat, single-leg squat, '
+                  'push-up, rollup) follows in v2. Join the waitlist to hear when '
+                  'it lands.',
                   style: mktBody(
                     17,
                     color: MarketingPalette.muted,

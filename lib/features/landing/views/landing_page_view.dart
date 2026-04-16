@@ -512,7 +512,7 @@ class _HeroContent extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 620),
             child: Text(
-              'The closed-loop biometric training instrument. Sense the recruitment, cue the correction, verify the lift — in under half a second, every repetition.',
+              'The prototype is a tethered sEMG rig for the bicep curl. Calibrate your peak, feel the envelope fade across the set, and let a graduated haptic pattern tell you when fatigue is about to break form.',
               style: _body(
                 _isNarrow(context) ? 16 : (_isDesktop(context) ? 18 : 17),
                 color: _Palette.muted,
@@ -676,7 +676,7 @@ class _WedgeSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '// INSTRUMENT INDEX  —  THE CLOSED LOOP',
+            '// INSTRUMENT INDEX  —  SENSE · CUE · LOG',
             style: _mono(11, color: _Palette.subtle, letterSpacing: 2.6),
           ),
           SizedBox(height: _isNarrow(context) ? 40 : 72),
@@ -685,11 +685,11 @@ class _WedgeSection extends StatelessWidget {
             title: 'Sense.',
             signal: 'SEMG + POSE',
             body:
-                'Two-channel surface electromyography reads the bicep/brachioradialis recruitment ratio at 1 kHz. A 33-point pose inference pipeline renders the lift on-device at 30 FPS, with zero raw video leaving the phone.',
+                'A single MyoWare 2.0 sEMG sensor reads the bicep envelope through an ESP32 at roughly 500 Hz. Alongside it, a 33-point pose inference pipeline renders the lift on-device at 30 FPS, with zero raw video leaving the phone.',
             figures: [
-              _Figure('CHANNELS', '2'),
+              _Figure('CHANNELS', '1'),
               _Figure('POSE LM', '33'),
-              _Figure('SAMPLE', '1 kHz'),
+              _Figure('SAMPLE', '~500 Hz'),
             ],
             visual: _PoseSkeletonViz(),
           ),
@@ -699,25 +699,25 @@ class _WedgeSection extends StatelessWidget {
             title: 'Cue.',
             signal: 'HAPTIC',
             body:
-                'When brachioradialis dominance persists across two consecutive concentric phases, a graduated haptic squeeze fires on the bicep. The cue retrains wrist supination mid-rep, at the exact joint angle where the correction is most learnable.',
+                'A five-second calibration captures your peak voluntary contraction. As the rolling envelope falls below that peak across the set, a vibration motor fires in five graduated PWM bands — a slow pulse at 20% fatigue, near-continuous at 80% — pacing the set by touch.',
             figures: [
-              _Figure('LATENCY', '< 500 ms'),
-              _Figure('CUE TYPE', 'GRADUATED'),
-              _Figure('LOCKOUT', '1 REP'),
+              _Figure('PWM', '2 kHz'),
+              _Figure('BANDS', '5'),
+              _Figure('CAL', '5 s'),
             ],
             visual: _CuePulseViz(),
           ),
           SizedBox(height: _isNarrow(context) ? 64 : 96),
           const _WedgeBlock(
             index: '03',
-            title: 'Verify.',
-            signal: 'RMS SHIFT',
+            title: 'Log.',
+            signal: 'CSV STREAM',
             body:
-                'The same sensor measures the correction. A ≥15% shift in the recruitment ratio toward the bicep — within 500 ms of the cue — is logged as a verified rep. No shift, the system flags the rep. The loop closes in real time, or not at all.',
+                'Every sample lands in a CSV row — timestamp, envelope, calibration peak, fatigue percent, motor state — streamed at 115200 baud. Sessions replay as a graph, not a verdict. The sensor stays the ground truth.',
             figures: [
-              _Figure('WINDOW', '500 ms'),
-              _Figure('THRESHOLD', '≥ 15%'),
-              _Figure('VERIFY RATE', 'LIVE'),
+              _Figure('STREAM', 'CSV'),
+              _Figure('BAUD', '115200'),
+              _Figure('FIELDS', '5'),
             ],
             visual: _RatioBarChart(),
           ),
@@ -915,10 +915,10 @@ class _SystemSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cells = const [
-      _SpecCell(code: 'S-01', label: 'sEMG HUB', value: 'ESP32-S3', meta: '2-CH · 1 kHz'),
+      _SpecCell(code: 'S-01', label: 'sEMG RIG', value: 'ESP32-WROOM', meta: '1-CH · ~500 Hz'),
       _SpecCell(code: 'S-02', label: 'POSE', value: 'BLAZEPOSE', meta: '33 LANDMARKS'),
-      _SpecCell(code: 'S-03', label: 'CUE', value: 'HAPTIC MOTOR', meta: 'GRADUATED'),
-      _SpecCell(code: 'S-04', label: 'TRANSPORT', value: 'BLE 5.0', meta: 'ON-DEVICE'),
+      _SpecCell(code: 'S-03', label: 'CUE', value: 'HAPTIC MOTOR', meta: '5 BANDS · 2 kHz PWM'),
+      _SpecCell(code: 'S-04', label: 'TRANSPORT', value: 'USB SERIAL', meta: '115200 BAUD'),
     ];
 
     final isNarrow = _isNarrow(context);
@@ -1438,13 +1438,13 @@ class _EmgWaveformPainter extends CustomPainter {
     );
     _paintText(
       canvas,
-      'CH-1 · BRACH',
+      'BICEP · RAW',
       Offset(size.width - 150, size.height * 0.58 - 18),
       labelStyle,
     );
     _paintText(
       canvas,
-      'CH-2 · BICEP',
+      'BICEP · ENV',
       Offset(size.width - 150, size.height * 0.82 - 18),
       labelStyle,
     );
@@ -1773,7 +1773,7 @@ class _CuePulseVizState extends State<_CuePulseViz>
           bottom: 0,
           left: 0,
           child: Text(
-            'LATENCY < 500 MS',
+            'PWM · 2 kHz · 8-BIT',
             style: _mono(9, color: _Palette.signal, letterSpacing: 2),
           ),
         ),
@@ -1783,9 +1783,9 @@ class _CuePulseVizState extends State<_CuePulseViz>
           child: AnimatedBuilder(
             animation: _c,
             builder: (_, _) {
-              final ms = (_c.value * 500).clamp(0, 500).round();
+              final band = (_c.value * 5).clamp(0, 5).floor();
               return Text(
-                '$ms MS',
+                'BAND $band / 5',
                 style: _mono(9, color: _Palette.text, letterSpacing: 2),
               );
             },
@@ -1883,7 +1883,7 @@ class _CuePulsePainter extends CustomPainter {
 }
 
 // =============================================================================
-// Recruitment ratio chart — animated pre/post cue bars, Section 03
+// Envelope-vs-peak chart — animated fatigue-ramp bars, Section 03
 // =============================================================================
 
 class _RatioBarChart extends StatefulWidget {
@@ -1934,7 +1934,7 @@ class _RatioBarChartState extends State<_RatioBarChart>
           top: 0,
           left: 0,
           child: Text(
-            'RMS RATIO · 500 MS WINDOW',
+            'ENVELOPE vs PEAK  ·  FATIGUE %',
             style: _mono(9, color: _Palette.muted, letterSpacing: 2),
           ),
         ),
@@ -1945,13 +1945,13 @@ class _RatioBarChartState extends State<_RatioBarChart>
             animation: _c,
             builder: (_, _) {
               final shift = _shift(_c.value);
-              final shiftPct = (shift * 22).round();
-              final ok = shiftPct >= 15;
+              final fatiguePct = (38 + shift * 22).round();
+              final cueing = fatiguePct >= 50;
               return Text(
-                ok ? 'Δ $shiftPct% · OK' : 'Δ $shiftPct%',
+                cueing ? 'FATIGUE $fatiguePct% · CUE' : 'FATIGUE $fatiguePct%',
                 style: _mono(
                   9,
-                  color: ok ? _Palette.signal : _Palette.muted,
+                  color: cueing ? _Palette.signal : _Palette.muted,
                   letterSpacing: 2,
                   weight: FontWeight.w500,
                 ),
@@ -1984,36 +1984,36 @@ class _RatioPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(pad, y1, trackW, barH), trackPaint);
     canvas.drawRect(Rect.fromLTWH(pad, y2, trackW, barH), trackPaint);
 
-    final brachPct = 0.62 - 0.22 * shift;
-    final bicepPct = 0.38 + 0.22 * shift;
+    final envPct = 0.62 - 0.22 * shift;
+    final fatiguePct = 0.38 + 0.22 * shift;
 
     canvas.drawRect(
-      Rect.fromLTWH(pad, y1, trackW * brachPct, barH),
+      Rect.fromLTWH(pad, y1, trackW * envPct, barH),
       Paint()..color = _Palette.muted.withValues(alpha: 0.85),
     );
     canvas.drawRect(
-      Rect.fromLTWH(pad, y2, trackW * bicepPct, barH),
+      Rect.fromLTWH(pad, y2, trackW * fatiguePct, barH),
       Paint()..color = _Palette.signal,
     );
 
     _paintMono(
       canvas,
-      'BRACH  ·  ${(brachPct * 100).round()}%',
+      'ENV  ·  ${(envPct * 100).round()}% of PEAK',
       Offset(pad, y1 - 14),
       _Palette.text,
       10,
     );
     _paintMono(
       canvas,
-      'BICEP  ·  ${(bicepPct * 100).round()}%',
+      'FATIGUE  ·  ${(fatiguePct * 100).round()}%',
       Offset(pad, y2 - 14),
       _Palette.signal,
       10,
     );
 
-    // 15% threshold marker.
-    final thresholdX = pad + trackW * (0.62 - 0.15);
-    final crossed = shift >= (15.0 / 22.0);
+    // Fatigue cue-band marker at 50%.
+    final thresholdX = pad + trackW * 0.50;
+    final crossed = fatiguePct >= 0.50;
     final markerColor = crossed ? _Palette.signal : _Palette.subtle;
     canvas.drawLine(
       Offset(thresholdX, y1 - 8),
@@ -2024,8 +2024,8 @@ class _RatioPainter extends CustomPainter {
     );
     _paintMono(
       canvas,
-      '≥15%',
-      Offset(thresholdX - 14, y2 + barH + 10),
+      'CUE BAND',
+      Offset(thresholdX - 28, y2 + barH + 10),
       markerColor,
       9,
     );
@@ -2084,17 +2084,17 @@ class _FiguresSection extends StatelessWidget {
     final isDesktop = _isDesktop(context);
 
     const primary = [
-      _FigureBig(value: '< 500', unit: 'MS', label: 'LATENCY'),
-      _FigureBig(value: '≥ 15', unit: '%', label: 'THRESHOLD'),
+      _FigureBig(value: '1', unit: 'CH', label: 'MYOWARE'),
+      _FigureBig(value: '5', unit: 'S', label: 'CAL'),
       _FigureBig(value: '33', unit: 'LM', label: 'LANDMARKS'),
-      _FigureBig(value: '2', unit: 'CH', label: 'CHANNELS'),
+      _FigureBig(value: '5', unit: '', label: 'HAPTIC BANDS'),
     ];
 
     const secondary = [
-      _FigureSmall(value: '1 kHz', label: 'SAMPLE'),
+      _FigureSmall(value: '~500 Hz', label: 'SAMPLE'),
       _FigureSmall(value: '30 FPS', label: 'POSE'),
-      _FigureSmall(value: '500 ms', label: 'WINDOW'),
-      _FigureSmall(value: 'BLE 5.0', label: 'TRANSPORT'),
+      _FigureSmall(value: '2 kHz', label: 'PWM'),
+      _FigureSmall(value: 'USB SERIAL', label: 'TRANSPORT'),
     ];
 
     return _SectionShell(

@@ -107,9 +107,9 @@ class _HeroSplit extends StatelessWidget {
                   constraints: const BoxConstraints(maxWidth: 520),
                   child: Text(
                     'Bioliminal is open source. The Flutter app is one part of a larger '
-                    'system — ESP32 firmware for the sEMG garment and a shared research '
-                    'hub for hardware, ML, and team docs. Dev happens on GitLab; these '
-                    'are the public mirrors.',
+                    'system — ESP32 firmware for the sEMG prototype rig and a shared '
+                    'research hub for hardware, ML, and team docs. Dev happens on GitLab; '
+                    'these are the public mirrors.',
                     style: mktBody(
                       18,
                       color: MarketingPalette.muted,
@@ -420,9 +420,10 @@ class _ReposSection extends StatelessWidget {
                 name: 'esp32-firmware',
                 tagline: 'sEMG capture + haptic cueing.',
                 description:
-                    'Firmware for the ESP32-based sEMG garment. Captures muscle activation, '
-                    'streams over BLE, drives haptic cueing for real-time form feedback. '
-                    'Phase 2 hardware — ships after the v1 app validates the reasoning layer.',
+                    'Firmware for the ESP32 + MyoWare 2.0 sEMG rig. Reads the bicep '
+                    'envelope, detects fatigue against a calibrated peak, drives a graduated '
+                    'PWM haptic pattern, and streams session CSV over USB serial. Prototype '
+                    'hardware — precedes the Phase 2 wireless garment.',
                 language: 'C++',
                 langColor: Color(0xFFF472B6),
                 url: BioliminalRepos.esp32,

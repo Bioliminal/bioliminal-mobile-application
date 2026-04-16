@@ -110,9 +110,10 @@ class _HeroSplit extends StatelessWidget {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560),
                   child: Text(
-                    'No neural network. A rule system that encodes expert fascial-chain logic '
-                    'into computable rules, running in the browser on 33 body landmarks per frame. '
-                    'The intelligence is the logic, not a black box.',
+                    'The pose landmarks come from a pretrained neural network — MediaPipe BlazePose, '
+                    '33 points per frame, on-device. Everything above that line is a rule system '
+                    'that encodes expert fascial-chain logic as computable rules. The reasoning '
+                    'layer is readable, not a black box.',
                     style: mktBody(
                       18,
                       color: MarketingPalette.muted,
@@ -170,9 +171,10 @@ class _HeroStacked extends StatelessWidget {
         ScrollReveal(
           delay: const Duration(milliseconds: 260),
           child: Text(
-            'No neural network. A rule system that encodes expert fascial-chain logic '
-            'into computable rules, running in the browser on 33 body landmarks per frame. '
-            'The intelligence is the logic, not a black box.',
+            'The pose landmarks come from a pretrained neural network — MediaPipe BlazePose, '
+            '33 points per frame, on-device. Everything above that line is a rule system '
+            'that encodes expert fascial-chain logic as computable rules. The reasoning '
+            'layer is readable, not a black box.',
             style: mktBody(
               16,
               color: MarketingPalette.muted,
