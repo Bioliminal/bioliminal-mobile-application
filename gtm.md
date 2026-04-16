@@ -130,7 +130,7 @@ Spread across channels, 100 is reachable even without a single viral hit.
 - Mitigation: Seed with 2-3 team members asking genuine questions. Be responsive in first 2 hours (critical for HN algorithm).
 
 **Risk: "This is just heuristics, not real AI"**
-- Response: "Exactly. The intelligence is in the rule system encoding expert fascial chain logic, not in a neural network. That's the point — it's interpretable, evidence-based, and auditable. The pitch.md explains why."
+- Response: "The reasoning layer is rule-based, not a learned model — interpretable, evidence-based, and auditable. Pose estimation uses MediaPipe BlazePose, an off-the-shelf neural network; everything above that — joint angles, thresholds, fascial-chain attribution — is hand-encoded rules. The pitch.md explains why."
 
 **Risk: "Fascial chains aren't proven"**
 - Response: "We restrict to the 3 chains with strong anatomical evidence (Wilke 2016, confirmed by Kalichman 2025). We exclude chains with insufficient evidence. And our approach doesn't depend on long-range force transmission — we detect co-occurring movement patterns, regardless of mechanism."
