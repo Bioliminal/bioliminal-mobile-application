@@ -38,7 +38,7 @@ class _LoginViewState extends ConsumerState<LoginView> {
       if (auth == null) {
         throw StateError('AuthService failed to initialize.');
       }
-      await auth.signIn(); // Using existing anonymous or future email/pass
+      await auth.signInAnonymously();
 
       if (mounted) context.go('/history');
     } catch (e) {
