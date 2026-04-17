@@ -1,12 +1,128 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bioliminal/core/providers.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../core/providers.dart';
+import '../../../core/theme.dart';
+import 'guest_profile_view.dart';
 
 class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
 
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final asyncProfile = ref.watch(userProfileProvider);
+
+    return asyncProfile.when(
+      loading: () => const Scaffold(
+        backgroundColor: BioliminalTheme.screenBackground,
+        body: Center(child: CircularProgressIndicator()),
+      ),
+      error: (_, _) => const GuestProfileView(),
+      data: (profile) {
+        if (profile == null) return const GuestProfileView();
+        return _SignedInProfileView(profile: profile);
+      },
+    );
+  }
+}
+
+class _SignedInProfileView extends ConsumerWidget {
+  const _SignedInProfileView({required this.profile});
+  final UserProfile profile;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final scansAsync = ref.watch(assessmentCountProvider);
+
+    return Scaffold(
+      backgroundColor: BioliminalTheme.screenBackground,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(8, 8, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+                onPressed: () => context.pop(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 24, 0, 0),
+                child: Text('PROFILE', style: theme.textTheme.headlineLarge),
+              ),
+              const SizedBox(height: 40),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _InfoBlock(label: 'NAME', value: profile.name),
+                    _InfoBlock(label: 'EMAIL', value: profile.email),
+                    _InfoBlock(
+                      label: 'MEMBER SINCE',
+                      value: _formatDate(profile.memberSince),
+                    ),
+                    _InfoBlock(
+                      label: 'TOTAL SCANS',
+                      value: scansAsync.when(
+                        data: (n) => '$n',
+                        loading: () => '—',
+                        error: (_, _) => '—',
+                      ),
+                    ),
+                    const SizedBox(height: 32),
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: () => _showEditNameDialog(
+                          context,
+                          ref,
+                          profile.name,
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.2),
+                          ),
+                          foregroundColor: Colors.white70,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('EDIT DISPLAY NAME'),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => _confirmSignOut(context, ref),
+                        child: Text(
+                          'SIGN OUT',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: theme.colorScheme.error,
+                            letterSpacing: 2.0,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   String _formatDate(DateTime date) {
-    final months = [
+    const months = [
       'January',
       'February',
       'March',
@@ -23,108 +139,27 @@ class ProfileView extends ConsumerWidget {
     return '${months[date.month - 1]} ${date.year}';
   }
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-    final profile = ref.watch(userProfileProvider);
-
-    return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: const Text('USER PROFILE'),
-        backgroundColor: Colors.transparent,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: theme.colorScheme.onSurface.withValues(
-                alpha: 0.1,
-              ),
-              child: Icon(
-                Icons.person,
-                size: 50,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(profile.name, style: theme.textTheme.headlineMedium),
-            const SizedBox(height: 8),
-            Text(
-              profile.email,
-              style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
-              ),
-            ),
-            const SizedBox(height: 48),
-            _infoRow(
-              Icons.calendar_today,
-              'Member Since',
-              _formatDate(profile.memberSince),
-              theme,
-            ),
-            _infoRow(
-              Icons.assessment_outlined,
-              'Total Scans',
-              '${profile.totalScans}',
-              theme,
-            ),
-            _infoRow(
-              Icons.workspace_premium,
-              'Account Type',
-              'Premium (Capstone Edition)',
-              theme,
-            ),
-            const SizedBox(height: 48),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () =>
-                    _showEditProfileDialog(context, ref, profile, theme),
-                child: const Text('EDIT PROFILE'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showEditProfileDialog(
+  Future<void> _showEditNameDialog(
     BuildContext context,
     WidgetRef ref,
-    UserProfile profile,
-    ThemeData theme,
-  ) {
-    final nameController = TextEditingController(text: profile.name);
-    final emailController = TextEditingController(text: profile.email);
+    String currentName,
+  ) async {
+    final theme = Theme.of(context);
+    final controller = TextEditingController(text: currentName);
 
-    showDialog(
+    final newName = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('EDIT PROFILE', style: theme.textTheme.titleLarge),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(
-                labelText: 'Name',
-                labelStyle: TextStyle(color: theme.colorScheme.secondary),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-                labelStyle: TextStyle(color: theme.colorScheme.secondary),
-              ),
-            ),
-          ],
+        title: const Text('EDIT DISPLAY NAME'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          decoration: InputDecoration(
+            labelText: 'Name',
+            labelStyle: TextStyle(color: theme.colorScheme.secondary),
+          ),
         ),
         actions: [
           TextButton(
@@ -132,45 +167,104 @@ class ProfileView extends ConsumerWidget {
             child: Text(
               'CANCEL',
               style: TextStyle(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.4),
+                color: Colors.white.withValues(alpha: 0.4),
               ),
             ),
           ),
           FilledButton(
-            onPressed: () {
-              ref
-                  .read(userProfileProvider.notifier)
-                  .updateName(nameController.text);
-              ref
-                  .read(userProfileProvider.notifier)
-                  .updateEmail(emailController.text);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated successfully')),
-              );
-            },
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
             child: const Text('SAVE'),
           ),
         ],
       ),
     );
+
+    if (newName == null || newName.isEmpty || newName == currentName) return;
+
+    final auth = ref.read(authServiceProvider);
+    if (auth == null) return;
+
+    try {
+      await auth.updateDisplayName(newName);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Display name updated.')),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not update name. Try again.')),
+        );
+      }
+    }
   }
 
-  Widget _infoRow(IconData icon, String label, String value, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: theme.colorScheme.secondary),
-          const SizedBox(width: 16),
-          Text(
-            label,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+  Future<void> _confirmSignOut(BuildContext context, WidgetRef ref) async {
+    final theme = Theme.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: theme.colorScheme.surface,
+        title: const Text('SIGN OUT?'),
+        content: const Text(
+          'Your sessions stay on this device. Sign in again anytime.',
+          style: TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(
+              'CANCEL',
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.4),
+              ),
             ),
           ),
-          const Spacer(),
-          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: theme.colorScheme.error,
+            ),
+            child: const Text('SIGN OUT'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    final auth = ref.read(authServiceProvider);
+    if (auth != null) await auth.signOut();
+  }
+}
+
+class _InfoBlock extends StatelessWidget {
+  const _InfoBlock({required this.label, required this.value});
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: theme.textTheme.labelSmall?.copyWith(
+              letterSpacing: 2.0,
+              color: Colors.white.withValues(alpha: 0.4),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: theme.textTheme.bodyLarge?.copyWith(fontSize: 17),
+          ),
         ],
       ),
     );

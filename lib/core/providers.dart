@@ -70,52 +70,20 @@ final selectedAIModelProvider = NotifierProvider<AIModelNotifier, String>(
 );
 
 // ---------------------------------------------------------------------------
-// User Profile — In-memory for now, could link to auth/firestore.
+// User Profile — derived from FirebaseAuth. Null when guest / anonymous.
 // ---------------------------------------------------------------------------
 
 class UserProfile {
   final String name;
   final String email;
   final DateTime memberSince;
-  final int totalScans;
 
-  UserProfile({
+  const UserProfile({
     required this.name,
     required this.email,
     required this.memberSince,
-    required this.totalScans,
   });
-
-  UserProfile copyWith({String? name, String? email, int? totalScans}) {
-    return UserProfile(
-      name: name ?? this.name,
-      email: email ?? this.email,
-      memberSince: memberSince,
-      totalScans: totalScans ?? this.totalScans,
-    );
-  }
 }
-
-class UserProfileNotifier extends Notifier<UserProfile> {
-  @override
-  UserProfile build() {
-    return UserProfile(
-      name: 'Guest User',
-      email: 'guest.user@example.com',
-      memberSince: DateTime(2026, 4, 1),
-      totalScans: 12,
-    );
-  }
-
-  void updateName(String name) => state = state.copyWith(name: name);
-  void updateEmail(String email) => state = state.copyWith(email: email);
-  void incrementScans() =>
-      state = state.copyWith(totalScans: state.totalScans + 1);
-}
-
-final userProfileProvider = NotifierProvider<UserProfileNotifier, UserProfile>(
-  UserProfileNotifier.new,
-);
 
 // ---------------------------------------------------------------------------
 // Core providers — always available, offline-first.
@@ -229,4 +197,35 @@ final firestoreServiceProvider = Provider<firestore_impl.FirestoreService?>((
   final auth = ref.watch(authServiceProvider);
   if (auth == null) return null;
   return firestore_impl.FirestoreService.withFirebase(auth);
+});
+
+/// Streams the current user profile, rebuilding on sign-in, sign-out, or
+/// profile updates (displayName, email). Null when the user is a guest or
+/// signed in anonymously.
+final userProfileProvider = StreamProvider<UserProfile?>((ref) {
+  final auth = ref.watch(authServiceProvider);
+  if (auth == null) return Stream.value(null);
+
+  return auth.userChanges.map((user) {
+    if (user == null || user.isAnonymous) return null;
+    return UserProfile(
+      name: user.displayName ?? user.email ?? 'User',
+      email: user.email ?? '',
+      memberSince: user.metadata.creationTime ?? DateTime.now(),
+    );
+  });
+});
+
+/// True when the user has a real (non-anonymous) account.
+final isSignedInProvider = Provider<bool>((ref) {
+  final profile = ref.watch(userProfileProvider);
+  return profile.asData?.value != null;
+});
+
+/// Count of assessments for display on the profile view.
+final assessmentCountProvider = FutureProvider<int>((ref) async {
+  final assessments = await ref
+      .watch(localStorageServiceProvider)
+      .listAssessments();
+  return assessments.length;
 });

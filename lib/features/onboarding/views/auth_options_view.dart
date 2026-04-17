@@ -52,7 +52,7 @@ class AuthOptionsView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: FilledButton(
-                  onPressed: () => context.push('/login'), // We'll update login to handle both
+                  onPressed: () => context.push('/sign-up'),
                   child: const Text('CREATE ACCOUNT'),
                 ),
               ),
@@ -60,7 +60,7 @@ class AuthOptionsView extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () => context.push('/login'),
+                  onPressed: () => context.push('/sign-in'),
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: theme.colorScheme.secondary),
                     padding: const EdgeInsets.symmetric(vertical: 16),

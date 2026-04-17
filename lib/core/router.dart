@@ -21,6 +21,8 @@ import '../features/screening/views/screening_view.dart';
 import '../features/settings/views/login_view.dart';
 import '../features/settings/views/settings_view.dart';
 import '../features/settings/views/profile_view.dart';
+import '../features/settings/views/sign_in_view.dart';
+import '../features/settings/views/sign_up_view.dart';
 import '../features/settings/views/ai_model_settings_view.dart';
 import '../features/settings/views/calibration_view.dart';
 import 'widgets/main_scaffold.dart';
@@ -119,6 +121,16 @@ final goRouter = GoRouter(
       path: '/login',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const LoginView(),
+    ),
+    GoRoute(
+      path: '/sign-up',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SignUpView(),
+    ),
+    GoRoute(
+      path: '/sign-in',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SignInView(),
     ),
     GoRoute(
       path: '/profile',

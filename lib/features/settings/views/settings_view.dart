@@ -11,7 +11,7 @@ class SettingsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final profile = ref.watch(userProfileProvider);
+    final profile = ref.watch(userProfileProvider).asData?.value;
     final aiModel = ref.watch(selectedAIModelProvider);
     final isPremium = ref.watch(isPremiumProvider);
     final hardwareState = ref.watch(hardwareControllerProvider);
@@ -30,12 +30,14 @@ class SettingsView extends ConsumerWidget {
               const _SectionHeader('ACCOUNT'),
               _Row(
                 title: 'User Profile',
-                value: profile.name,
+                value: profile?.name ?? 'Not signed in',
                 onTap: () => context.push('/profile'),
               ),
               _Row(
                 title: 'Cloud Backup',
-                value: 'Disabled (Local only)',
+                value: profile != null
+                    ? 'Synced'
+                    : 'Disabled (Local only)',
                 onTap: () => context.push('/login'),
               ),
               const SizedBox(height: 40),
