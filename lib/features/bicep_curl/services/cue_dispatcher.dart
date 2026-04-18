@@ -53,17 +53,7 @@ class CueDispatcher {
       }
     }
 
-    final event = CueEvent(
-      repNum: decision.repNum,
-      content: decision.content,
-      firedAt: decision.decidedAt,
-      channelsFired: fired,
-    );
-
-    if (profile.visual.enabled) {
-      visualBus.value = event;
-      fired.add('visual');
-    }
+    if (profile.visual.enabled) fired.add('visual');
 
     if (profile.verbal.enabled) {
       final phrase = _verbalPhrase(decision.content);
@@ -73,6 +63,13 @@ class CueDispatcher {
       }
     }
 
+    final event = CueEvent(
+      repNum: decision.repNum,
+      content: decision.content,
+      firedAt: decision.decidedAt,
+      channelsFired: Set.unmodifiable(fired),
+    );
+    if (profile.visual.enabled) visualBus.value = event;
     onLog(event);
   }
 }
@@ -93,5 +90,5 @@ String? _verbalPhrase(CueContent content) {
 }
 
 Future<void> _defaultSpeak(String _) async {
-  // Stub. flutter_tts wired in commit 5 alongside the live view.
+  // Stub. flutter_tts wires in commit 5 alongside the live view.
 }
