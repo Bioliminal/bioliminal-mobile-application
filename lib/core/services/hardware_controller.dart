@@ -1,10 +1,8 @@
 import 'dart:async';
 import 'dart:developer' as developer;
-import 'dart:math' as math;
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bioliminal/features/camera/widgets/signal_led.dart';
 
 // ---------------------------------------------------------------------------
 // Hardware Models
@@ -45,14 +43,8 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   final _emgDataController = StreamController<EMGData>.broadcast();
   Stream<EMGData> get emgDataStream => _emgDataController.stream;
 
-  final _signalStatusController =
-      StreamController<Map<int, SignalStatus>>.broadcast();
-  Stream<Map<int, SignalStatus>> get signalStatusStream =>
-      _signalStatusController.stream;
-
   final List<double> _smoothedValues = List.filled(10, 0.0);
   static const double _alpha = 0.2;
-  final _random = math.Random();
 
   static const String _serviceUuid = 'FF01';
   static const String _characteristicUuid = 'FF02';
@@ -64,7 +56,6 @@ class HardwareController extends Notifier<HardwareConnectionState> {
       _dataSubscription?.cancel();
       _targetDevice?.disconnect();
       _emgDataController.close();
-      _signalStatusController.close();
     });
     return HardwareConnectionState.disconnected;
   }
@@ -133,46 +124,14 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   }
 
   void _processRawData(List<double> raw) {
-    final statusMap = <int, SignalStatus>{};
-
     for (var i = 0; i < 10; i++) {
       _smoothedValues[i] =
           (_alpha * raw[i]) + ((1 - _alpha) * _smoothedValues[i]);
-
-      if (raw[i] < 0.05) {
-        statusMap[i] = SignalStatus.disconnected;
-      } else if (raw[i] > 0.95) {
-        statusMap[i] = SignalStatus.saturated;
-      } else {
-        statusMap[i] = SignalStatus.clean;
-      }
     }
 
-    _signalStatusController.add(statusMap);
     _emgDataController.add(
       EMGData(channels: List.from(_smoothedValues), timestamp: DateTime.now()),
     );
-  }
-
-  Timer? _mockTimer;
-  void startMockData() {
-    _mockTimer?.cancel();
-    state = HardwareConnectionState.connected;
-
-    _mockTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      final t = DateTime.now().millisecondsSinceEpoch / 1000.0;
-      final mockRaw = List.generate(10, (i) {
-        return (math.sin(t * 2 + i) + 1.0) /
-            2.0 *
-            (0.5 + _random.nextDouble() * 0.5);
-      });
-      _processRawData(mockRaw);
-    });
-  }
-
-  void stopMockData() {
-    _mockTimer?.cancel();
-    state = HardwareConnectionState.disconnected;
   }
 }
 
@@ -193,14 +152,4 @@ final emgDataStreamProvider = StreamProvider<EMGData>((ref) {
 final latestEMGDataProvider = Provider<EMGData>((ref) {
   final stream = ref.watch(emgDataStreamProvider);
   return stream.value ?? EMGData.empty();
-});
-
-final signalStatusStreamProvider = StreamProvider<Map<int, SignalStatus>>((
-  ref,
-) {
-  return ref.watch(hardwareControllerProvider.notifier).signalStatusStream;
-});
-
-final latestSignalStatusProvider = Provider<Map<int, SignalStatus>>((ref) {
-  return ref.watch(signalStatusStreamProvider).value ?? {};
 });

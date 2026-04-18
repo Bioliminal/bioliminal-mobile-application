@@ -263,7 +263,7 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
                     initializing: _initializing,
                     check: _check,
                     holdComplete: _holdComplete,
-                    onContinue: () => context.go('/capture'),
+                    onContinue: () => context.go('/history'),
                   ),
                 ],
               ),

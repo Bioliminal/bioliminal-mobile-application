@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
-import '../features/camera/views/hardware_setup_view.dart';
 import '../features/dev/views/ble_debug_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/landing/views/code_view.dart';
@@ -15,7 +14,6 @@ import '../features/landing/views/system_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
 import '../features/waitlist/views/waitlist_view.dart';
-import '../features/rep_capture/views/rep_capture_view.dart';
 import '../features/report/views/report_view.dart';
 import '../features/settings/views/login_view.dart';
 import '../features/settings/views/settings_view.dart';
@@ -93,16 +91,6 @@ final goRouter = GoRouter(
       path: '/auth-options',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const AuthOptionsView(),
-    ),
-    GoRoute(
-      path: '/hardware-setup',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const HardwareSetupView(),
-    ),
-    GoRoute(
-      path: '/capture',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const RepCaptureView(),
     ),
     GoRoute(
       path: '/report/:id',
