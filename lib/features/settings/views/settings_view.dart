@@ -55,6 +55,11 @@ class SettingsView extends ConsumerWidget {
                 subtitle: 'Scan, inspect services, send/receive',
                 onTap: () => context.push('/ble-debug'),
               ),
+              _Row(
+                title: 'Bicep Curl (debug entry)',
+                subtitle: 'Temporary — set picker lands in next commit',
+                onTap: () => context.push('/bicep-curl'),
+              ),
               const SizedBox(height: 40),
 
               const _SectionHeader('ANALYSIS'),

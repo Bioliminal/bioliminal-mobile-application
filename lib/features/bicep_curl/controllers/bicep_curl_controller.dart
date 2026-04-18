@@ -21,6 +21,7 @@ import '../services/cue_dispatcher.dart';
 import '../services/envelope_derivator.dart';
 import '../services/fatigue_algorithm.dart';
 import '../services/rep_detector.dart';
+import '../services/tts_speaker.dart';
 
 // ---------------------------------------------------------------------------
 // State
@@ -130,6 +131,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   EnvelopeDerivator? _envelope;
   RepDetector? _repDetector;
   CueDispatcher? _dispatcher;
+  TtsSpeaker? _tts;
 
   // Subscriptions.
   StreamSubscription<SampleBatch>? _sampleSub;
@@ -210,11 +212,13 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _wallEpochUs = null;
 
     final hardware = ref.read(hardwareControllerProvider.notifier);
+    _tts = TtsSpeaker();
     _dispatcher = CueDispatcher(
       profile: _profile,
       hardware: hardware,
       onLog: _cueLog.add,
       visualBus: visualBus,
+      speak: _tts!.speak,
     );
 
     _sampleSub = hardware.rawEmgStream.listen(_onSample);
@@ -521,6 +525,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _envelope?.reset();
     _envelope = null;
     _dispatcher = null;
+    await _tts?.dispose();
+    _tts = null;
     _envelopeBuffer.clear();
     _currentRepFrames.clear();
     _calibrationFramesForRef.clear();

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
+import '../features/bicep_curl/views/bicep_curl_view.dart';
 import '../features/dev/views/ble_debug_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/landing/views/code_view.dart';
@@ -126,6 +127,11 @@ final goRouter = GoRouter(
       path: '/ble-debug',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const BleDebugView(),
+    ),
+    GoRoute(
+      path: '/bicep-curl',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const BicepCurlView(),
     ),
 
     // Shell routes for bottom nav
