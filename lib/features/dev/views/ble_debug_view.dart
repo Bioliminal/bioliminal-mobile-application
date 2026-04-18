@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
+import 'package:bioliminal/core/services/sample_batch.dart';
 import 'package:bioliminal/core/theme.dart';
 import 'package:bioliminal/features/dev/views/ble_live_view.dart';
 
@@ -595,6 +596,7 @@ class _CharTileState extends State<_CharTile> {
   StreamSubscription<List<int>>? _valueSub;
   List<int>? _lastValue;
   int _packetCount = 0;
+  DateTime? _firstPacketAt;
   bool _subscribed = false;
   final _writeCtrl = TextEditingController();
 
@@ -632,6 +634,7 @@ class _CharTileState extends State<_CharTile> {
         setState(() {
           _lastValue = v;
           _packetCount++;
+          _firstPacketAt ??= DateTime.now();
         });
       });
       setState(() => _subscribed = true);
@@ -733,12 +736,15 @@ class _CharTileState extends State<_CharTile> {
             ),
             if (_subscribed)
               Text(
-                'packets  $_packetCount',
-                style: const TextStyle(
-                  color: Colors.white38,
-                  fontSize: 10,
-                ),
+                _firstPacketAt != null
+                    ? 'packets  $_packetCount   (~${_throughputHz(_packetCount, _firstPacketAt!).toStringAsFixed(1)} Hz)'
+                    : 'packets  $_packetCount',
+                style: const TextStyle(color: Colors.white38, fontSize: 10),
               ),
+            if (_lastValue!.length == SampleBatch.packetSize) ...[
+              const SizedBox(height: 6),
+              _SampleBatchPreview(bytes: _lastValue!),
+            ],
             const SizedBox(height: 8),
           ],
           Wrap(
@@ -798,11 +804,102 @@ class _CharTileState extends State<_CharTile> {
   }
 }
 
+/// Decoded view of a 308-byte FF02 packet. Lights up only when the payload
+/// matches the v0 wire format — useful for verifying real firmware output
+/// against the spec without leaving the app.
+class _SampleBatchPreview extends StatelessWidget {
+  const _SampleBatchPreview({required this.bytes});
+
+  final List<int> bytes;
+
+  @override
+  Widget build(BuildContext context) {
+    final batch = SampleBatch.decode(bytes);
+    if (batch == null) {
+      return const Text(
+        'decoded  — (308 B but layout mismatch)',
+        style: TextStyle(
+          color: Colors.orangeAccent,
+          fontSize: 10,
+          fontFamily: 'monospace',
+        ),
+      );
+    }
+    String head(List<int> ch) => ch.take(4).join(', ');
+    final clipFlags = [
+      if (batch.clipRaw) 'RAW',
+      if (batch.clipRect) 'RECT',
+      if (batch.clipEnv) 'ENV',
+    ].join('+');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'SampleBatch  seq=${batch.seqNum}  t_us=${batch.tUsStart}  '
+            '${batch.channelCount}ch×${batch.samplesPerChannel}',
+            style: const TextStyle(
+              color: BioliminalTheme.accent,
+              fontSize: 10,
+              fontFamily: 'monospace',
+            ),
+          ),
+          Text(
+            'raw[0..3]   ${head(batch.raw)}',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+              fontFamily: 'monospace',
+            ),
+          ),
+          Text(
+            'rect[0..3]  ${head(batch.rect)}',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+              fontFamily: 'monospace',
+            ),
+          ),
+          Text(
+            'env[0..3]   ${head(batch.env)}',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 10,
+              fontFamily: 'monospace',
+            ),
+          ),
+          if (batch.clippedAny)
+            Text(
+              'CLIP  $clipFlags',
+              style: const TextStyle(
+                color: Colors.orangeAccent,
+                fontSize: 10,
+                fontFamily: 'monospace',
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 class _LogEntry {
   _LogEntry(this.time, this.tag, this.message);
   final DateTime time;
   final String tag;
   final String message;
+}
+
+double _throughputHz(int count, DateTime since) {
+  final elapsed = DateTime.now().difference(since).inMilliseconds / 1000.0;
+  if (elapsed < 0.1 || count < 2) return 0;
+  return (count - 1) / elapsed;
 }
 
 String _hex(List<int> bytes) =>
