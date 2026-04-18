@@ -37,13 +37,16 @@ class _BleDebugViewState extends State<BleDebugView> {
   void initState() {
     super.initState();
     _adapterSub = FlutterBluePlus.adapterState.listen((s) {
+      if (!mounted) return;
       setState(() => _adapterState = s);
       _logLine('adapter', s.name);
     });
     _isScanningSub = FlutterBluePlus.isScanning.listen((s) {
+      if (!mounted) return;
       setState(() => _isScanning = s);
     });
     _scanSub = FlutterBluePlus.scanResults.listen((results) {
+      if (!mounted) return;
       setState(() {
         _results
           ..clear()
@@ -64,7 +67,7 @@ class _BleDebugViewState extends State<BleDebugView> {
 
   Future<void> _startScan() async {
     _logLine('scan', 'start');
-    setState(_results.clear);
+    if (mounted) setState(_results.clear);
     try {
       await FlutterBluePlus.startScan(timeout: const Duration(seconds: 15));
     } catch (e) {
@@ -82,6 +85,7 @@ class _BleDebugViewState extends State<BleDebugView> {
     await FlutterBluePlus.stopScan();
     try {
       await device.connect(timeout: const Duration(seconds: 10));
+      if (!mounted) return;
       setState(() => _selectedDevice = device);
       _logLine('connect', 'OK');
     } catch (e) {
@@ -98,10 +102,12 @@ class _BleDebugViewState extends State<BleDebugView> {
     } catch (e) {
       _logLine('error', 'disconnect: $e');
     }
+    if (!mounted) return;
     setState(() => _selectedDevice = null);
   }
 
   void _logLine(String tag, String msg) {
+    if (!mounted) return;
     setState(() {
       _log.insert(0, _LogEntry(DateTime.now(), tag, msg));
       if (_log.length > 500) _log.removeLast();
@@ -610,6 +616,7 @@ class _CharTileState extends State<_CharTile> {
   Future<void> _read() async {
     try {
       final v = await widget.characteristic.read();
+      if (!mounted) return;
       setState(() => _lastValue = v);
       widget.onLog('read', '${widget.characteristic.uuid.str} → ${_hex(v)}');
     } catch (e) {
@@ -621,6 +628,7 @@ class _CharTileState extends State<_CharTile> {
     if (_subscribed) {
       await widget.characteristic.setNotifyValue(false);
       await _valueSub?.cancel();
+      if (!mounted) return;
       setState(() {
         _subscribed = false;
         _valueSub = null;
@@ -631,12 +639,14 @@ class _CharTileState extends State<_CharTile> {
     try {
       await widget.characteristic.setNotifyValue(true);
       _valueSub = widget.characteristic.lastValueStream.listen((v) {
+        if (!mounted) return;
         setState(() {
           _lastValue = v;
           _packetCount++;
           _firstPacketAt ??= DateTime.now();
         });
       });
+      if (!mounted) return;
       setState(() => _subscribed = true);
       widget.onLog('notify', 'on ${widget.characteristic.uuid.str}');
     } catch (e) {
