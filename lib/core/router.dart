@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
+import '../features/bicep_curl/models/compensation_reference.dart';
 import '../features/bicep_curl/views/bicep_curl_view.dart';
 import '../features/dev/views/ble_debug_view.dart';
+import '../features/sets/views/set_picker_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/landing/views/code_view.dart';
 import '../features/landing/views/demo_view.dart';
@@ -129,9 +131,19 @@ final goRouter = GoRouter(
       builder: (context, state) => const BleDebugView(),
     ),
     GoRoute(
+      path: '/sets',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SetPickerView(),
+    ),
+    GoRoute(
       path: '/bicep-curl',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const BicepCurlView(),
+      builder: (context, state) {
+        final side = state.uri.queryParameters['side'] == 'left'
+            ? ArmSide.left
+            : ArmSide.right;
+        return BicepCurlView(armSide: side);
+      },
     ),
 
     // Shell routes for bottom nav
