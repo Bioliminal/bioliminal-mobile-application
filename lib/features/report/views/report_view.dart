@@ -1,520 +1,256 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
-import '../../history/services/archetype_classifier.dart';
-import '../../history/services/trend_detection_service.dart';
-import '../services/pdf_generator.dart';
-import '../services/report_assembly_service.dart';
-import '../services/server_report_adapter.dart';
-import '../widgets/body_map.dart';
-import '../widgets/finding_card.dart';
 
-// ---------------------------------------------------------------------------
-// Archetype descriptions — user-facing, no chain names
-// ---------------------------------------------------------------------------
-
-const _archetypeDisplayNames = <MobilityArchetype, String>{
-  MobilityArchetype.ankleDominant: 'Ankle-Dominant',
-  MobilityArchetype.hipDominant: 'Hip-Dominant',
-  MobilityArchetype.trunkDominant: 'Trunk-Dominant',
-  MobilityArchetype.hypermobile: 'Hypermobile',
-  MobilityArchetype.balanced: 'Balanced',
-};
-
-const _archetypePreferredType = <MobilityArchetype, CompensationType>{
-  MobilityArchetype.ankleDominant: CompensationType.ankleRestriction,
-  MobilityArchetype.hipDominant: CompensationType.hipDrop,
-  MobilityArchetype.trunkDominant: CompensationType.trunkLean,
-};
-
-// ---------------------------------------------------------------------------
-// ReportView
-// ---------------------------------------------------------------------------
-
+/// Displays the analysis server's report for a single captured session.
+///
+/// The route is `/report/{session_id}`. The view loads any locally-stored
+/// SessionRecord, then polls the server every 3 seconds for the report until
+/// it arrives. All rendered content comes from the server — there is no
+/// local fallback.
 class ReportView extends ConsumerStatefulWidget {
-  const ReportView({super.key, required this.id, this.localOnly = false});
+  const ReportView({super.key, required this.id});
 
   final String id;
-  final bool localOnly;
 
   @override
   ConsumerState<ReportView> createState() => _ReportViewState();
 }
 
 class _ReportViewState extends ConsumerState<ReportView> {
-  String? _cachedPdfPath;
-  bool _generating = false;
-  Assessment? _assessment;
-  Report? _remoteReport;
-  bool _didLoad = false;
-  bool _loading = false;
-  bool _polling = false;
-  int? _selectedFindingIndex;
-
-  TrendReport? _trendReport;
-  MobilityArchetype? _archetype;
+  SessionRecord? _record;
+  bool _loadingLocal = true;
+  bool _fetching = false;
+  String? _fetchError;
 
   Timer? _pollingTimer;
-  final _scrollController = ScrollController();
-  final _findingKeys = <int, GlobalKey>{};
-
-  // -- PDF / Share --
-
-  Future<String> _generatePdf(Report report, Assessment assessment) async {
-    if (_cachedPdfPath != null) return _cachedPdfPath!;
-
-    final bytes = await PdfGenerator.generate(
-      report,
-      assessmentId: assessment.id,
-      date: assessment.createdAt,
-    );
-
-    final dir = await getTemporaryDirectory();
-    final file = File('${dir.path}/bioliminal_report_${assessment.id}.pdf');
-    await file.writeAsBytes(bytes);
-    _cachedPdfPath = file.path;
-    return file.path;
-  }
-
-  Future<void> _onShare(Report report, Assessment assessment) async {
-    if (_generating) return;
-    setState(() => _generating = true);
-    try {
-      final path = await _generatePdf(report, assessment);
-      await SharePlus.instance.share(
-        ShareParams(
-          files: [XFile(path)],
-          subject: 'Bioliminal Movement Screen',
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to share: $e')));
-      }
-    } finally {
-      if (mounted) setState(() => _generating = false);
-    }
-  }
-
-  // -- Lifecycle --
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_didLoad) return;
-    _didLoad = true;
-
-    final extra = GoRouterState.of(context).extra as Assessment?;
-    if (extra != null) {
-      _assessment = extra;
-      _loadLongitudinalContext();
-      if (extra.report == null && !widget.localOnly) _startPolling();
-      return;
-    }
-
-    setState(() => _loading = true);
-    ref.read(localStorageServiceProvider).loadAssessment(widget.id).then((
-      loaded,
-    ) {
-      if (!mounted) return;
-      setState(() {
-        _assessment = loaded;
-        _loading = false;
-      });
-      if (loaded != null) {
-        _loadLongitudinalContext();
-        if (loaded.report == null && !widget.localOnly) _startPolling();
-      }
-    });
-  }
-
-  void _startPolling() {
-    if (_polling) return;
-    setState(() => _polling = true);
-
-    _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      final client = ref.read(bioliminalClientProvider);
-      try {
-        final serverReport = await client.fetchReport(widget.id);
-        if (serverReport != null && mounted) {
-          final report = ServerReportAdapter.toLegacyReport(serverReport);
-          timer.cancel();
-          setState(() {
-            _remoteReport = report;
-            _polling = false;
-          });
-          // Save the fetched report locally
-          if (_assessment != null) {
-            final updated = Assessment(
-              id: _assessment!.id,
-              createdAt: _assessment!.createdAt,
-              movements: _assessment!.movements,
-              compensations: _assessment!.compensations,
-              payload: _assessment!.payload,
-              report: report,
-            );
-            ref.read(localStorageServiceProvider).saveAssessment(updated);
-          }
-        }
-      } catch (_) {
-        // Retry on next tick
-      }
-    });
-  }
-
-  Future<void> _loadLongitudinalContext() async {
-    final allAssessments = await ref
-        .read(localStorageServiceProvider)
-        .listAssessments();
-
-    if (!mounted || allAssessments.length <= 1) return;
-
-    final trendReport = TrendDetectionService.analyzeTrends(allAssessments);
-    final archetype = ArchetypeClassifier.classify(allAssessments);
-
-    setState(() {
-      _trendReport = trendReport;
-      _archetype = archetype;
-    });
+  void initState() {
+    super.initState();
+    _load();
   }
 
   @override
   void dispose() {
     _pollingTimer?.cancel();
-    _scrollController.dispose();
     super.dispose();
   }
 
-  // -- Body map interaction --
-
-  void _onRegionTap(int findingIndex) {
+  Future<void> _load() async {
+    final storage = ref.read(localStorageServiceProvider);
+    final record = await storage.loadSessionRecord(widget.id);
+    if (!mounted) return;
     setState(() {
-      _selectedFindingIndex = findingIndex;
+      _record = record;
+      _loadingLocal = false;
     });
-    _scrollToFinding(findingIndex);
+    if (record?.report == null) _startPolling();
   }
 
-  void _scrollToFinding(int index) {
-    final key = _findingKeys[index];
-    if (key?.currentContext != null) {
-      Scrollable.ensureVisible(
-        key!.currentContext!,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+  void _startPolling() {
+    _pollingTimer?.cancel();
+    _fetchOnce();
+    _pollingTimer = Timer.periodic(
+      const Duration(seconds: 3),
+      (_) => _fetchOnce(),
+    );
+  }
+
+  Future<void> _fetchOnce() async {
+    if (_fetching) return;
+    _fetching = true;
+
+    try {
+      final report = await ref
+          .read(bioliminalClientProvider)
+          .fetchReport(widget.id);
+      if (!mounted) return;
+
+      if (report != null) {
+        _pollingTimer?.cancel();
+
+        final updated = (_record ?? _bootstrapRecord()).copyWith(report: report);
+        await ref.read(localStorageServiceProvider).saveSessionRecord(updated);
+
+        if (!mounted) return;
+        setState(() {
+          _record = updated;
+          _fetchError = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _fetchError = e.toString());
+    } finally {
+      _fetching = false;
     }
   }
 
-  // -- Build --
+  /// Fallback when the user navigates to /report/{id} without a prior local
+  /// record (e.g. deep link). We stamp a minimal record so persistence still
+  /// has something to update once the server responds.
+  SessionRecord _bootstrapRecord() => SessionRecord(
+    sessionId: widget.id,
+    movement: 'unknown',
+    capturedAt: DateTime.now().toUtc(),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loadingLocal) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    final record = _record;
+    final report = record?.report;
+
+    if (report == null) {
+      return _ProcessingView(
+        sessionId: widget.id,
+        error: _fetchError,
+        onRetry: _startPolling,
+      );
+    }
+
+    return _ReportContent(record: record!, report: report);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Processing state
+// ---------------------------------------------------------------------------
+
+class _ProcessingView extends StatelessWidget {
+  const _ProcessingView({
+    required this.sessionId,
+    required this.error,
+    required this.onRetry,
+  });
+
+  final String sessionId;
+  final String? error;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
-    final assessment = _assessment;
-    if (assessment == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Report')),
-        body: const Center(child: Text('Assessment not found')),
-      );
-    }
-
-    final report = _remoteReport ?? assessment.report;
-
-    // Processing state: no local report and still polling
-    if (report == null && _polling) {
-      return Scaffold(
-        backgroundColor: BioliminalTheme.screenBackground,
-        body: Center(
+    return Scaffold(
+      backgroundColor: BioliminalTheme.screenBackground,
+      appBar: AppBar(
+        title: const Text('ANALYSIS'),
+        backgroundColor: Colors.transparent,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 32),
               Text(
-                'CLINICAL ANALYSIS IN PROGRESS',
+                'ANALYZING YOUR SESSION',
                 style: theme.textTheme.labelLarge?.copyWith(
                   color: theme.colorScheme.secondary,
                   letterSpacing: 2.0,
                 ),
               ),
               const SizedBox(height: 12),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 48),
-                child: Text(
-                  'Our servers are calculating joint moments and muscle forces. This usually takes 10-15 seconds.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white54),
+              Text(
+                'The server is computing joint angles, rep metrics, and '
+                'movement chain observations. This usually takes 10–15 '
+                'seconds.',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white60,
                 ),
               ),
+              const SizedBox(height: 24),
+              Text(
+                'session: ${_shortId(sessionId)}',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white38,
+                  letterSpacing: 1.5,
+                ),
+              ),
+              if (error != null) ...[
+                const SizedBox(height: 32),
+                Text(
+                  'Last fetch failed: $error',
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.redAccent,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                OutlinedButton(
+                  onPressed: onRetry,
+                  child: const Text('RETRY'),
+                ),
+              ],
             ],
           ),
         ),
-      );
-    }
+      ),
+    );
+  }
+}
 
-    // Fallback: build a local report if server fails or for prototype fallback
-    final activeReport =
-        report ??
-        ReportAssemblyService.buildReport(
-          assessment,
-          trendReport: _trendReport,
-          archetype: _archetype,
-        );
+// ---------------------------------------------------------------------------
+// Main report content
+// ---------------------------------------------------------------------------
 
-    // Empty state: no findings detected.
-    if (activeReport.findings.isEmpty) {
-      return Scaffold(
-        backgroundColor: BioliminalTheme.screenBackground,
-        appBar: AppBar(
-          title: const Text('ANALYSIS'),
-          backgroundColor: Colors.transparent,
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(
-                  'No significant movement patterns detected. Your movement looks good!',
-                  style: theme.textTheme.titleMedium,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
+class _ReportContent extends StatelessWidget {
+  const _ReportContent({required this.record, required this.report});
 
-    // Ensure we have GlobalKeys for each finding.
-    for (var i = 0; i < activeReport.findings.length; i++) {
-      _findingKeys.putIfAbsent(i, () => GlobalKey());
-    }
+  final SessionRecord record;
+  final ServerReport report;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final quality = report.movementSection.qualityReport;
 
     return Scaffold(
       backgroundColor: BioliminalTheme.screenBackground,
       appBar: AppBar(
         title: const Text('ANALYSIS'),
         backgroundColor: Colors.transparent,
-        actions: [
-          IconButton(
-            icon: _generating
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.share_outlined),
-            onPressed: _generating
-                ? null
-                : () => _onShare(activeReport, assessment),
-          ),
-        ],
       ),
       body: SingleChildScrollView(
-        controller: _scrollController,
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // -- Header / Archetype --
-            if (_archetype != null)
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.secondary.withValues(
-                          alpha: 0.1,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.person_search,
-                        color: theme.colorScheme.secondary,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _archetypeDisplayNames[_archetype]!.toUpperCase(),
-                            style: theme.textTheme.labelLarge?.copyWith(
-                              color: theme.colorScheme.secondary,
-                              letterSpacing: 1.5,
-                            ),
-                          ),
-                          Text(
-                            'Movement Archetype',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white54,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // -- Body Map (Primary Visual) --
-            Center(
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 24),
-                padding: const EdgeInsets.all(16),
-                decoration: BioliminalTheme.glassEffect,
-                child: BodyMap(
-                  findings: activeReport.findings,
-                  selectedFindingIndex: _selectedFindingIndex,
-                  onRegionTap: _onRegionTap,
-                ),
-              ),
-            ),
-
+            _Header(record: record, movement: report.metadata.movement),
             const SizedBox(height: 32),
-
-            // -- Findings Label --
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'KEY FINDINGS',
-                    style: theme.textTheme.labelLarge?.copyWith(
-                      letterSpacing: 2.0,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  Text(
-                    '${activeReport.findings.length} DETECTED',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: Colors.white38,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // -- Horizontal Findings Carousel --
-            SizedBox(
-              height: 280,
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                scrollDirection: Axis.horizontal,
-                itemCount: activeReport.findings.length,
-                itemBuilder: (context, i) {
-                  final finding = activeReport.findings[i];
-                  final isSelected = _selectedFindingIndex == i;
-                  return SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    child: FindingCard(
-                      finding: finding,
-                      selected: isSelected,
-                      onTap: () => setState(() => _selectedFindingIndex = i),
-                      archetypePreferredType: _archetype != null
-                          ? _archetypePreferredType[_archetype!]
-                          : null,
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // -- Practitioner Points --
-            if (activeReport.practitionerPoints.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'MOVEMENT INSIGHTS',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: theme.colorScheme.secondary,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ...activeReport.practitionerPoints.map(
-                        (p) => Padding(
-                          padding: const EdgeInsets.only(bottom: 8.0),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Icon(
-                                Icons.check_circle_outline,
-                                size: 16,
-                                color: Colors.white38,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  p,
-                                  style: theme.textTheme.bodyMedium,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
+            _QualityBanner(quality: quality),
+            const SizedBox(height: 24),
+            if (quality.passed) ...[
+              _NarrativeSection(narrative: report.overallNarrative),
+              if (report.movementSection.chainObservations.isNotEmpty) ...[
+                const SizedBox(height: 32),
+                Text(
+                  'CHAIN OBSERVATIONS',
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    color: Colors.white70,
+                    letterSpacing: 2.0,
                   ),
                 ),
-              ),
-
-            const SizedBox(height: 32),
-
-            // -- EMG Summary (If available) --
-            if (assessment.payload != null &&
-                assessment.payload!.frames.isNotEmpty)
-              _EMGActivationSection(payload: assessment.payload!),
-
-            const SizedBox(height: 32),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _onShare(activeReport, assessment),
-                  icon: const Icon(Icons.picture_as_pdf_outlined),
-                  label: const Text('EXPORT CLINICAL PDF'),
+                const SizedBox(height: 12),
+                ...report.movementSection.chainObservations.map(
+                  (o) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _ChainObservationCard(observation: o),
+                  ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 48),
+              ],
+            ],
           ],
         ),
       ),
@@ -522,94 +258,229 @@ class _ReportViewState extends ConsumerState<ReportView> {
   }
 }
 
-class _EMGActivationSection extends StatelessWidget {
-  const _EMGActivationSection({required this.payload});
-  final SessionPayload payload;
+class _Header extends StatelessWidget {
+  const _Header({required this.record, required this.movement});
+
+  final SessionRecord record;
+  final String movement;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    // Simple average across all frames for the report
-    final averages = List.filled(10, 0.0);
-    for (final frame in payload.frames) {
-      for (var i = 0; i < 10; i++) {
-        averages[i] += frame
-            .landmarks[i]
-            .x; // Using x as proxy for EMG value if stored there, or similar
-        // Note: Real implementation would use a dedicated EMG field in payload
-      }
-    }
-    for (var i = 0; i < 10; i++) {
-      averages[i] /= payload.frames.length;
-    }
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'EMG ACTIVATION',
-            style: theme.textTheme.labelLarge?.copyWith(
-              letterSpacing: 2.0,
-              color: Colors.white70,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          movement.replaceAll('_', ' ').toUpperCase(),
+          style: theme.textTheme.headlineMedium?.copyWith(
+            fontWeight: FontWeight.w900,
           ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                _activationRow(
-                  'Calves',
-                  (averages[0] + averages[1] + averages[2] + averages[3]) / 4,
-                  theme,
-                ),
-                _activationRow('Quads', (averages[4] + averages[5]) / 2, theme),
-                _activationRow(
-                  'Glutes',
-                  (averages[6] + averages[7]) / 2,
-                  theme,
-                ),
-                _activationRow('Core', (averages[8] + averages[9]) / 2, theme),
-              ],
-            ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          '${_formatDate(record.capturedAt.toLocal())} · ${_shortId(record.sessionId)}',
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: Colors.white38,
+            letterSpacing: 1.0,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
+}
 
-  Widget _activationRow(String label, double value, ThemeData theme) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+class _QualityBanner extends StatelessWidget {
+  const _QualityBanner({required this.quality});
+
+  final SessionQualityReport quality;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final passed = quality.passed;
+    final color = passed ? theme.colorScheme.secondary : Colors.redAccent;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(label, style: theme.textTheme.bodySmall),
+              Icon(
+                passed ? Icons.check_circle : Icons.error,
+                color: color,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
               Text(
-                '${(value * 100).toInt()}%',
-                style: theme.textTheme.labelSmall,
+                passed ? 'SESSION QUALITY: PASSED' : 'SESSION QUALITY: REJECTED',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: color,
+                  letterSpacing: 1.5,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: value.clamp(0.0, 1.0),
-            backgroundColor: Colors.white10,
-            color: theme.colorScheme.secondary,
-            minHeight: 4,
-          ),
+          if (quality.issues.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...quality.issues.map(
+              (issue) => Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '· ${issue.code}: ${issue.detail}',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+}
+
+class _NarrativeSection extends StatelessWidget {
+  const _NarrativeSection({required this.narrative});
+
+  final String narrative;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'SUMMARY',
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: Colors.white70,
+            letterSpacing: 2.0,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Text(
+            narrative,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: Colors.white,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ChainObservationCard extends StatelessWidget {
+  const _ChainObservationCard({required this.observation});
+
+  final ChainObservation observation;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final severityColor = switch (observation.severity) {
+      ObservationSeverity.info => theme.colorScheme.secondary,
+      ObservationSeverity.concern => Colors.orange,
+      ObservationSeverity.flag => Colors.redAccent,
+    };
+    final chainLabel = observation.chain.wire
+        .replaceAll('_', ' ')
+        .toUpperCase();
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.04),
+        border: Border.all(color: severityColor.withValues(alpha: 0.3)),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                chainLabel,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: severityColor,
+                  letterSpacing: 1.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                '${observation.severity.name.toUpperCase()} · '
+                '${(observation.confidence * 100).round()}%',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: Colors.white38,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            observation.narrative,
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+          ),
+          if (observation.involvedJoints.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'joints: ${observation.involvedJoints.join(", ")}',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.white38,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+String _shortId(String sessionId) {
+  if (sessionId.length <= 8) return sessionId;
+  return sessionId.substring(0, 8);
+}
+
+String _formatDate(DateTime dt) {
+  final months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+  final hh = dt.hour.toString().padLeft(2, '0');
+  final mm = dt.minute.toString().padLeft(2, '0');
+  return '${months[dt.month - 1]} ${dt.day}, ${dt.year} · $hh:$mm';
 }

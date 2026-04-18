@@ -535,11 +535,17 @@ class ServerReport {
     required this.metadata,
     required this.movementSection,
     required this.overallNarrative,
+    required this.raw,
   });
 
   final ReportMetadata metadata;
   final MovementSection movementSection;
   final String overallNarrative;
+
+  /// The raw JSON body for this report. Kept so local persistence can round-
+  /// trip the full server payload (including fields we don't yet decode) and
+  /// so the UI can lazily consume them once rendering catches up.
+  final Map<String, dynamic> raw;
 
   factory ServerReport.fromJson(Map<String, dynamic> json) => ServerReport(
     metadata: ReportMetadata.fromJson(
@@ -549,5 +555,56 @@ class ServerReport {
       json['movement_section'] as Map<String, dynamic>,
     ),
     overallNarrative: json['overall_narrative'] as String,
+    raw: json,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Local session persistence — one record per completed server POST /sessions.
+// The ServerReport inside is null until the report has been fetched.
+// ---------------------------------------------------------------------------
+
+class SessionRecord {
+  const SessionRecord({
+    required this.sessionId,
+    required this.movement,
+    required this.capturedAt,
+    this.report,
+  });
+
+  /// The session_id returned by POST /sessions.
+  final String sessionId;
+
+  /// Wire movement value (e.g. "bicep_curl"). Cached from the payload so the
+  /// history view can show movement labels before the report arrives.
+  final String movement;
+
+  /// When the capture was finalized on-device (UTC).
+  final DateTime capturedAt;
+
+  /// The server's analysis report. Null until it has been fetched.
+  final ServerReport? report;
+
+  SessionRecord copyWith({ServerReport? report}) => SessionRecord(
+    sessionId: sessionId,
+    movement: movement,
+    capturedAt: capturedAt,
+    report: report ?? this.report,
+  );
+
+  Map<String, dynamic> toJson() => {
+    'session_id': sessionId,
+    'movement': movement,
+    'captured_at': capturedAt.toUtc().toIso8601String(),
+    if (report != null) 'report': report!.raw,
+  };
+
+  factory SessionRecord.fromJson(Map<String, dynamic> json) => SessionRecord(
+    sessionId: json['session_id'] as String,
+    movement: json['movement'] as String,
+    capturedAt: DateTime.parse(json['captured_at'] as String),
+    report: json['report'] != null
+        ? ServerReport.fromJson(json['report'] as Map<String, dynamic>)
+        : null,
   );
 }

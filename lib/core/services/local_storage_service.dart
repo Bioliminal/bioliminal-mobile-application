@@ -343,6 +343,65 @@ class LocalStorageService {
     return reportFromJson(json);
   }
 
+  // -- Session records (new server-shaped persistence) --
+
+  Future<void> saveSessionRecord(SessionRecord record) async {
+    if (kIsWeb) {
+      _webMemory['session_records/${record.sessionId}'] = record.toJson();
+      return;
+    }
+    final dir = await _getDir('session_records') as Directory;
+    final file = File('${dir.path}/${record.sessionId}.json');
+    await file.writeAsString(jsonEncode(record.toJson()));
+  }
+
+  Future<SessionRecord?> loadSessionRecord(String sessionId) async {
+    if (kIsWeb) {
+      final json = _webMemory['session_records/$sessionId'];
+      if (json == null) return null;
+      return SessionRecord.fromJson(json as Map<String, dynamic>);
+    }
+    final dir = await _getDir('session_records') as Directory;
+    final file = File('${dir.path}/$sessionId.json');
+    if (!file.existsSync()) return null;
+    final json = jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+    return SessionRecord.fromJson(json);
+  }
+
+  Future<List<SessionRecord>> listSessionRecords() async {
+    if (kIsWeb) {
+      return _webMemory.keys
+          .where((k) => k.startsWith('session_records/'))
+          .map(
+            (k) => SessionRecord.fromJson(_webMemory[k] as Map<String, dynamic>),
+          )
+          .toList()
+        ..sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+    }
+    final dir = await _getDir('session_records') as Directory;
+    final files = dir.listSync().whereType<File>().where(
+      (f) => f.path.endsWith('.json'),
+    );
+    final records = <SessionRecord>[];
+    for (final file in files) {
+      final json =
+          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+      records.add(SessionRecord.fromJson(json));
+    }
+    records.sort((a, b) => b.capturedAt.compareTo(a.capturedAt));
+    return records;
+  }
+
+  Future<void> deleteSessionRecord(String sessionId) async {
+    if (kIsWeb) {
+      _webMemory.remove('session_records/$sessionId');
+      return;
+    }
+    final dir = await _getDir('session_records') as Directory;
+    final file = File('${dir.path}/$sessionId.json');
+    if (file.existsSync()) await file.delete();
+  }
+
   // -- PDFs --
 
   Future<void> savePdf(String assessmentId, List<int> bytes) async {
