@@ -142,9 +142,8 @@ class SessionPayload {
 }
 
 // ---------------------------------------------------------------------------
-// Server report wire types — mirror software/mobile-handover/schemas/report.schema.json
-// from ML_RandD_Server. Decode-only. Use ServerReportAdapter to convert into
-// the legacy Report shape the UI renders.
+// Server report wire types — mirror software/mobile-handover/schemas/ in
+// ML_RandD_Server (source of truth, pinned at c6ae531). Decode-only.
 // ---------------------------------------------------------------------------
 
 enum ChainName {
