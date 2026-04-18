@@ -46,7 +46,21 @@ class SessionTrends extends ConsumerWidget {
       data: (sessions) {
         if (sessions.length < 2) return const _NotEnoughSessions();
         final formScores = sessions.map((s) => s.formScore).toList();
-        final firstFades = sessions.map(_firstFadeRep).toList();
+        // For sessions where no fade ever fired, plot at total_reps + 1
+        // so the user reads "your fade rep was past the end of the set"
+        // instead of looking at a "—" gap that reads as missing data.
+        // Display also flips to "RIR+<n>" so the value is unambiguous.
+        final firstFades = <_FadePoint>[];
+        for (final s in sessions) {
+          final fade = _firstFadeRep(s);
+          if (fade > 0) {
+            firstFades.add(_FadePoint(value: fade.toDouble(), faded: true));
+          } else {
+            firstFades.add(
+              _FadePoint(value: (s.reps.length + 1).toDouble(), faded: false),
+            );
+          }
+        }
         final maxPeaks = sessions
             .map((s) =>
                 s.peaks.isEmpty ? 0.0 : s.peaks.reduce((a, b) => a > b ? a : b))
@@ -65,8 +79,16 @@ class SessionTrends extends ConsumerWidget {
             _TrendCard(
               label: 'FIRST FADE REP',
               unit: '',
-              values: firstFades.map((v) => v.toDouble()).toList(),
-              format: (v) => v == 0 ? '—' : v.toStringAsFixed(0),
+              values: firstFades.map((p) => p.value).toList(),
+              format: (v) {
+                final p = firstFades.firstWhere(
+                  (p) => p.value == v,
+                  orElse: () => firstFades.last,
+                );
+                return p.faded
+                    ? v.toStringAsFixed(0)
+                    : 'RIR+${(v - 1).toStringAsFixed(0)}';
+              },
               higherIsBetter: true,
             ),
             const SizedBox(height: 10),
@@ -111,6 +133,12 @@ class _NotEnoughSessions extends StatelessWidget {
   }
 }
 
+class _FadePoint {
+  const _FadePoint({required this.value, required this.faded});
+  final double value;
+  final bool faded;
+}
+
 class _TrendCard extends StatelessWidget {
   const _TrendCard({
     required this.label,
@@ -132,11 +160,14 @@ class _TrendCard extends StatelessWidget {
     final previous = values[values.length - 2];
     final delta = latest - previous;
     final improved = higherIsBetter ? delta >= 0 : delta <= 0;
+    // Colorblind-safe palette (Wong-style): blue for improving, orange
+    // for regressing. Avoids the classic red/green deuteranopia trap.
+    // Arrows still carry the same signal redundantly.
     final deltaColor = delta == 0
         ? Colors.white54
         : improved
-            ? BioliminalTheme.confidenceHigh
-            : BioliminalTheme.confidenceLow;
+            ? const Color(0xFF56B4E9) // sky blue
+            : const Color(0xFFE69F00); // orange
     final arrow = delta == 0 ? '' : (delta > 0 ? '↑' : '↓');
 
     return Container(
