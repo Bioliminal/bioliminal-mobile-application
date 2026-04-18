@@ -17,13 +17,11 @@ import '../features/onboarding/views/auth_options_view.dart';
 import '../features/waitlist/views/waitlist_view.dart';
 import '../features/rep_capture/views/rep_capture_view.dart';
 import '../features/report/views/report_view.dart';
-import '../features/screening/views/screening_view.dart';
 import '../features/settings/views/login_view.dart';
 import '../features/settings/views/settings_view.dart';
 import '../features/settings/views/profile_view.dart';
 import '../features/settings/views/sign_in_view.dart';
 import '../features/settings/views/sign_up_view.dart';
-import '../features/settings/views/ai_model_settings_view.dart';
 import '../features/settings/views/calibration_view.dart';
 import 'widgets/main_scaffold.dart';
 
@@ -39,10 +37,10 @@ final goRouter = GoRouter(
     if (!kIsWeb && state.uri.path == '/disclaimer') {
       final container = ProviderScope.containerOf(context);
       final storage = container.read(localStorageServiceProvider);
-      final assessments = await storage.listAssessments();
+      final records = await storage.listSessionRecords();
 
-      // If they have assessments, they have already completed onboarding.
-      if (assessments.isNotEmpty) {
+      // If they have sessions, they have already completed onboarding.
+      if (records.isNotEmpty) {
         return '/history';
       }
     }
@@ -106,12 +104,6 @@ final goRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const RepCaptureView(),
     ),
-    // Dormant until post-demo — no user-reachable entrypoint. See #30.
-    GoRoute(
-      path: '/screening',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const ScreeningView(),
-    ),
     GoRoute(
       path: '/report/:id',
       parentNavigatorKey: _rootNavigatorKey,
@@ -136,11 +128,6 @@ final goRouter = GoRouter(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const ProfileView(),
-    ),
-    GoRoute(
-      path: '/ai-settings',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AIModelSettingsView(),
     ),
     GoRoute(
       path: '/calibration',

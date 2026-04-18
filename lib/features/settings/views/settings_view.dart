@@ -12,7 +12,6 @@ class SettingsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final profile = ref.watch(userProfileProvider).asData?.value;
-    final aiModel = ref.watch(selectedAIModelProvider);
     final isPremium = ref.watch(isPremiumProvider);
     final hardwareState = ref.watch(hardwareControllerProvider);
 
@@ -81,13 +80,8 @@ class SettingsView extends ConsumerWidget {
               const _SectionHeader('ANALYSIS'),
               _Row(
                 title: 'Camera Calibration',
-                value: 'Auto-calibrate',
+                value: 'Framing check',
                 onTap: () => context.push('/calibration'),
-              ),
-              _Row(
-                title: 'AI Model',
-                value: aiModel,
-                onTap: () => context.push('/ai-settings'),
               ),
               const SizedBox(height: 40),
 

@@ -11,16 +11,13 @@ void main() {
 
       expect(paths, contains('/'));
       expect(paths, contains('/disclaimer'));
+      expect(paths, contains('/calibration'));
       expect(paths, contains('/capture'));
-      expect(paths, contains('/screening'));
       expect(paths, contains('/report/:id'));
       expect(paths, contains('/login'));
       expect(paths, contains('/profile'));
-    });
-
-    test('expected number of top-level routes exist', () {
-      // 11 GoRoutes + 1 StatefulShellRoute = 12
-      expect(goRouter.configuration.routes.length, 12);
+      expect(paths, isNot(contains('/screening')));
+      expect(paths, isNot(contains('/ai-settings')));
     });
   });
 }
