@@ -229,7 +229,7 @@ class _NewScanBar extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: FilledButton(
-          onPressed: () => context.go('/hardware-setup'),
+          onPressed: () => context.go('/capture'),
           child: const Text('NEW SCAN'),
         ),
       ),
