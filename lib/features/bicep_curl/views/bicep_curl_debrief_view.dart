@@ -8,6 +8,7 @@ import '../models/session_log.dart';
 import 'widgets/body_heatmap.dart';
 import 'widgets/cue_timeline.dart';
 import 'widgets/peak_chart.dart';
+import 'widgets/session_trends.dart';
 
 /// Loads a persisted bicep curl session by id and renders the post-set
 /// debrief. The chain (commit 7 persistence → commit 8 load) means the
@@ -101,6 +102,11 @@ class _DebriefBody extends StatelessWidget {
           _Section(
             title: 'COMPENSATION EVENTS',
             child: _CompensationList(log: log),
+          ),
+          const SizedBox(height: 16),
+          const _Section(
+            title: 'PROGRESS OVER TIME',
+            child: SessionTrends(),
           ),
           const SizedBox(height: 24),
           _CtaRow(),
