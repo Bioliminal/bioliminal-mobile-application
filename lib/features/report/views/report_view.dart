@@ -14,6 +14,7 @@ import '../../history/services/archetype_classifier.dart';
 import '../../history/services/trend_detection_service.dart';
 import '../services/pdf_generator.dart';
 import '../services/report_assembly_service.dart';
+import '../services/server_report_adapter.dart';
 import '../widgets/body_map.dart';
 import '../widgets/finding_card.dart';
 
@@ -145,8 +146,9 @@ class _ReportViewState extends ConsumerState<ReportView> {
     _pollingTimer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       final client = ref.read(bioliminalClientProvider);
       try {
-        final report = await client.fetchReport(widget.id);
-        if (report != null && mounted) {
+        final serverReport = await client.fetchReport(widget.id);
+        if (serverReport != null && mounted) {
+          final report = ServerReportAdapter.toLegacyReport(serverReport);
           timer.cancel();
           setState(() {
             _remoteReport = report;

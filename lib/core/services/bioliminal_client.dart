@@ -5,10 +5,14 @@ import '../../../domain/models.dart';
 
 /// Client for the Bioliminal clinical analysis server.
 class BioliminalClient {
-  BioliminalClient({
-    this.baseUrl = 'https://api.bioliminal.ai', // Placeholder
-    http.Client? httpClient,
-  }) : _client = httpClient ?? http.Client();
+  BioliminalClient({String? baseUrl, http.Client? httpClient})
+    : baseUrl = baseUrl ?? _defaultBaseUrl,
+      _client = httpClient ?? http.Client();
+
+  static const String _defaultBaseUrl = String.fromEnvironment(
+    'SERVER_URL',
+    defaultValue: 'http://localhost:8000',
+  );
 
   final String baseUrl;
   final http.Client _client;
@@ -46,17 +50,19 @@ class BioliminalClient {
   }
 
   /// Fetch the clinical report for a completed session.
-  Future<Report?> fetchReport(String sessionId) async {
-    final url = Uri.parse('$baseUrl/reports/$sessionId');
+  ///
+  /// Returns null while the server is still processing (404). Throws on any
+  /// other non-200 status.
+  Future<ServerReport?> fetchReport(String sessionId) async {
+    final url = Uri.parse('$baseUrl/sessions/$sessionId/report');
 
     try {
       final response = await _client.get(url);
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return Report.fromJson(data);
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return ServerReport.fromJson(data);
       } else if (response.statusCode == 404) {
-        // Still processing
         return null;
       } else {
         throw Exception('Failed to fetch report: ${response.statusCode}');

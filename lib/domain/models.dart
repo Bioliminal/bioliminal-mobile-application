@@ -400,3 +400,154 @@ class TrendReport {
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Server report wire types — mirror software/mobile-handover/schemas/report.schema.json
+// from ML_RandD_Server. Decode-only. Use ServerReportAdapter to convert into
+// the legacy Report shape the UI renders.
+// ---------------------------------------------------------------------------
+
+enum ChainName {
+  superficialBackLine('superficial_back_line'),
+  backFunctionalLine('back_functional_line'),
+  frontFunctionalLine('front_functional_line');
+
+  const ChainName(this.wire);
+  final String wire;
+
+  static ChainName fromWire(String value) =>
+      ChainName.values.firstWhere((c) => c.wire == value);
+}
+
+enum ObservationSeverity { info, concern, flag }
+
+class QualityIssue {
+  const QualityIssue({required this.code, required this.detail});
+
+  final String code;
+  final String detail;
+
+  factory QualityIssue.fromJson(Map<String, dynamic> json) => QualityIssue(
+    code: json['code'] as String,
+    detail: json['detail'] as String,
+  );
+}
+
+class SessionQualityReport {
+  const SessionQualityReport({required this.passed, this.issues = const []});
+
+  final bool passed;
+  final List<QualityIssue> issues;
+
+  factory SessionQualityReport.fromJson(Map<String, dynamic> json) =>
+      SessionQualityReport(
+        passed: json['passed'] as bool,
+        issues:
+            (json['issues'] as List<dynamic>?)
+                ?.map((e) => QualityIssue.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+      );
+}
+
+class ChainObservation {
+  const ChainObservation({
+    required this.chain,
+    required this.severity,
+    required this.confidence,
+    required this.triggerRule,
+    required this.narrative,
+    this.involvedJoints = const [],
+  });
+
+  final ChainName chain;
+  final ObservationSeverity severity;
+  final double confidence;
+  final String triggerRule;
+  final String narrative;
+  final List<String> involvedJoints;
+
+  factory ChainObservation.fromJson(Map<String, dynamic> json) =>
+      ChainObservation(
+        chain: ChainName.fromWire(json['chain'] as String),
+        severity: ObservationSeverity.values.byName(json['severity'] as String),
+        confidence: (json['confidence'] as num).toDouble(),
+        triggerRule: json['trigger_rule'] as String,
+        narrative: json['narrative'] as String,
+        involvedJoints:
+            (json['involved_joints'] as List<dynamic>?)?.cast<String>() ??
+            const [],
+      );
+}
+
+class MovementSection {
+  const MovementSection({
+    required this.movement,
+    required this.qualityReport,
+    this.chainObservations = const [],
+  });
+
+  final String movement;
+  final SessionQualityReport qualityReport;
+  final List<ChainObservation> chainObservations;
+
+  factory MovementSection.fromJson(Map<String, dynamic> json) =>
+      MovementSection(
+        movement: json['movement'] as String,
+        qualityReport: SessionQualityReport.fromJson(
+          json['quality_report'] as Map<String, dynamic>,
+        ),
+        chainObservations:
+            (json['chain_observations'] as List<dynamic>?)
+                ?.map(
+                  (e) => ChainObservation.fromJson(e as Map<String, dynamic>),
+                )
+                .toList() ??
+            const [],
+      );
+}
+
+class ReportMetadata {
+  const ReportMetadata({
+    required this.sessionId,
+    required this.movement,
+    this.capturedAtMs,
+  });
+
+  final String sessionId;
+  final String movement;
+  final int? capturedAtMs;
+
+  factory ReportMetadata.fromJson(Map<String, dynamic> json) => ReportMetadata(
+    sessionId: json['session_id'] as String,
+    movement: json['movement'] as String,
+    capturedAtMs: json['captured_at_ms'] as int?,
+  );
+}
+
+/// Top-level report returned by GET /sessions/{id}/report.
+///
+/// Only `metadata`, `movement_section`, and `overall_narrative` are decoded.
+/// Optional `temporal_section` / `cross_movement_section` are ignored until
+/// the UI needs them.
+class ServerReport {
+  const ServerReport({
+    required this.metadata,
+    required this.movementSection,
+    required this.overallNarrative,
+  });
+
+  final ReportMetadata metadata;
+  final MovementSection movementSection;
+  final String overallNarrative;
+
+  factory ServerReport.fromJson(Map<String, dynamic> json) => ServerReport(
+    metadata: ReportMetadata.fromJson(
+      json['metadata'] as Map<String, dynamic>,
+    ),
+    movementSection: MovementSection.fromJson(
+      json['movement_section'] as Map<String, dynamic>,
+    ),
+    overallNarrative: json['overall_narrative'] as String,
+  );
+}
