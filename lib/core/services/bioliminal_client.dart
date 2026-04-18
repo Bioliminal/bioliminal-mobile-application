@@ -11,7 +11,7 @@ class BioliminalClient {
 
   static const String _defaultBaseUrl = String.fromEnvironment(
     'SERVER_URL',
-    defaultValue: 'http://localhost:8000',
+    defaultValue: 'https://bioliminal-demo.aaroncarney.me',
   );
 
   final String baseUrl;
