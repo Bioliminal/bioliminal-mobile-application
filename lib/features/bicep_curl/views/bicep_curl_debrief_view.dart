@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../models/session_log.dart';
+import 'widgets/body_heatmap.dart';
 import 'widgets/cue_timeline.dart';
 import 'widgets/peak_chart.dart';
 
@@ -85,6 +86,11 @@ class _DebriefBody extends StatelessWidget {
               baseline: baseline,
               cueEvents: log.cueEvents,
             ),
+          ),
+          const SizedBox(height: 16),
+          _Section(
+            title: 'MUSCLE ACTIVITY',
+            child: BicepCurlHeatmapSection(log: log),
           ),
           const SizedBox(height: 16),
           _Section(
