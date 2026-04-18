@@ -322,12 +322,12 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   void _onRepBoundary(RepBoundary b) {
-    final peakEnv = _peakInWindow(b.tStartUs, b.tEndUs);
+    final summary = _summarizeWindow(b.tStartUs, b.tEndUs);
     final s = state;
     if (s is BicepCurlCalibrating) {
-      _handleCalibrationRep(s, b, peakEnv);
+      _handleCalibrationRep(s, b, summary.peak, summary.samples);
     } else if (s is BicepCurlActive) {
-      _handleActiveRep(s, b, peakEnv);
+      _handleActiveRep(s, b, summary.peak, summary.samples);
     }
     _currentRepFrames.clear();
     _resetIdleTimer();
@@ -337,6 +337,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     BicepCurlCalibrating s,
     RepBoundary b,
     double peakEnv,
+    List<double> envelopeSamples,
   ) {
     final repNum = s.repsCompleted + 1;
     final record = RepRecord(
@@ -345,6 +346,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       tPeakUs: b.tPeakUs,
       tEndUs: b.tEndUs,
       peakEnv: peakEnv,
+      envelopeSamples: envelopeSamples,
     );
     final reps = [...s.reps, record];
 
@@ -378,6 +380,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     BicepCurlActive s,
     RepBoundary b,
     double peakEnv,
+    List<double> envelopeSamples,
   ) {
     final repNum = s.reps.length + 1;
 
@@ -394,6 +397,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       tEndUs: b.tEndUs,
       peakEnv: peakEnv,
       poseDelta: delta,
+      envelopeSamples: envelopeSamples,
     );
     final reps = [...s.reps, record];
     final peaks = [for (final r in reps) r.peakEnv];
@@ -438,14 +442,30 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
   // ---------- helpers ----------
 
-  double _peakInWindow(int tStartUs, int tEndUs) {
-    var maxV = 0.0;
+  /// Walks the envelope buffer once, computing the per-rep peak and a
+  /// 50-bucket max-pooled segment for the heatmap. Bucket-max (vs mean
+  /// or interpolation) preserves visual peaks across the rep window.
+  static const int _envelopeBucketsPerRep = 50;
+
+  ({double peak, List<double> samples}) _summarizeWindow(
+    int tStartUs,
+    int tEndUs,
+  ) {
+    final samples =
+        List<double>.filled(_envelopeBucketsPerRep, 0.0);
+    var peak = 0.0;
+    if (tEndUs <= tStartUs) return (peak: peak, samples: samples);
+    final binSize = (tEndUs - tStartUs) / _envelopeBucketsPerRep;
     for (final s in _envelopeBuffer) {
       if (s.tUs < tStartUs) continue;
       if (s.tUs >= tEndUs) break;
-      if (s.value > maxV) maxV = s.value;
+      if (s.value > peak) peak = s.value;
+      final bin = ((s.tUs - tStartUs) / binSize)
+          .floor()
+          .clamp(0, _envelopeBucketsPerRep - 1);
+      if (s.value > samples[bin]) samples[bin] = s.value;
     }
-    return maxV;
+    return (peak: peak, samples: samples);
   }
 
   PoseDelta _meanDelta(

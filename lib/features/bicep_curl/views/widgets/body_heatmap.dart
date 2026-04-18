@@ -5,10 +5,9 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme.dart';
 import '../../models/compensation_reference.dart';
-import '../../models/rep_record.dart';
 import '../../models/session_log.dart';
 
-/// Per-rep muscle engagement values, normalized to `[0, 1]`. Drives the
+/// Per-frame muscle engagement values, normalized to `[0, 1]`. Drives the
 /// brightness of each muscle region in [BodyHeatmapPanel].
 class MuscleActivations {
   const MuscleActivations({
@@ -33,17 +32,20 @@ class MuscleActivations {
 
 enum HeatmapMode { measured, inferred }
 
-/// Side-by-side measured + inferred body heatmap panels with a shared
-/// rep-scrub bar. Auto-plays through the set on mount; tap a rep on the
-/// scrub bar to jump.
+/// Side-by-side measured + inferred body heatmap with a continuous
+/// within-rep scrub bar. Auto-plays through the full session at ~14 ms
+/// per envelope sample (50 samples per rep ≈ 700 ms per rep visually).
 ///
-/// Honest labeling is non-negotiable here. The MEASURED panel shows real
-/// bicep EMG; the INFERRED panel shows kinematic estimates derived from
-/// pose drift (not actual muscle measurements). Visual treatments are
-/// distinct (solid vs dotted glow rings) so the two read differently.
-/// When v2 hardware lands additional EMG channels, the INFERRED panel
-/// gets retired and those muscles move to the MEASURED side using the
-/// same painter.
+/// Honest labeling is non-negotiable. The MEASURED panel shows real
+/// bicep EMG sample-by-sample within each rep (smooth concentric→peak→
+/// eccentric trajectory); the INFERRED panel shows kinematic estimates
+/// derived from per-rep pose drift, so it steps at rep boundaries
+/// rather than animating within a rep — which is the truth: we only
+/// have one pose summary per rep window.
+///
+/// Sessions saved before the continuous-heatmap commit have null
+/// envelopeSamples; debrief synthesizes a half-sine peaked mid-rep
+/// from the stored peakEnv so old sessions still animate.
 class BicepCurlHeatmapSection extends StatefulWidget {
   const BicepCurlHeatmapSection({super.key, required this.log});
   final SessionLog log;
@@ -54,14 +56,27 @@ class BicepCurlHeatmapSection extends StatefulWidget {
 }
 
 class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
-  int _currentRep = 0;
+  static const int _samplesPerRep = 50;
+  static const Duration _frameInterval = Duration(milliseconds: 14);
+
+  int _absoluteSample = 0;
   Timer? _autoPlay;
   bool _playing = true;
+  late double _maxSampleValue;
 
   @override
   void initState() {
     super.initState();
-    if (widget.log.reps.length > 1) _startAutoPlay();
+    _maxSampleValue = _computeMaxSampleValue();
+    if (widget.log.reps.isNotEmpty) _startAutoPlay();
+  }
+
+  @override
+  void didUpdateWidget(covariant BicepCurlHeatmapSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.log != widget.log) {
+      _maxSampleValue = _computeMaxSampleValue();
+    }
   }
 
   @override
@@ -70,12 +85,15 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
     super.dispose();
   }
 
+  int get _totalSamples =>
+      widget.log.reps.length * _samplesPerRep;
+
   void _startAutoPlay() {
     _autoPlay?.cancel();
-    _autoPlay = Timer.periodic(const Duration(milliseconds: 700), (_) {
+    _autoPlay = Timer.periodic(_frameInterval, (_) {
       if (!mounted) return;
       setState(() {
-        _currentRep = (_currentRep + 1) % widget.log.reps.length;
+        _absoluteSample = (_absoluteSample + 1) % _totalSamples;
       });
     });
   }
@@ -91,11 +109,73 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
     });
   }
 
-  void _jumpTo(int rep) {
+  void _jumpTo(int absoluteSample) {
     setState(() {
-      _currentRep = rep;
-      if (_playing) _startAutoPlay(); // restart timer from the new position
+      _absoluteSample = absoluteSample.clamp(0, _totalSamples - 1);
+      if (_playing) _startAutoPlay(); // restart timer from new position
     });
+  }
+
+  double _computeMaxSampleValue() {
+    var max = 0.0;
+    for (final rep in widget.log.reps) {
+      final samples = rep.envelopeSamples;
+      if (samples != null) {
+        for (final v in samples) {
+          if (v > max) max = v;
+        }
+      } else if (rep.peakEnv > max) {
+        max = rep.peakEnv;
+      }
+    }
+    return max;
+  }
+
+  /// Decodes an absolute sample index into (rep index, within-rep index).
+  ({int rep, int within}) _decode(int absoluteSample) {
+    final repIdx = (absoluteSample ~/ _samplesPerRep)
+        .clamp(0, widget.log.reps.length - 1);
+    final within = absoluteSample % _samplesPerRep;
+    return (rep: repIdx, within: within);
+  }
+
+  MuscleActivations _activationsNow() {
+    if (widget.log.reps.isEmpty) return MuscleActivations.zero;
+    final (rep: r, within: w) = _decode(_absoluteSample);
+    final rep = widget.log.reps[r];
+
+    // Bicep (measured, continuous).
+    final samples = rep.envelopeSamples;
+    final rawBicep = samples != null && w < samples.length
+        ? samples[w]
+        : _syntheticSample(rep.peakEnv, w);
+    final bicepNorm = _maxSampleValue > 0
+        ? (rawBicep / _maxSampleValue).clamp(0.0, 1.0)
+        : 0.0;
+
+    // Inferred channels (per-rep, step at boundaries).
+    final delta = rep.poseDelta;
+    final shoulder = delta == null
+        ? 0.0
+        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
+    final erector = delta == null
+        ? 0.0
+        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
+
+    return MuscleActivations(
+      // 0.4 floor so even quiet moments stay visible.
+      bicep: math.max(bicepNorm * 0.6 + 0.4, 0.4),
+      shoulder: shoulder,
+      trap: shoulder * 0.85,
+      erector: erector,
+    );
+  }
+
+  /// Half-sine peaked at the middle, scaled to peakEnv. Used for legacy
+  /// sessions where per-rep envelope segments weren't persisted.
+  double _syntheticSample(double peakEnv, int withinRep) {
+    final phase = (withinRep / (_samplesPerRep - 1)) * math.pi;
+    return peakEnv * math.sin(phase);
   }
 
   @override
@@ -103,13 +183,8 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
     if (widget.log.reps.isEmpty) {
       return const SizedBox.shrink();
     }
-    final maxPeak = widget.log.reps
-        .map((r) => r.peakEnv)
-        .fold<double>(0, math.max);
-    final activations = _activationsFor(
-      widget.log.reps[_currentRep],
-      maxPeak,
-    );
+    final activations = _activationsNow();
+    final (rep: currentRep, within: _) = _decode(_absoluteSample);
 
     return Column(
       children: [
@@ -143,40 +218,15 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
         ),
         const SizedBox(height: 14),
         _ScrubRow(
+          totalSamples: _totalSamples,
+          currentSample: _absoluteSample,
+          repNumber: currentRep + 1,
           repCount: widget.log.reps.length,
-          currentRep: _currentRep,
           playing: _playing,
           onTogglePlay: _togglePlay,
           onJump: _jumpTo,
         ),
       ],
-    );
-  }
-
-  MuscleActivations _activationsFor(RepRecord rep, double maxPeak) {
-    // Bicep (measured): per-rep peak normalized to set max so the brightest
-    // rep glows fully; weakest rep dim. Applies a gentle floor so even
-    // low-effort reps remain visible.
-    final bicep =
-        maxPeak == 0 ? 0.0 : (rep.peakEnv / maxPeak).clamp(0.0, 1.0);
-
-    // Inferred channels (kinematic estimates):
-    // - shoulder + trap from shoulder Y drift; the two co-fire because a
-    //   shoulder hike is itself trap recruitment
-    // - erector from torso pitch
-    final delta = rep.poseDelta;
-    final shoulder = delta == null
-        ? 0.0
-        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
-    final erector = delta == null
-        ? 0.0
-        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
-
-    return MuscleActivations(
-      bicep: math.max(bicep * 0.6 + 0.4, 0.4),
-      shoulder: shoulder,
-      trap: shoulder * 0.85,
-      erector: erector,
     );
   }
 }
@@ -227,15 +277,19 @@ class _PanelLabeled extends StatelessWidget {
 
 class _ScrubRow extends StatelessWidget {
   const _ScrubRow({
+    required this.totalSamples,
+    required this.currentSample,
+    required this.repNumber,
     required this.repCount,
-    required this.currentRep,
     required this.playing,
     required this.onTogglePlay,
     required this.onJump,
   });
 
+  final int totalSamples;
+  final int currentSample;
+  final int repNumber;
   final int repCount;
-  final int currentRep;
   final bool playing;
   final VoidCallback onTogglePlay;
   final ValueChanged<int> onJump;
@@ -253,7 +307,7 @@ class _ScrubRow extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Text(
-          'REP ${currentRep + 1}/$repCount',
+          'REP $repNumber/$repCount',
           style: const TextStyle(
             color: Colors.white,
             fontSize: 11,
@@ -275,9 +329,11 @@ class _ScrubRow extends StatelessWidget {
             ),
             child: Slider(
               min: 0,
-              max: (repCount - 1).toDouble(),
-              divisions: repCount > 1 ? repCount - 1 : null,
-              value: currentRep.toDouble(),
+              max: (totalSamples - 1).toDouble(),
+              value: currentSample.toDouble().clamp(
+                    0.0,
+                    (totalSamples - 1).toDouble(),
+                  ),
               onChanged: (v) => onJump(v.round()),
             ),
           ),

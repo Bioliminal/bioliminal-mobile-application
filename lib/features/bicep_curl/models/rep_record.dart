@@ -10,6 +10,7 @@ class RepRecord {
     required this.tEndUs,
     required this.peakEnv,
     this.poseDelta,
+    this.envelopeSamples,
   });
 
   final int repNum;
@@ -26,6 +27,12 @@ class RepRecord {
   /// pose-frame coverage (e.g., user briefly out of frame).
   final PoseDelta? poseDelta;
 
+  /// 50 evenly-spaced envelope samples across the rep window, used by the
+  /// debrief heatmap to animate within-rep dynamics. Null on sessions
+  /// saved before the continuous-heatmap commit; debrief falls back to
+  /// a synthetic half-sine peaked at the middle in that case.
+  final List<double>? envelopeSamples;
+
   Duration get duration =>
       Duration(microseconds: tEndUs - tStartUs);
 
@@ -36,6 +43,7 @@ class RepRecord {
         't_end_us': tEndUs,
         'peak_env': peakEnv,
         if (poseDelta != null) 'pose_delta': poseDelta!.toJson(),
+        if (envelopeSamples != null) 'envelope_samples': envelopeSamples,
       };
 
   factory RepRecord.fromJson(Map<String, dynamic> json) => RepRecord(
@@ -46,6 +54,12 @@ class RepRecord {
         peakEnv: (json['peak_env'] as num).toDouble(),
         poseDelta: json['pose_delta'] != null
             ? PoseDelta.fromJson(json['pose_delta'] as Map<String, dynamic>)
+            : null,
+        envelopeSamples: json['envelope_samples'] != null
+            ? [
+                for (final v in json['envelope_samples'] as List)
+                  (v as num).toDouble(),
+              ]
             : null,
       );
 }
