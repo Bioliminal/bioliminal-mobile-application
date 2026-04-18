@@ -28,4 +28,24 @@ class RepRecord {
 
   Duration get duration =>
       Duration(microseconds: tEndUs - tStartUs);
+
+  Map<String, dynamic> toJson() => {
+        'rep_num': repNum,
+        't_start_us': tStartUs,
+        't_peak_us': tPeakUs,
+        't_end_us': tEndUs,
+        'peak_env': peakEnv,
+        if (poseDelta != null) 'pose_delta': poseDelta!.toJson(),
+      };
+
+  factory RepRecord.fromJson(Map<String, dynamic> json) => RepRecord(
+        repNum: json['rep_num'] as int,
+        tStartUs: json['t_start_us'] as int,
+        tPeakUs: json['t_peak_us'] as int,
+        tEndUs: json['t_end_us'] as int,
+        peakEnv: (json['peak_env'] as num).toDouble(),
+        poseDelta: json['pose_delta'] != null
+            ? PoseDelta.fromJson(json['pose_delta'] as Map<String, dynamic>)
+            : null,
+      );
 }

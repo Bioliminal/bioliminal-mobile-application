@@ -84,6 +84,23 @@ class CueProfile {
         verbal: ChannelConfig(enabled: true),
         timing: TimingMode.midRep,
       );
+
+  /// v0 persists only the preset label — custom profile tuning isn't a
+  /// runtime feature yet. Loading rebuilds via the factory.
+  Map<String, dynamic> toJson() => {'label': label};
+
+  factory CueProfile.fromJson(Map<String, dynamic> json) {
+    final label = json['label'] as String;
+    switch (label) {
+      case 'beginner':
+        return CueProfile.beginner();
+      case 'advanced':
+        return CueProfile.advanced();
+      case 'intermediate':
+      default:
+        return CueProfile.intermediate();
+    }
+  }
 }
 
 class FatigueThresholds {

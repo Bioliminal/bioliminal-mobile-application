@@ -115,6 +115,21 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     }
   }
 
+  Future<void> _persistAndExit(BicepCurlComplete complete) async {
+    // Skip empty sessions (user cancelled before any reps landed).
+    if (complete.log.reps.isNotEmpty) {
+      final record = SessionRecord(
+        sessionId: 'bicep_${complete.log.startedAt.millisecondsSinceEpoch}',
+        movement: 'bicep_curl',
+        capturedAt: complete.log.startedAt,
+        bicepCurl: complete.log.toJson(),
+      );
+      await ref.read(localStorageServiceProvider).saveSessionRecord(record);
+    }
+    if (!mounted) return;
+    context.go('/history');
+  }
+
   bool _armVisible(List<PoseLandmark> landmarks) {
     if (landmarks.length != 33) return false;
     final shoulder =
@@ -155,10 +170,10 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     final hardwareState = ref.watch(hardwareControllerProvider);
     final cameraAsync = ref.watch(appCameraControllerProvider);
 
-    // Side-effect: navigate on Complete (commit 8 will route to debrief).
+    // Side-effect: persist + navigate on Complete (commit 8 routes to debrief).
     ref.listen<BicepCurlState>(bicepCurlControllerProvider, (_, next) {
       if (next is BicepCurlComplete && mounted) {
-        context.go('/history');
+        unawaited(_persistAndExit(next));
       }
     });
 

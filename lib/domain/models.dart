@@ -309,6 +309,7 @@ class SessionRecord {
     required this.movement,
     required this.capturedAt,
     this.report,
+    this.bicepCurl,
   });
 
   /// The session_id returned by POST /sessions.
@@ -321,21 +322,34 @@ class SessionRecord {
   /// When the capture was finalized on-device (UTC).
   final DateTime capturedAt;
 
-  /// The server's analysis report. Null until it has been fetched.
+  /// The server's analysis report. Null until it has been fetched. Used by
+  /// the screening flow.
   final ServerReport? report;
 
-  SessionRecord copyWith({ServerReport? report}) => SessionRecord(
-    sessionId: sessionId,
-    movement: movement,
-    capturedAt: capturedAt,
-    report: report ?? this.report,
-  );
+  /// On-device bicep curl session log (reps, cues, compensation events,
+  /// profile, etc.). Generic blob so domain doesn't depend on the
+  /// bicep_curl feature; the feature owns serialization via
+  /// `SessionLog.toJson()` / `.fromJson()`.
+  final Map<String, dynamic>? bicepCurl;
+
+  SessionRecord copyWith({
+    ServerReport? report,
+    Map<String, dynamic>? bicepCurl,
+  }) =>
+      SessionRecord(
+        sessionId: sessionId,
+        movement: movement,
+        capturedAt: capturedAt,
+        report: report ?? this.report,
+        bicepCurl: bicepCurl ?? this.bicepCurl,
+      );
 
   Map<String, dynamic> toJson() => {
     'session_id': sessionId,
     'movement': movement,
     'captured_at': capturedAt.toUtc().toIso8601String(),
     if (report != null) 'report': report!.raw,
+    if (bicepCurl != null) 'bicep_curl': bicepCurl,
   };
 
   factory SessionRecord.fromJson(Map<String, dynamic> json) => SessionRecord(
@@ -345,5 +359,6 @@ class SessionRecord {
     report: json['report'] != null
         ? ServerReport.fromJson(json['report'] as Map<String, dynamic>)
         : null,
+    bicepCurl: json['bicep_curl'] as Map<String, dynamic>?,
   );
 }

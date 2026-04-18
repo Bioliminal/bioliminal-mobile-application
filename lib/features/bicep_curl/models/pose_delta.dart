@@ -18,4 +18,15 @@ class PoseDelta {
   bool exceedsThresholds(CompensationThresholds thresholds) =>
       shoulderDriftDeg.abs() > thresholds.shoulderDriftDeg ||
       torsoPitchDeltaDeg.abs() > thresholds.torsoPitchDeltaDeg;
+
+  Map<String, dynamic> toJson() => {
+        'shoulder_drift_deg': shoulderDriftDeg,
+        'torso_pitch_delta_deg': torsoPitchDeltaDeg,
+      };
+
+  factory PoseDelta.fromJson(Map<String, dynamic> json) => PoseDelta(
+        shoulderDriftDeg: (json['shoulder_drift_deg'] as num).toDouble(),
+        torsoPitchDeltaDeg:
+            (json['torso_pitch_delta_deg'] as num).toDouble(),
+      );
 }

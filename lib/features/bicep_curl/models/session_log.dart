@@ -56,4 +56,34 @@ class SessionLog {
     }).length;
     return (clean / reps.length) * 100.0;
   }
+
+  Map<String, dynamic> toJson() => {
+        'reps': [for (final r in reps) r.toJson()],
+        'cue_events': [for (final e in cueEvents) e.toJson()],
+        if (ref != null) 'ref': ref!.toJson(),
+        'started_at': startedAt.toUtc().toIso8601String(),
+        'duration_us': duration.inMicroseconds,
+        'profile': profile.toJson(),
+        'arm_side': armSide.name,
+        'ble_dropped_during_set': bleDroppedDuringSet,
+      };
+
+  factory SessionLog.fromJson(Map<String, dynamic> json) => SessionLog(
+        reps: [
+          for (final r in json['reps'] as List)
+            RepRecord.fromJson(r as Map<String, dynamic>),
+        ],
+        cueEvents: [
+          for (final e in json['cue_events'] as List)
+            CueEvent.fromJson(e as Map<String, dynamic>),
+        ],
+        ref: json['ref'] != null
+            ? CompensationReference.fromJson(json['ref'] as Map<String, dynamic>)
+            : null,
+        startedAt: DateTime.parse(json['started_at'] as String),
+        duration: Duration(microseconds: json['duration_us'] as int),
+        profile: CueProfile.fromJson(json['profile'] as Map<String, dynamic>),
+        armSide: ArmSide.fromName(json['arm_side'] as String),
+        bleDroppedDuringSet: json['ble_dropped_during_set'] as bool,
+      );
 }

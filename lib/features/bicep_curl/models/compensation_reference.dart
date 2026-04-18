@@ -1,4 +1,10 @@
-enum ArmSide { left, right }
+enum ArmSide {
+  left,
+  right;
+
+  static ArmSide fromName(String name) =>
+      ArmSide.values.firstWhere((s) => s.name == name);
+}
 
 /// Per-session pose baseline captured during reps 1–3 of the calibration
 /// window. Subsequent reps compare current shoulder Y / torso pitch
@@ -20,4 +26,17 @@ class CompensationReference {
   final double torsoPitchDegRef;
 
   final ArmSide armSide;
+
+  Map<String, dynamic> toJson() => {
+        'shoulder_y_ref': shoulderYRef,
+        'torso_pitch_deg_ref': torsoPitchDegRef,
+        'arm_side': armSide.name,
+      };
+
+  factory CompensationReference.fromJson(Map<String, dynamic> json) =>
+      CompensationReference(
+        shoulderYRef: (json['shoulder_y_ref'] as num).toDouble(),
+        torsoPitchDegRef: (json['torso_pitch_deg_ref'] as num).toDouble(),
+        armSide: ArmSide.fromName(json['arm_side'] as String),
+      );
 }
