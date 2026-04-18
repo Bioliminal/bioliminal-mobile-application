@@ -233,13 +233,15 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   /// Called by the live view once the framing-check passes. Transitions
-  /// Setup → Calibrating and tells firmware we've started.
+  /// Setup → Calibrating and tells firmware we've started. The idle
+  /// auto-end timer is *not* started yet — calibration's first rep can
+  /// take 20-30 s (user reaching for dumbbell, getting into position).
+  /// Timer arms once we enter Active state.
   void markFramingComplete() {
     if (state is! BicepCurlSetup) return;
     final hardware = ref.read(hardwareControllerProvider.notifier);
     hardware.setSessionState(1); // 1 = Calibrating
     state = const BicepCurlCalibrating(repsCompleted: 0, reps: <RepRecord>[]);
-    _resetIdleTimer();
   }
 
   /// Long-press toggle on the rep counter cycles the active profile.
@@ -271,7 +273,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     final hardware = ref.read(hardwareControllerProvider.notifier);
     await hardware.setSessionState(0);
     await hardware.stopHaptic();
-    await _teardown(keepVisualBus: true);
+    await _teardown();
     state = const BicepCurlIdle();
   }
 
@@ -473,9 +475,12 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     return (1.0 - peaks.last / baseline).clamp(0.0, 1.0);
   }
 
+  /// Auto-end the set when no rep has been detected for [_autoEndIdle].
+  /// Only runs during Active — calibration is allowed to take its time
+  /// (first rep often arrives 20-30 s after Setup completes).
   void _resetIdleTimer() {
     _idleTimer?.cancel();
-    if (state is BicepCurlActive || state is BicepCurlCalibrating) {
+    if (state is BicepCurlActive) {
       _idleTimer = Timer(_autoEndIdle, () => unawaited(endSession()));
     }
   }
