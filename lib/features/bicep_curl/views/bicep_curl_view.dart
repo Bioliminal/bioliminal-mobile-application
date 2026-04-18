@@ -116,18 +116,22 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   }
 
   Future<void> _persistAndExit(BicepCurlComplete complete) async {
-    // Skip empty sessions (user cancelled before any reps landed).
-    if (complete.log.reps.isNotEmpty) {
-      final record = SessionRecord(
-        sessionId: 'bicep_${complete.log.startedAt.millisecondsSinceEpoch}',
-        movement: 'bicep_curl',
-        capturedAt: complete.log.startedAt,
-        bicepCurl: complete.log.toJson(),
-      );
-      await ref.read(localStorageServiceProvider).saveSessionRecord(record);
+    if (complete.log.reps.isEmpty) {
+      // User cancelled before any reps — nothing to debrief.
+      if (mounted) context.go('/history');
+      return;
     }
+    final sessionId =
+        'bicep_${complete.log.startedAt.millisecondsSinceEpoch}';
+    final record = SessionRecord(
+      sessionId: sessionId,
+      movement: 'bicep_curl',
+      capturedAt: complete.log.startedAt,
+      bicepCurl: complete.log.toJson(),
+    );
+    await ref.read(localStorageServiceProvider).saveSessionRecord(record);
     if (!mounted) return;
-    context.go('/history');
+    context.go('/bicep-curl/debrief/$sessionId');
   }
 
   bool _armVisible(List<PoseLandmark> landmarks) {

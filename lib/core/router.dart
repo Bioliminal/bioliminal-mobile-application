@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
 import '../features/bicep_curl/models/compensation_reference.dart';
+import '../features/bicep_curl/views/bicep_curl_debrief_view.dart';
 import '../features/bicep_curl/views/bicep_curl_view.dart';
 import '../features/dev/views/ble_debug_view.dart';
 import '../features/sets/views/set_picker_view.dart';
@@ -143,6 +144,13 @@ final goRouter = GoRouter(
             ? ArmSide.left
             : ArmSide.right;
         return BicepCurlView(armSide: side);
+      },
+    ),
+    GoRoute(
+      path: '/bicep-curl/debrief/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        return BicepCurlDebriefView(sessionId: state.pathParameters['id']!);
       },
     ),
 

@@ -196,23 +196,44 @@ class _SessionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isBicepCurl = record.movement == 'bicep_curl';
     final report = record.report;
-    final passed = report?.movementSection.qualityReport.passed;
-    final status = switch (passed) {
-      true => _CardStatus(
-        label: 'PASSED',
-        color: theme.colorScheme.secondary,
-      ),
-      false => const _CardStatus(label: 'REJECTED', color: Colors.redAccent),
-      null => const _CardStatus(label: 'PENDING', color: Colors.white38),
-    };
+    final bicepCurl = record.bicepCurl;
 
-    final summary = report != null
-        ? _truncate(report.overallNarrative, 140)
-        : 'Waiting for server analysis...';
+    final _CardStatus status;
+    final String summary;
+    final String tapDestination;
+
+    if (isBicepCurl && bicepCurl != null) {
+      final reps = (bicepCurl['reps'] as List?)?.length ?? 0;
+      final cueCount = (bicepCurl['cue_events'] as List?)?.length ?? 0;
+      final bleDropped = bicepCurl['ble_dropped_during_set'] as bool? ?? false;
+      status = _CardStatus(
+        label: '$reps REPS',
+        color: theme.colorScheme.secondary,
+      );
+      summary = bleDropped
+          ? '$cueCount cues fired · BLE dropped mid-set'
+          : '$cueCount cues fired across the set';
+      tapDestination = '/bicep-curl/debrief/${record.sessionId}';
+    } else {
+      final passed = report?.movementSection.qualityReport.passed;
+      status = switch (passed) {
+        true => _CardStatus(
+          label: 'PASSED',
+          color: theme.colorScheme.secondary,
+        ),
+        false => const _CardStatus(label: 'REJECTED', color: Colors.redAccent),
+        null => const _CardStatus(label: 'PENDING', color: Colors.white38),
+      };
+      summary = report != null
+          ? _truncate(report.overallNarrative, 140)
+          : 'Waiting for server analysis...';
+      tapDestination = '/report/${record.sessionId}';
+    }
 
     return InkWell(
-      onTap: () => context.go('/report/${record.sessionId}'),
+      onTap: () => context.go(tapDestination),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(20),

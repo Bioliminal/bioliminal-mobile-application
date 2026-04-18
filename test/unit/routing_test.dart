@@ -14,6 +14,7 @@ void main() {
       expect(paths, contains('/calibration'));
       expect(paths, contains('/sets'));
       expect(paths, contains('/bicep-curl'));
+      expect(paths, contains('/bicep-curl/debrief/:id'));
       expect(paths, contains('/report/:id'));
       expect(paths, contains('/login'));
       expect(paths, contains('/profile'));
