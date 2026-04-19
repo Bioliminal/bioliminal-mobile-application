@@ -7,24 +7,25 @@ import 'package:bioliminal/features/bicep_curl/models/cue_profile.dart';
 import 'package:bioliminal/features/bicep_curl/services/envelope_derivator.dart';
 import 'package:bioliminal/features/bicep_curl/services/fatigue_algorithm.dart';
 
-/// **Smoke gate** for the algorithm against real data.
+/// **Snapshot regression guard** for the envelope+algorithm pipeline against
+/// real data.
 ///
 /// Runs Rajiv's 27-rep-to-failure session through the software envelope +
-/// fatigue algorithm. The CSV's rep boundaries are derived from BOOT
-/// button presses, which carry significant timing noise (the handshake
-/// itself flags this as a known issue) — so per-rep peaks swing wildly
-/// and the algorithm fires *more* cues here than the handshake predicted
-/// for clean data. **Production uses camera-derived rep boundaries from
-/// elbow-angle inflection, which will be much tighter.**
+/// fatigue algorithm and asserts the exact cue sequence against a checked-in
+/// snapshot. The CSV's rep boundaries come from BOOT button presses, which
+/// are noisy — peaks swing wildly and the algorithm fires *more* cues here
+/// than the handshake predicted for clean data. **Production uses
+/// camera-derived rep boundaries from elbow-angle inflection, which will be
+/// tighter.** So the snapshot isn't a spec for production behavior; it's a
+/// tripwire for regressions in the envelope filter, the fatigue algorithm,
+/// or the fixture itself.
 ///
-/// We therefore assert the algorithm's *shape*, not the precise rep
-/// numbers from the handshake's idealized expected:
-/// - No cues during calibration window (reps 1..N)
-/// - At least one fatigue cue fires before failure
-/// - STOP fires by the end (Rajiv hit failure at rep 27)
+/// If this test fails because you intentionally changed the filter or the
+/// algorithm, rerun, inspect the printed replay, and update the snapshot.
+/// If you haven't touched either, something upstream drifted.
 ///
-/// If this test fails, the algorithm regressed in shape (e.g., calibration
-/// silence broken). Tighter behavioral assertions belong in
+/// Shape invariants cross-check the snapshot (calibration silence, STOP
+/// terminates the set). Pure-algorithm behavior lives in
 /// fatigue_algorithm_test.dart against fabricated peak sequences.
 ///
 /// CSV format (per `docs/hardware_integration/`):
@@ -33,7 +34,22 @@ import 'package:bioliminal/features/bicep_curl/services/fatigue_algorithm.dart';
 /// - `X,t_us,final_rep`     — session end
 /// - `# ...` lines are comments
 void main() {
-  test('Rajiv\'s 27-rep failure session shape sanity', () {
+  // Locked-in cue sequence for the current {envelope coefficients, algorithm,
+  // CueProfile.intermediate(), Rajiv fixture}. Update deliberately after
+  // confirming a legitimate upstream change.
+  const expectedCueSequence = <(int, CueContent)>[
+    (7, CueContent.fatigueUrgent),
+    (11, CueContent.fatigueUrgent),
+    (14, CueContent.fatigueUrgent),
+    (19, CueContent.fatigueStop),
+    (21, CueContent.fatigueUrgent),
+    (24, CueContent.fatigueUrgent),
+    (25, CueContent.fatigueStop),
+    (26, CueContent.fatigueStop),
+    (27, CueContent.fatigueStop),
+  ];
+
+  test('Rajiv\'s 27-rep failure session — snapshot + shape', () {
     final csvPath =
         '${Directory.current.path}/docs/hardware_integration/'
         'session_Rajiv47_20260417_211321.csv';
@@ -73,21 +89,41 @@ void main() {
     print('Per-rep peaks: '
         '${peaks.asMap().entries.map((e) => '${e.key + 1}=${e.value.toStringAsFixed(0)}').join(' ')}');
 
-    // Calibration silence — invariant regardless of data noise.
+    // --- Snapshot check (primary regression guard) ---
+    final actualSequence = cues
+        .map((c) => (c.repNum, c.content))
+        .toList(growable: false);
+    expect(
+      actualSequence,
+      expectedCueSequence,
+      reason: 'Cue sequence drifted from snapshot. If you changed the '
+          'envelope filter, fatigue algorithm, or fixture, inspect the '
+          'printed replay above and update `expectedCueSequence` in this '
+          'file. Otherwise something upstream regressed.',
+    );
+
+    // --- Shape invariants (cross-checks; must always hold) ---
+
+    // 1. Calibration silence — no cues until the calibration window closes.
     expect(cues.where((c) => c.repNum <= profile.calibrationReps), isEmpty,
         reason:
             'reps 1..${profile.calibrationReps} must be silent (calibration window)');
 
-    // At least one fatigue cue fires before the failure rep.
-    final hasFatigueCue = cues.any((c) =>
+    // 2. STOP terminates the failure set and is the final cue.
+    expect(cues.last.content, CueContent.fatigueStop,
+        reason: 'last cue on a failure set must be fatigueStop');
+    expect(cues.last.repNum, reps.length,
+        reason: 'final STOP should land on the terminal rep');
+
+    // 3. At least one fatigue cue (FADE or URGENT) fires before the first
+    //    STOP — i.e., the algorithm warned before halting.
+    final firstStopIdx =
+        cues.indexWhere((c) => c.content == CueContent.fatigueStop);
+    final hasWarningBeforeStop = cues.sublist(0, firstStopIdx).any((c) =>
         c.content == CueContent.fatigueFade ||
         c.content == CueContent.fatigueUrgent);
-    expect(hasFatigueCue, isTrue,
-        reason: 'algorithm fired no fatigue cues across a failure set');
-
-    // STOP fires by the end (Rajiv collapsed at rep 27).
-    expect(cues.any((c) => c.content == CueContent.fatigueStop), isTrue,
-        reason: 'STOP must fire by end of failure set');
+    expect(hasWarningBeforeStop, isTrue,
+        reason: 'algorithm jumped straight to STOP without FADE/URGENT warning');
   });
 }
 
