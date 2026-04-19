@@ -21,40 +21,6 @@ enum MovementType {
       MovementType.values.firstWhere((m) => m.wire == value);
 }
 
-enum CompensationType { kneeValgus, hipDrop, ankleRestriction, trunkLean }
-
-enum ChainType { sbl, bfl, ffl }
-
-enum ConfidenceLevel {
-  high,
-  medium,
-  low;
-
-  int get severityValue {
-    switch (this) {
-      case ConfidenceLevel.high:
-        return 0;
-      case ConfidenceLevel.medium:
-        return 1;
-      case ConfidenceLevel.low:
-        return 2;
-    }
-  }
-
-  bool isWorseThan(ConfidenceLevel other) =>
-      severityValue > other.severityValue;
-
-  static ConfidenceLevel worstOf(Iterable<ConfidenceLevel> levels) {
-    var worst = ConfidenceLevel.high;
-    for (final level in levels) {
-      if (level.isWorseThan(worst)) worst = level;
-    }
-    return worst;
-  }
-}
-
-enum CitationType { research, clinical, guideline }
-
 /// A single BlazePose landmark.
 class PoseLandmark {
   const PoseLandmark({
@@ -175,228 +141,224 @@ class SessionPayload {
   }
 }
 
-class JointAngle {
-  const JointAngle({
-    required this.joint,
-    required this.angleDegrees,
-    required this.confidence,
-  });
+// ---------------------------------------------------------------------------
+// Server report wire types — mirror software/mobile-handover/schemas/ in
+// ML_RandD_Server (source of truth, pinned at c6ae531). Decode-only.
+// ---------------------------------------------------------------------------
 
-  final String joint;
-  final double angleDegrees;
-  final ConfidenceLevel confidence;
+enum ChainName {
+  superficialBackLine('superficial_back_line'),
+  backFunctionalLine('back_functional_line'),
+  frontFunctionalLine('front_functional_line');
+
+  const ChainName(this.wire);
+  final String wire;
+
+  static ChainName fromWire(String value) =>
+      ChainName.values.firstWhere((c) => c.wire == value);
 }
 
-class Citation {
-  const Citation({
-    required this.finding,
-    required this.source,
-    required this.url,
-    required this.type,
-    required this.appUsage,
-  });
+enum ObservationSeverity { info, concern, flag }
 
-  final String finding;
-  final String source;
-  final String url;
-  final CitationType type;
-  final String appUsage;
+class QualityIssue {
+  const QualityIssue({required this.code, required this.detail});
 
-  factory Citation.fromJson(Map<String, dynamic> json) => Citation(
-    finding: json['finding'] as String,
-    source: json['source'] as String,
-    url: json['url'] as String,
-    type: CitationType.values.byName(json['type'] as String),
-    appUsage: json['app_usage'] as String,
+  final String code;
+  final String detail;
+
+  factory QualityIssue.fromJson(Map<String, dynamic> json) => QualityIssue(
+    code: json['code'] as String,
+    detail: json['detail'] as String,
   );
 }
 
-class Compensation {
-  const Compensation({
-    required this.type,
-    required this.joint,
-    this.chain,
+class SessionQualityReport {
+  const SessionQualityReport({required this.passed, this.issues = const []});
+
+  final bool passed;
+  final List<QualityIssue> issues;
+
+  factory SessionQualityReport.fromJson(Map<String, dynamic> json) =>
+      SessionQualityReport(
+        passed: json['passed'] as bool,
+        issues:
+            (json['issues'] as List<dynamic>?)
+                ?.map((e) => QualityIssue.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+      );
+}
+
+class ChainObservation {
+  const ChainObservation({
+    required this.chain,
+    required this.severity,
     required this.confidence,
-    required this.value,
-    required this.threshold,
-    required this.citation,
+    required this.triggerRule,
+    required this.narrative,
+    this.involvedJoints = const [],
   });
 
-  final CompensationType type;
-  final String joint;
-  final ChainType? chain;
-  final ConfidenceLevel confidence;
-  final double value;
-  final double threshold;
-  final Citation citation;
+  final ChainName chain;
+  final ObservationSeverity severity;
+  final double confidence;
+  final String triggerRule;
+  final String narrative;
+  final List<String> involvedJoints;
 
-  factory Compensation.fromJson(Map<String, dynamic> json) => Compensation(
-    type: CompensationType.values.byName(json['type'] as String),
-    joint: json['joint'] as String,
-    chain: json['chain'] != null
-        ? ChainType.values.byName(json['chain'] as String)
-        : null,
-    confidence: ConfidenceLevel.values.byName(json['confidence'] as String),
-    value: (json['value'] as num).toDouble(),
-    threshold: (json['threshold'] as num).toDouble(),
-    citation: Citation.fromJson(json['citation'] as Map<String, dynamic>),
+  factory ChainObservation.fromJson(Map<String, dynamic> json) =>
+      ChainObservation(
+        chain: ChainName.fromWire(json['chain'] as String),
+        severity: ObservationSeverity.values.byName(json['severity'] as String),
+        confidence: (json['confidence'] as num).toDouble(),
+        triggerRule: json['trigger_rule'] as String,
+        narrative: json['narrative'] as String,
+        involvedJoints:
+            (json['involved_joints'] as List<dynamic>?)?.cast<String>() ??
+            const [],
+      );
+}
+
+class MovementSection {
+  const MovementSection({
+    required this.movement,
+    required this.qualityReport,
+    this.chainObservations = const [],
+  });
+
+  final String movement;
+  final SessionQualityReport qualityReport;
+  final List<ChainObservation> chainObservations;
+
+  factory MovementSection.fromJson(Map<String, dynamic> json) =>
+      MovementSection(
+        movement: json['movement'] as String,
+        qualityReport: SessionQualityReport.fromJson(
+          json['quality_report'] as Map<String, dynamic>,
+        ),
+        chainObservations:
+            (json['chain_observations'] as List<dynamic>?)
+                ?.map(
+                  (e) => ChainObservation.fromJson(e as Map<String, dynamic>),
+                )
+                .toList() ??
+            const [],
+      );
+}
+
+class ReportMetadata {
+  const ReportMetadata({
+    required this.sessionId,
+    required this.movement,
+    this.capturedAtMs,
+  });
+
+  final String sessionId;
+  final String movement;
+  final int? capturedAtMs;
+
+  factory ReportMetadata.fromJson(Map<String, dynamic> json) => ReportMetadata(
+    sessionId: json['session_id'] as String,
+    movement: json['movement'] as String,
+    capturedAtMs: json['captured_at_ms'] as int?,
   );
 }
 
-class Movement {
-  const Movement({
-    required this.type,
-    required this.frames,
-    required this.keyframeAngles,
-    required this.duration,
+/// Top-level report returned by GET /sessions/{id}/report.
+///
+/// Only `metadata`, `movement_section`, and `overall_narrative` are decoded.
+/// Optional `temporal_section` / `cross_movement_section` are ignored until
+/// the UI needs them.
+class ServerReport {
+  const ServerReport({
+    required this.metadata,
+    required this.movementSection,
+    required this.overallNarrative,
+    required this.raw,
   });
 
-  final MovementType type;
-  final List<PoseFrame> frames;
-  final List<JointAngle> keyframeAngles;
-  final Duration duration;
-}
+  final ReportMetadata metadata;
+  final MovementSection movementSection;
+  final String overallNarrative;
 
-class MobilityDrill {
-  const MobilityDrill({
-    required this.name,
-    required this.targetArea,
-    required this.durationSeconds,
-    required this.steps,
-    required this.compensationType,
-  });
+  /// The raw JSON body for this report. Kept so local persistence can round-
+  /// trip the full server payload (including fields we don't yet decode) and
+  /// so the UI can lazily consume them once rendering catches up.
+  final Map<String, dynamic> raw;
 
-  final String name;
-  final String targetArea;
-  final int durationSeconds;
-  final List<String> steps;
-  final CompensationType compensationType;
-
-  factory MobilityDrill.fromJson(Map<String, dynamic> json) => MobilityDrill(
-    name: json['name'] as String,
-    targetArea: json['target_area'] as String,
-    durationSeconds: json['duration_seconds'] as int,
-    steps: (json['steps'] as List<dynamic>).cast<String>(),
-    compensationType: CompensationType.values.byName(
-      json['compensation_type'] as String,
+  factory ServerReport.fromJson(Map<String, dynamic> json) => ServerReport(
+    metadata: ReportMetadata.fromJson(
+      json['metadata'] as Map<String, dynamic>,
     ),
+    movementSection: MovementSection.fromJson(
+      json['movement_section'] as Map<String, dynamic>,
+    ),
+    overallNarrative: json['overall_narrative'] as String,
+    raw: json,
   );
 }
 
-enum TrendClassification { improving, worsening, stable, newPattern }
+// ---------------------------------------------------------------------------
+// Local session persistence — one record per completed server POST /sessions.
+// The ServerReport inside is null until the report has been fetched.
+// ---------------------------------------------------------------------------
 
-class Finding {
-  const Finding({
-    required this.bodyPathDescription,
-    required this.compensations,
-    this.upstreamDriver,
-    required this.recommendation,
-    required this.citations,
-    this.drills = const [],
-    this.trendStatus,
-  });
-
-  final String bodyPathDescription;
-  final List<Compensation> compensations;
-  final String? upstreamDriver;
-  final String recommendation;
-  final List<Citation> citations;
-  final List<MobilityDrill> drills;
-  final TrendClassification? trendStatus;
-
-  factory Finding.fromJson(Map<String, dynamic> json) => Finding(
-    bodyPathDescription: json['body_path_description'] as String,
-    compensations: (json['compensations'] as List<dynamic>)
-        .map((e) => Compensation.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    upstreamDriver: json['upstream_driver'] as String?,
-    recommendation: json['recommendation'] as String,
-    citations: (json['citations'] as List<dynamic>)
-        .map((e) => Citation.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    drills: json['drills'] != null
-        ? (json['drills'] as List<dynamic>)
-              .map((e) => MobilityDrill.fromJson(e as Map<String, dynamic>))
-              .toList()
-        : const [],
-    trendStatus: json['trend_status'] != null
-        ? TrendClassification.values.byName(json['trend_status'] as String)
-        : null,
-  );
-}
-
-class Report {
-  const Report({
-    required this.findings,
-    required this.practitionerPoints,
-    this.pdfUrl,
-  });
-
-  final List<Finding> findings;
-  final List<String> practitionerPoints;
-  final String? pdfUrl;
-
-  factory Report.fromJson(Map<String, dynamic> json) => Report(
-    findings: (json['findings'] as List<dynamic>)
-        .map((e) => Finding.fromJson(e as Map<String, dynamic>))
-        .toList(),
-    practitionerPoints: (json['practitioner_points'] as List<dynamic>)
-        .cast<String>(),
-    pdfUrl: json['pdf_url'] as String?,
-  );
-}
-
-class Assessment {
-  const Assessment({
-    required this.id,
-    required this.createdAt,
-    required this.movements,
-    required this.compensations,
+class SessionRecord {
+  const SessionRecord({
+    required this.sessionId,
+    required this.movement,
+    required this.capturedAt,
     this.report,
-    this.payload,
+    this.bicepCurl,
   });
 
-  final String id;
-  final DateTime createdAt;
-  final List<Movement> movements;
-  final List<Compensation> compensations;
-  final Report? report;
-  final SessionPayload? payload;
-}
+  /// The session_id returned by POST /sessions.
+  final String sessionId;
 
-enum MobilityArchetype {
-  ankleDominant,
-  hipDominant,
-  trunkDominant,
-  hypermobile,
-  balanced,
-}
+  /// Wire movement value (e.g. "bicep_curl"). Cached from the payload so the
+  /// history view can show movement labels before the report arrives.
+  final String movement;
 
-class CompensationTrend {
-  const CompensationTrend({
-    required this.compensationType,
-    required this.joint,
-    required this.trend,
-    required this.values,
-    required this.slope,
-  });
+  /// When the capture was finalized on-device (UTC).
+  final DateTime capturedAt;
 
-  final CompensationType compensationType;
-  final String joint;
-  final TrendClassification trend;
-  final List<double> values;
-  final double slope;
-}
+  /// The server's analysis report. Null until it has been fetched. Used by
+  /// the screening flow.
+  final ServerReport? report;
 
-class TrendReport {
-  const TrendReport({required this.trends});
+  /// On-device bicep curl session log (reps, cues, compensation events,
+  /// profile, etc.). Generic blob so domain doesn't depend on the
+  /// bicep_curl feature; the feature owns serialization via
+  /// `SessionLog.toJson()` / `.fromJson()`.
+  final Map<String, dynamic>? bicepCurl;
 
-  final List<CompensationTrend> trends;
+  SessionRecord copyWith({
+    ServerReport? report,
+    Map<String, dynamic>? bicepCurl,
+  }) =>
+      SessionRecord(
+        sessionId: sessionId,
+        movement: movement,
+        capturedAt: capturedAt,
+        report: report ?? this.report,
+        bicepCurl: bicepCurl ?? this.bicepCurl,
+      );
 
-  CompensationTrend? trendFor(CompensationType type, String joint) {
-    for (final t in trends) {
-      if (t.compensationType == type && t.joint == joint) return t;
-    }
-    return null;
-  }
+  Map<String, dynamic> toJson() => {
+    'session_id': sessionId,
+    'movement': movement,
+    'captured_at': capturedAt.toUtc().toIso8601String(),
+    if (report != null) 'report': report!.raw,
+    if (bicepCurl != null) 'bicep_curl': bicepCurl,
+  };
+
+  factory SessionRecord.fromJson(Map<String, dynamic> json) => SessionRecord(
+    sessionId: json['session_id'] as String,
+    movement: json['movement'] as String,
+    capturedAt: DateTime.parse(json['captured_at'] as String),
+    report: json['report'] != null
+        ? ServerReport.fromJson(json['report'] as Map<String, dynamic>)
+        : null,
+    bicepCurl: json['bicep_curl'] as Map<String, dynamic>?,
+  );
 }

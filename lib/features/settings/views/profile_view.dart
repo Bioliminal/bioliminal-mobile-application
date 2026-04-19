@@ -34,7 +34,7 @@ class _SignedInProfileView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final scansAsync = ref.watch(assessmentCountProvider);
+    final scansAsync = ref.watch(sessionCountProvider);
 
     return Scaffold(
       backgroundColor: BioliminalTheme.screenBackground,

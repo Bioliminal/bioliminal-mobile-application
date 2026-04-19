@@ -32,41 +32,6 @@ void main() {
       },
     );
 
-    test('firestore_service.dart does not call Firebase instances at top level', () {
-      final projectRoot = _findProjectRoot();
-      final file = File(
-        '$projectRoot/lib/core/services/firestore_service.dart',
-      );
-      expect(file.existsSync(), isTrue);
-
-      final content = file.readAsStringSync();
-      final lines = content.split('\n');
-
-      final codeLines = lines.where((l) => !l.trimLeft().startsWith('//'));
-
-      // FirebaseFirestore.instance should appear exactly once (in the factory).
-      final firestoreInstances = codeLines
-          .where((l) => l.contains('FirebaseFirestore.instance'))
-          .length;
-      expect(
-        firestoreInstances,
-        1,
-        reason:
-            'FirebaseFirestore.instance should appear exactly once (in the factory)',
-      );
-
-      // FirebaseStorage.instance should appear exactly once (in the factory).
-      final storageInstances = codeLines
-          .where((l) => l.contains('FirebaseStorage.instance'))
-          .length;
-      expect(
-        storageInstances,
-        1,
-        reason:
-            'FirebaseStorage.instance should appear exactly once (in the factory)',
-      );
-    });
-
     test('AuthService constructor accepts injected FirebaseAuth', () {
       final projectRoot = _findProjectRoot();
       final file = File('$projectRoot/lib/core/services/auth_service.dart');

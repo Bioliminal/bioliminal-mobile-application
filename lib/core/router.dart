@@ -4,8 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/providers.dart';
-import '../features/camera/views/hardware_setup_view.dart';
+import '../features/bicep_curl/models/compensation_reference.dart';
+import '../features/bicep_curl/views/bicep_curl_debrief_view.dart';
+import '../features/bicep_curl/views/bicep_curl_view.dart';
 import '../features/dev/views/ble_debug_view.dart';
+import '../features/sets/views/set_picker_view.dart';
 import '../features/history/views/history_view.dart';
 import '../features/landing/views/code_view.dart';
 import '../features/landing/views/demo_view.dart';
@@ -15,15 +18,12 @@ import '../features/landing/views/system_view.dart';
 import '../features/onboarding/views/disclaimer_view.dart';
 import '../features/onboarding/views/auth_options_view.dart';
 import '../features/waitlist/views/waitlist_view.dart';
-import '../features/rep_capture/views/rep_capture_view.dart';
 import '../features/report/views/report_view.dart';
-import '../features/screening/views/screening_view.dart';
 import '../features/settings/views/login_view.dart';
 import '../features/settings/views/settings_view.dart';
 import '../features/settings/views/profile_view.dart';
 import '../features/settings/views/sign_in_view.dart';
 import '../features/settings/views/sign_up_view.dart';
-import '../features/settings/views/ai_model_settings_view.dart';
 import '../features/settings/views/calibration_view.dart';
 import 'widgets/main_scaffold.dart';
 
@@ -39,10 +39,10 @@ final goRouter = GoRouter(
     if (!kIsWeb && state.uri.path == '/disclaimer') {
       final container = ProviderScope.containerOf(context);
       final storage = container.read(localStorageServiceProvider);
-      final assessments = await storage.listAssessments();
+      final records = await storage.listSessionRecords();
 
-      // If they have assessments, they have already completed onboarding.
-      if (assessments.isNotEmpty) {
+      // If they have sessions, they have already completed onboarding.
+      if (records.isNotEmpty) {
         return '/history';
       }
     }
@@ -97,22 +97,6 @@ final goRouter = GoRouter(
       builder: (context, state) => const AuthOptionsView(),
     ),
     GoRoute(
-      path: '/hardware-setup',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const HardwareSetupView(),
-    ),
-    GoRoute(
-      path: '/capture',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const RepCaptureView(),
-    ),
-    // Dormant until post-demo — no user-reachable entrypoint. See #30.
-    GoRoute(
-      path: '/screening',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const ScreeningView(),
-    ),
-    GoRoute(
       path: '/report/:id',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => ReportView(id: state.pathParameters['id']!),
@@ -138,11 +122,6 @@ final goRouter = GoRouter(
       builder: (context, state) => const ProfileView(),
     ),
     GoRoute(
-      path: '/ai-settings',
-      parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AIModelSettingsView(),
-    ),
-    GoRoute(
       path: '/calibration',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const CalibrationView(),
@@ -151,6 +130,28 @@ final goRouter = GoRouter(
       path: '/ble-debug',
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) => const BleDebugView(),
+    ),
+    GoRoute(
+      path: '/sets',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SetPickerView(),
+    ),
+    GoRoute(
+      path: '/bicep-curl',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final side = state.uri.queryParameters['side'] == 'left'
+            ? ArmSide.left
+            : ArmSide.right;
+        return BicepCurlView(armSide: side);
+      },
+    ),
+    GoRoute(
+      path: '/bicep-curl/debrief/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        return BicepCurlDebriefView(sessionId: state.pathParameters['id']!);
+      },
     ),
 
     // Shell routes for bottom nav

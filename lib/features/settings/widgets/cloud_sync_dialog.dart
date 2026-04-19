@@ -68,9 +68,7 @@ class _CloudSyncDialogState extends ConsumerState<CloudSyncDialog> {
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 12),
-            _bulletPoint('Assessment session data'),
-            _bulletPoint('Generated reports'),
-            _bulletPoint('PDF exports'),
+            _bulletPoint('Session data (movement, timestamp, analysis report)'),
             const SizedBox(height: 12),
             Text(
               'What is NOT synced:',

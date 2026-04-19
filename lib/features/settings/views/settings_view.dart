@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:bioliminal/core/theme.dart';
 import 'package:bioliminal/core/providers.dart';
-import 'package:bioliminal/core/services/hardware_controller.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -12,9 +11,7 @@ class SettingsView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final profile = ref.watch(userProfileProvider).asData?.value;
-    final aiModel = ref.watch(selectedAIModelProvider);
     final isPremium = ref.watch(isPremiumProvider);
-    final hardwareState = ref.watch(hardwareControllerProvider);
 
     return Scaffold(
       backgroundColor: BioliminalTheme.screenBackground,
@@ -54,24 +51,6 @@ class SettingsView extends ConsumerWidget {
                 ),
               ),
               _Row(
-                title: 'Hardware Simulation',
-                subtitle: 'Stream mock sEMG data',
-                trailing: Switch(
-                  value: hardwareState == HardwareConnectionState.connected,
-                  onChanged: (val) {
-                    final controller = ref.read(
-                      hardwareControllerProvider.notifier,
-                    );
-                    if (val) {
-                      controller.startMockData();
-                    } else {
-                      controller.stopMockData();
-                    }
-                  },
-                  activeThumbColor: theme.colorScheme.secondary,
-                ),
-              ),
-              _Row(
                 title: 'BLE Debug',
                 subtitle: 'Scan, inspect services, send/receive',
                 onTap: () => context.push('/ble-debug'),
@@ -81,13 +60,8 @@ class SettingsView extends ConsumerWidget {
               const _SectionHeader('ANALYSIS'),
               _Row(
                 title: 'Camera Calibration',
-                value: 'Auto-calibrate',
+                value: 'Framing check',
                 onTap: () => context.push('/calibration'),
-              ),
-              _Row(
-                title: 'AI Model',
-                value: aiModel,
-                onTap: () => context.push('/ai-settings'),
               ),
               const SizedBox(height: 40),
 
