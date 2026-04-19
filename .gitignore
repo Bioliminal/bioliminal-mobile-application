@@ -46,8 +46,15 @@ app.*.map.json
 
 # Claude tracking files
 .claude/tracking/
+.claude/*.lock
 .ship-manifest.json
 .worktrees/
+
+# Captured session data (large CSVs, not source)
+docs/**/*.csv
+
+# Asset source bundles (raw zips, not the extracted assets)
+assets/*.zip
 
 # Firebase CLI cache
 .firebase/
