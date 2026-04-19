@@ -1,133 +1,67 @@
 import 'dart:async';
-import 'dart:io';
-import 'dart:ui' show Size;
 
 import 'package:camera/camera.dart';
-import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart'
-    as mlkit;
 
 import '../../../domain/models.dart' as domain;
 
 /// Abstract pose detection interface for the Bioliminal Flutter app.
 ///
-/// The app should not bind directly to MediaPipe at the UI layer. We ship
-/// BlazePose at launch, but the pipeline plan allows for swapping models.
+/// Implementations MUST return exactly 33 BlazePose landmarks per frame.
+/// See `bioliminal-ops/operations/handover/mobile/model/blazepose_landmark_order.md`
+/// for the canonical index → joint mapping.
 abstract class PoseDetector {
-  /// Process a single camera frame.
-  /// Implementation must return exactly 33 BlazePose landmarks.
   Future<List<domain.PoseLandmark>> processFrame(
     CameraImage image, {
     required int rotationDegrees,
   });
 
-  /// Release native resources.
   Future<void> dispose();
 }
 
-/// Implementation of PoseDetector using Google ML Kit (BlazePose).
+/// Real pose detector — BlazePose Full via direct MediaPipe Tasks.
+///
+/// PENDING INTEGRATION. The on-device asset
+/// (`assets/models/pose_landmarker_full.task`, SHA-256 recorded in
+/// `assets/models/CHECKSUMS.md`) is in the repo; the native binding still
+/// needs to be wired. See the handover doc at
+/// `bioliminal-ops/operations/handover/mobile/README.md` §3 for the
+/// binding options (maintained MediaPipe Tasks Flutter binding, or
+/// platform channels to the native MediaPipe Tasks API on Android + iOS).
+///
+/// Google ML Kit is excluded from ship (beta, no SLA) per the
+/// model-commercial-viability matrix §9 — do not re-introduce
+/// `google_mlkit_pose_detection` as the binding.
 class MediaPipePoseDetector implements PoseDetector {
-  MediaPipePoseDetector()
-    : _poseDetector = mlkit.PoseDetector(
-        options: mlkit.PoseDetectorOptions(
-          mode: mlkit.PoseDetectionMode.stream,
-          model: mlkit.PoseDetectionModel.base,
-        ),
-      );
+  MediaPipePoseDetector({
+    this.assetPath = 'assets/models/pose_landmarker_full.task',
+  });
 
-  final mlkit.PoseDetector _poseDetector;
+  final String assetPath;
 
   @override
   Future<List<domain.PoseLandmark>> processFrame(
     CameraImage image, {
     required int rotationDegrees,
   }) async {
-    final inputImage = _convertCameraImage(image, rotationDegrees);
-    if (inputImage == null) return const [];
-
-    final poses = await _poseDetector.processImage(inputImage);
-    if (poses.isEmpty) return const [];
-
-    final pose = poses.first;
-    final width = image.width.toDouble();
-    final height = image.height.toDouble();
-
-    // Map to domain model, ensuring 33 landmarks in BlazePose order.
-    return mlkit.PoseLandmarkType.values.map((type) {
-      final lm = pose.landmarks[type];
-      if (lm == null) {
-        return const domain.PoseLandmark(
-          x: 0,
-          y: 0,
-          z: 0,
-          visibility: 0,
-          presence: 0,
-        );
-      }
-      // Normalize coordinates based on image size.
-      // BlazePose coordinates are in image-space pixels.
-      return domain.PoseLandmark(
-        x: lm.x / width,
-        y: lm.y / height,
-        z: lm.z / width, // z is relative depth, scaled similar to x
-        visibility: lm.likelihood,
-        presence: lm.likelihood,
-      );
-    }).toList();
+    throw UnimplementedError(
+      'MediaPipe Tasks binding not wired. Load $assetPath via the chosen '
+      'MediaPipe Tasks Flutter binding or native platform channels, run '
+      'inference on the CameraImage at $rotationDegrees° rotation, and '
+      'map the 33 PoseLandmark outputs to domain.PoseLandmark with '
+      'image-normalized x/y, hip-midpoint-relative z, and visibility + '
+      'presence in [0, 1]. Drop partial detections (<33 landmarks) — '
+      'the server 422s anything else.',
+    );
   }
 
   @override
   Future<void> dispose() async {
-    await _poseDetector.close();
-  }
-
-  mlkit.InputImage? _convertCameraImage(
-    CameraImage image,
-    int rotationDegrees,
-  ) {
-    final planes = image.planes;
-    if (planes.isEmpty) return null;
-
-    final mlkit.InputImageFormat format;
-    if (Platform.isAndroid) {
-      format = mlkit.InputImageFormat.nv21;
-    } else if (Platform.isIOS) {
-      format = mlkit.InputImageFormat.bgra8888;
-    } else {
-      return null;
-    }
-
-    final bytes = planes.first.bytes;
-    final rotation = _degreesToRotation(rotationDegrees);
-
-    return mlkit.InputImage.fromBytes(
-      bytes: bytes,
-      metadata: mlkit.InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: format,
-        bytesPerRow: planes.first.bytesPerRow,
-      ),
-    );
-  }
-
-  mlkit.InputImageRotation _degreesToRotation(int degrees) {
-    switch (degrees) {
-      case 0:
-        return mlkit.InputImageRotation.rotation0deg;
-      case 90:
-        return mlkit.InputImageRotation.rotation90deg;
-      case 180:
-        return mlkit.InputImageRotation.rotation180deg;
-      case 270:
-        return mlkit.InputImageRotation.rotation270deg;
-      default:
-        return mlkit.InputImageRotation.rotation0deg;
-    }
+    // No native resources held yet.
   }
 }
 
-/// Mock implementation of PoseDetector for unit tests.
-/// Returns static landmarks and avoids native plugin calls.
+/// Mock implementation for unit tests. Returns static landmarks and avoids
+/// native plugin calls.
 class MockPoseDetector implements PoseDetector {
   @override
   Future<List<domain.PoseLandmark>> processFrame(
