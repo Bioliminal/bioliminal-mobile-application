@@ -134,13 +134,11 @@ class _ControllerHarness {
       ],
     );
     landmarks = container.read(_testLandmarksProvider.notifier);
-    // Mimic SkeletonOverlay's watch on currentLandmarksProvider in
-    // production. Without a second consumer, ref.listen from inside a
-    // Notifier method (BicepCurlController.startSession) doesn't appear
-    // to re-evaluate the override on subsequent state changes — the
-    // override builds once, then goes silent. In the live app the
-    // overlay always watches, so this keep-alive simulates that.
-    _kaSub = container.listen(currentLandmarksProvider, (_, _) {});
+    // Mimic BicepCurlView's watch on the controller. Without an active
+    // listener on the controller, Riverpod cancels it and tears down its
+    // outgoing subscriptions (including the one on currentLandmarksProvider
+    // wired in build()), at which point landmark updates stop flowing.
+    _ctrlSub = container.listen(bicepCurlControllerProvider, (_, _) {});
     controller = container.read(bicepCurlControllerProvider.notifier);
     fakeHardware = container.read(hardwareControllerProvider.notifier)
         as _FakeHardwareController;
@@ -150,7 +148,7 @@ class _ControllerHarness {
   late final BicepCurlController controller;
   late final _FakeHardwareController fakeHardware;
   late final _TestLandmarksNotifier landmarks;
-  late final ProviderSubscription<List<PoseLandmark>> _kaSub;
+  late final ProviderSubscription<BicepCurlState> _ctrlSub;
 
   BicepCurlState get state =>
       container.read(bicepCurlControllerProvider);
@@ -207,7 +205,7 @@ class _ControllerHarness {
   }
 
   void dispose() {
-    _kaSub.close();
+    _ctrlSub.close();
     container.dispose();
   }
 }

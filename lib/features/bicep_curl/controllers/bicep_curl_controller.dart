@@ -134,10 +134,18 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   TtsSpeaker? _tts;
 
   // Subscriptions.
+  // Pose-landmark and hardware-connection listeners are wired in [build] so
+  // their subscription lifetime equals the Notifier's. Every `ref.listen`
+  // subscription gets deactivated when the source element (this controller)
+  // has no active listeners — Riverpod treats an unwatched Notifier as
+  // effectively idle and pauses its outgoing subs. That's fine in production
+  // because [BicepCurlView] watches this provider for the entire session,
+  // but it's why the integration test harness also has to listen on the
+  // controller (just `container.read`ing won't keep the dep graph live).
+  // Sample + rep-boundary stream subs are per-session because they're tied
+  // to an EnvelopeDerivator/RepDetector created in startSession.
   StreamSubscription<SampleBatch>? _sampleSub;
   StreamSubscription<RepBoundary>? _repSub;
-  ProviderSubscription<List<PoseLandmark>>? _landmarksSub;
-  ProviderSubscription<HardwareConnectionState>? _connectionSub;
 
   // Wall-clock buffer of envelope samples (for per-rep peak extraction).
   final Queue<_TimedEnvelope> _envelopeBuffer = Queue<_TimedEnvelope>();
@@ -170,6 +178,16 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
   @override
   BicepCurlState build() {
+    // See the subscription-field note above for why these live here.
+    // Handlers no-op when state isn't Calibrating/Active.
+    ref.listen<List<PoseLandmark>>(
+      currentLandmarksProvider,
+      (_, next) => _onLandmarks(next),
+    );
+    ref.listen<HardwareConnectionState>(
+      hardwareControllerProvider,
+      (_, next) => _onConnectionState(next),
+    );
     ref.onDispose(_teardown);
     return const BicepCurlIdle();
   }
@@ -223,14 +241,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
     _sampleSub = hardware.rawEmgStream.listen(_onSample);
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
-    _landmarksSub = ref.listen<List<PoseLandmark>>(
-      currentLandmarksProvider,
-      (_, next) => _onLandmarks(next),
-    );
-    _connectionSub = ref.listen<HardwareConnectionState>(
-      hardwareControllerProvider,
-      (_, next) => _onConnectionState(next),
-    );
 
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
@@ -536,10 +546,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _sampleSub = null;
     await _repSub?.cancel();
     _repSub = null;
-    _landmarksSub?.close();
-    _landmarksSub = null;
-    _connectionSub?.close();
-    _connectionSub = null;
+    // Landmark + connection subs live on ref (wired in build) and tear down
+    // with the Notifier. Not closed per-session.
     await _repDetector?.dispose();
     _repDetector = null;
     _envelope?.reset();
