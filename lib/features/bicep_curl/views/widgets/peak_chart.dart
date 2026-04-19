@@ -123,7 +123,7 @@ class PeakChart extends StatelessWidget {
                   }
                   return FlDotCirclePainter(
                     radius: 6,
-                    color: _cueColor(cue.first.content),
+                    color: peakChartCueColor(cue.first.content),
                     strokeColor: Colors.white,
                     strokeWidth: 1.5,
                   );
@@ -137,7 +137,11 @@ class PeakChart extends StatelessWidget {
   }
 }
 
-Color _cueColor(CueContent content) {
+/// Cue-badge color lookup for [PeakChart]'s dot annotations. Public so
+/// tests can lock in the fade/urgent/stop mapping — the first-fade
+/// ambiguity fix depends on FADE and URGENT reading as visually distinct
+/// even on a colorblind palette.
+Color peakChartCueColor(CueContent content) {
   switch (content) {
     case CueContent.fatigueFade:
       return BioliminalTheme.confidenceMedium;

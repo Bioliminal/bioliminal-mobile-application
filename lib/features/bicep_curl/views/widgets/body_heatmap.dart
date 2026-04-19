@@ -28,6 +28,62 @@ class MuscleActivations {
     trap: 0,
     erector: 0,
   );
+
+  /// Decodes an absolute sample index (0..log.reps.length*samplesPerRep-1)
+  /// into an activation snapshot. Measured bicep reads envelope samples
+  /// directly (or synthesizes a half-sine for legacy reps without
+  /// per-sample data); inferred channels step at rep boundaries off
+  /// per-rep pose drift. Bicep has a 0.4 visibility floor so the measured
+  /// panel never fully darkens mid-rep. Trap rides at 0.85× shoulder
+  /// because trap engagement is a synergist of shoulder drift.
+  static MuscleActivations fromLog({
+    required SessionLog log,
+    required int absoluteSample,
+    required double maxSampleValue,
+    int samplesPerRep = 50,
+  }) {
+    if (log.reps.isEmpty) return zero;
+    final repIdx = (absoluteSample ~/ samplesPerRep)
+        .clamp(0, log.reps.length - 1);
+    final within = absoluteSample % samplesPerRep;
+    final rep = log.reps[repIdx];
+
+    final samples = rep.envelopeSamples;
+    final rawBicep = samples != null && within < samples.length
+        ? samples[within]
+        : _syntheticSample(
+            peakEnv: rep.peakEnv,
+            withinRep: within,
+            samplesPerRep: samplesPerRep,
+          );
+    final bicepNorm = maxSampleValue > 0
+        ? (rawBicep / maxSampleValue).clamp(0.0, 1.0)
+        : 0.0;
+
+    final delta = rep.poseDelta;
+    final shoulder = delta == null
+        ? 0.0
+        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
+    final erector = delta == null
+        ? 0.0
+        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
+
+    return MuscleActivations(
+      bicep: math.max(bicepNorm * 0.6 + 0.4, 0.4),
+      shoulder: shoulder,
+      trap: shoulder * 0.85,
+      erector: erector,
+    );
+  }
+
+  static double _syntheticSample({
+    required double peakEnv,
+    required int withinRep,
+    required int samplesPerRep,
+  }) {
+    final phase = (withinRep / (samplesPerRep - 1)) * math.pi;
+    return peakEnv * math.sin(phase);
+  }
 }
 
 enum HeatmapMode { measured, inferred }
@@ -139,51 +195,17 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
     return (rep: repIdx, within: within);
   }
 
-  MuscleActivations _activationsNow() {
-    if (widget.log.reps.isEmpty) return MuscleActivations.zero;
-    final (rep: r, within: w) = _decode(_absoluteSample);
-    final rep = widget.log.reps[r];
-
-    // Bicep (measured, continuous).
-    final samples = rep.envelopeSamples;
-    final rawBicep = samples != null && w < samples.length
-        ? samples[w]
-        : _syntheticSample(rep.peakEnv, w);
-    final bicepNorm = _maxSampleValue > 0
-        ? (rawBicep / _maxSampleValue).clamp(0.0, 1.0)
-        : 0.0;
-
-    // Inferred channels (per-rep, step at boundaries).
-    final delta = rep.poseDelta;
-    final shoulder = delta == null
-        ? 0.0
-        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
-    final erector = delta == null
-        ? 0.0
-        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
-
-    return MuscleActivations(
-      // 0.4 floor so even quiet moments stay visible.
-      bicep: math.max(bicepNorm * 0.6 + 0.4, 0.4),
-      shoulder: shoulder,
-      trap: shoulder * 0.85,
-      erector: erector,
-    );
-  }
-
-  /// Half-sine peaked at the middle, scaled to peakEnv. Used for legacy
-  /// sessions where per-rep envelope segments weren't persisted.
-  double _syntheticSample(double peakEnv, int withinRep) {
-    final phase = (withinRep / (_samplesPerRep - 1)) * math.pi;
-    return peakEnv * math.sin(phase);
-  }
-
   @override
   Widget build(BuildContext context) {
     if (widget.log.reps.isEmpty) {
       return const SizedBox.shrink();
     }
-    final activations = _activationsNow();
+    final activations = MuscleActivations.fromLog(
+      log: widget.log,
+      absoluteSample: _absoluteSample,
+      maxSampleValue: _maxSampleValue,
+      samplesPerRep: _samplesPerRep,
+    );
     final (rep: currentRep, within: _) = _decode(_absoluteSample);
 
     return Column(
