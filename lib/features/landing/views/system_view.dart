@@ -731,7 +731,7 @@ class _StackSection extends StatelessWidget {
   const _StackSection();
 
   static const _items = [
-    ('MediaPipe BlazePose', '33-landmark body model, on-device via ML Kit / tasks-vision.'),
+    ('MediaPipe BlazePose', '33-landmark body model, on-device via MediaPipe Tasks.'),
     ('Flutter', 'iOS, Android, web — one codebase. Flutter 3.11, Dart 3.11.'),
     ('CustomPainter', 'Real-time skeleton overlay + confidence coloring.'),
     ('Rule-based decision trees',
