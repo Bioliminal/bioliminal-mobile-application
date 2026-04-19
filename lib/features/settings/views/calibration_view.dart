@@ -257,7 +257,16 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
             child: SafeArea(
               child: Column(
                 children: [
-                  _TopBar(onClose: () => context.go('/history')),
+                  _TopBar(
+                    onClose: () => context.go('/history'),
+                    onFlip: () {
+                      _readySince = null;
+                      setState(() => _check = const _NoPerson());
+                      ref
+                          .read(appCameraControllerProvider.notifier)
+                          .toggleCamera();
+                    },
+                  ),
                   const Spacer(),
                   _CalibrationStatus(
                     initializing: _initializing,
@@ -288,8 +297,9 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
 // ---------------------------------------------------------------------------
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onClose});
+  const _TopBar({required this.onClose, required this.onFlip});
   final VoidCallback onClose;
+  final VoidCallback onFlip;
 
   @override
   Widget build(BuildContext context) {
@@ -309,6 +319,12 @@ class _TopBar extends StatelessWidget {
               color: Colors.white,
               letterSpacing: 2.5,
             ),
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: onFlip,
+            tooltip: 'Flip camera',
+            icon: const Icon(Icons.cameraswitch, color: Colors.white),
           ),
         ],
       ),

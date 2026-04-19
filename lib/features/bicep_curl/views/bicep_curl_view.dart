@@ -236,7 +236,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     if (!isStreaming) {
       return const SizedBox.shrink();
     }
-    final desc = ref.read(cameraDescriptionProvider);
+    final desc = ref.watch(cameraDescriptionProvider);
     final isFront = desc?.lensDirection == CameraLensDirection.front;
     return Stack(
       fit: StackFit.expand,
@@ -263,6 +263,14 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               } else {
                 if (mounted) context.go('/history');
               }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.cameraswitch, color: Colors.white),
+            tooltip: 'Flip camera',
+            onPressed: () {
+              _framingReadySince = null;
+              ref.read(appCameraControllerProvider.notifier).toggleCamera();
             },
           ),
           const Spacer(),
