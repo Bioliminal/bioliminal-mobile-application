@@ -1,0 +1,16 @@
+=== NS ===
+ns09.domaincontrol.com.
+ns10.domaincontrol.com.
+=== SOA ===
+ns09.domaincontrol.com. dns.jomax.net. 2026041601 28800 7200 604800 600
+=== A ===
+67.199.248.12
+67.199.248.13
+=== AAAA ===
+=== CNAME ===
+=== MX ===
+=== TXT ===
+=== www.bioliminal.org ===
+bioliminal.org.
+67.199.248.12
+67.199.248.13
