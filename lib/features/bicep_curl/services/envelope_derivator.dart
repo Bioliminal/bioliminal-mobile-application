@@ -5,8 +5,8 @@ import '../../../core/services/sample_batch.dart';
 ///
 /// 1. DC-removing (centering on VCC/2 = ADC midpoint 2048)
 /// 2. Full-wave rectifying (`abs`)
-/// 3. Lowpass-filtering with a 4th-order Butterworth IIR @ 5 Hz cutoff
-///    against the fixed 2 kHz sample rate.
+/// 3. Lowpass-filtering with a 4th-order IIR (effective -3 dB cutoff
+///    ~70 Hz from DC) against the fixed 2 kHz sample rate.
 ///
 /// Coefficients are baked-in compile-time constants (sample rate is
 /// firmware-locked). The IIR uses Direct-Form II Transposed so a single
@@ -16,13 +16,17 @@ import '../../../core/services/sample_batch.dart';
 /// from FF02; the controller buffers the resulting `EnvelopeSample`s and
 /// extracts the per-rep peak when the rep detector emits a boundary.
 class EnvelopeDerivator {
-  // From haptic-cueing-handshake.md §"Envelope derivation". The doc states
-  // scipy.signal.butter(4, 5.0/(2000/2), 'low') but the supplied coefficient
-  // magnitudes (~1e-4) and DC gain (~2.4) actually correspond to a ~50 Hz
-  // cutoff, not 5 Hz. Cue decisions use relative drops (peak/baseline) so
-  // the gain cancels — coefficients reproduce the firmware-team analysis
-  // byte-for-byte. Re-derive against true 5 Hz if envelope smoothness
-  // tightens up production rep detection.
+  // From haptic-cueing-handshake.md §"Envelope derivation". The doc originally
+  // described these as scipy.signal.butter(4, 5.0/(2000/2), 'low') but that's
+  // wrong (handshake doc is now corrected). What these actually are:
+  //   - `a` coefficients fit a 4th-order Butterworth designed at ~50 Hz
+  //   - `b` coefficients fit ~75 Hz
+  //   - sum(b)/sum(a) = 2.41 (DC gain), so not a properly-normalized Butterworth
+  //   - effective -3 dB point from DC is ~70 Hz
+  // We ship these verbatim to match the firmware-team reference pipeline. Cue
+  // decisions use peak/baseline ratios, so the non-unity DC gain cancels. If
+  // envelope smoothness ever becomes the bottleneck, design a true 5 Hz
+  // Butterworth in scipy and re-run the Rajiv CSV replay to retune thresholds.
   static const List<double> _b = [
     0.00013534,
     0.00054136,

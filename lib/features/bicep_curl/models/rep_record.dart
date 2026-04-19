@@ -18,8 +18,8 @@ class RepRecord {
   final int tPeakUs;
   final int tEndUs;
 
-  /// Max of the software-derived envelope (rectified RAW + 4th-order
-  /// Butterworth LP @ 5 Hz) across the rep window.
+  /// Max of the software-derived envelope (rectified RAW + 4th-order IIR LP;
+  /// see envelope_derivator.dart for the filter-characterization note).
   final double peakEnv;
 
   /// Pose drift from the calibration reference. Null during calibration
