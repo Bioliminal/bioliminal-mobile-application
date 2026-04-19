@@ -241,7 +241,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        CameraPreview(cameraState.controller),
+        _CoverCameraPreview(controller: cameraState.controller),
         SkeletonOverlay(isFrontCamera: isFront),
       ],
     );
@@ -372,6 +372,27 @@ class _ConnectGarmentCta extends StatelessWidget {
             child: const Text('SCAN'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CoverCameraPreview extends StatelessWidget {
+  const _CoverCameraPreview({required this.controller});
+  final CameraController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!controller.value.isInitialized) {
+      return const ColoredBox(color: Colors.black);
+    }
+    final size = MediaQuery.of(context).size;
+    var scale = size.aspectRatio * controller.value.aspectRatio;
+    if (scale < 1) scale = 1 / scale;
+    return ClipRect(
+      child: Transform.scale(
+        scale: scale,
+        child: Center(child: CameraPreview(controller)),
       ),
     );
   }
