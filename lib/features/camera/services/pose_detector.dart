@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 
 import '../../../domain/models.dart' as domain;
+import 'pose_channel.dart';
 
 /// Abstract pose detection interface for the Bioliminal Flutter app.
 ///
@@ -20,13 +21,9 @@ abstract class PoseDetector {
 
 /// Real pose detector — BlazePose Full via direct MediaPipe Tasks.
 ///
-/// PENDING INTEGRATION. The on-device asset
-/// (`assets/models/pose_landmarker_full.task`, SHA-256 recorded in
-/// `assets/models/CHECKSUMS.md`) is in the repo; the native binding still
-/// needs to be wired. See the handover doc at
-/// `bioliminal-ops/operations/handover/mobile/README.md` §3 for the
-/// binding options (maintained MediaPipe Tasks Flutter binding, or
-/// platform channels to the native MediaPipe Tasks API on Android + iOS).
+/// Bridges to native MediaPipe Tasks via [PoseChannel]. Asset
+/// `assets/models/pose_landmarker_full.task` (SHA-256 in
+/// `assets/models/CHECKSUMS.md`) is loaded lazily on first frame.
 ///
 /// Google ML Kit is excluded from ship (beta, no SLA) per the
 /// model-commercial-viability matrix §9 — do not re-introduce
@@ -34,29 +31,55 @@ abstract class PoseDetector {
 class MediaPipePoseDetector implements PoseDetector {
   MediaPipePoseDetector({
     this.assetPath = 'assets/models/pose_landmarker_full.task',
-  });
+    PoseChannel? channel,
+  }) : _channel = channel ?? PoseChannel();
 
   final String assetPath;
+  final PoseChannel _channel;
+  bool _initialized = false;
 
   @override
   Future<List<domain.PoseLandmark>> processFrame(
     CameraImage image, {
     required int rotationDegrees,
   }) async {
-    throw UnimplementedError(
-      'MediaPipe Tasks binding not wired. Load $assetPath via the chosen '
-      'MediaPipe Tasks Flutter binding or native platform channels, run '
-      'inference on the CameraImage at $rotationDegrees° rotation, and '
-      'map the 33 PoseLandmark outputs to domain.PoseLandmark with '
-      'image-normalized x/y, hip-midpoint-relative z, and visibility + '
-      'presence in [0, 1]. Drop partial detections (<33 landmarks) — '
-      'the server 422s anything else.',
+    if (!_initialized) {
+      _initialized = await _channel.initialize(assetPath: assetPath);
+      if (!_initialized) return const [];
+    }
+
+    final plane = image.planes.first;
+    final raw = await _channel.processFrame(
+      bytes: plane.bytes,
+      width: image.width,
+      height: image.height,
+      bytesPerRow: plane.bytesPerRow,
+      rotationDegrees: rotationDegrees,
+      timestampMs: DateTime.now().millisecondsSinceEpoch,
     );
+
+    // Drop partial detections — server 422s anything that isn't exactly 33.
+    if (raw.length != 33) return const [];
+
+    return raw
+        .map(
+          (m) => domain.PoseLandmark(
+            x: m['x'] ?? 0,
+            y: m['y'] ?? 0,
+            z: m['z'] ?? 0,
+            visibility: m['visibility'] ?? 0,
+            presence: m['presence'] ?? 0,
+          ),
+        )
+        .toList(growable: false);
   }
 
   @override
   Future<void> dispose() async {
-    // No native resources held yet.
+    if (_initialized) {
+      await _channel.dispose();
+      _initialized = false;
+    }
   }
 }
 

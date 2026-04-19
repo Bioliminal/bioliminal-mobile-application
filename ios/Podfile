@@ -30,6 +30,10 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
+  # MediaPipe Tasks Vision — direct binding for BlazePose Full inference.
+  # See plans/native-mediapipe-pose-integration.md.
+  pod 'MediaPipeTasksVision', '~> 0.10.14'
+
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
     inherit! :search_paths
@@ -39,5 +43,30 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+  end
+
+  # Workaround: MediaPipeTasksCommon and MediaPipeTasksVision ship as
+  # static-archive xcframeworks. CocoaPods doesn't generate the xcframework
+  # slice-extraction script for these pods (their targets are PBXAggregate),
+  # so the standard `-l"X"` link flags can't find anything. Patch Runner's
+  # xcconfig to:
+  #   - Use -framework instead of -l for both pods.
+  #   - Point FRAMEWORK_SEARCH_PATHS directly into the right xcframework
+  #     slice, per platform — Xcode resolves -framework X by looking for
+  #     X.framework inside FRAMEWORK_SEARCH_PATHS.
+  pods_runner_dir = File.join(installer.config.installation_root, 'Pods', 'Target Support Files', 'Pods-Runner')
+  device_paths = '"${PODS_ROOT}/MediaPipeTasksCommon/frameworks/MediaPipeTasksCommon.xcframework/ios-arm64" "${PODS_ROOT}/MediaPipeTasksVision/frameworks/MediaPipeTasksVision.xcframework/ios-arm64"'
+  sim_paths = '"${PODS_ROOT}/MediaPipeTasksCommon/frameworks/MediaPipeTasksCommon.xcframework/ios-arm64_x86_64-simulator" "${PODS_ROOT}/MediaPipeTasksVision/frameworks/MediaPipeTasksVision.xcframework/ios-arm64_x86_64-simulator"'
+
+  Dir.glob(File.join(pods_runner_dir, 'Pods-Runner.*.xcconfig')).each do |xcconfig|
+    text = File.read(xcconfig)
+    patched = text
+      .gsub(/-l"MediaPipeTasksCommon"/, '-framework "MediaPipeTasksCommon"')
+      .gsub(/-l"MediaPipeTasksVision"/, '-framework "MediaPipeTasksVision"')
+    unless patched.include?('FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]')
+      patched += "\nFRAMEWORK_SEARCH_PATHS[sdk=iphoneos*] = $(inherited) #{device_paths}\n"
+      patched += "FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*] = $(inherited) #{sim_paths}\n"
+    end
+    File.write(xcconfig, patched) if patched != text
   end
 end

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer' as developer;
+import 'dart:io' show Platform;
 
 import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -108,6 +109,12 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         selected,
         ResolutionPreset.medium,
         enableAudio: false,
+        // Android: force NV21 (single-plane); camera_android_camerax otherwise
+        // returns yuv420 with NV21-laid-out bytes — flutter/flutter#145961.
+        // iOS: BGRA8888 is the only supported format.
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.nv21
+            : ImageFormatGroup.bgra8888,
       );
 
       await _cameraController!.initialize();
