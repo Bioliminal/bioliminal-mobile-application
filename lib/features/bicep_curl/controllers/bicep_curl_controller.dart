@@ -152,6 +152,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // to an EnvelopeDerivator/RepDetector created in startSession.
   StreamSubscription<SampleBatch>? _sampleSub;
   StreamSubscription<RepBoundary>? _repSub;
+  StreamSubscription<int>? _repStartSub;
 
   // Wall-clock buffer of envelope samples (for per-rep peak extraction).
   final Queue<_TimedEnvelope> _envelopeBuffer = Queue<_TimedEnvelope>();
@@ -245,6 +246,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
     _sampleSub = hardware.rawEmgStream.listen(_onSample);
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
+    _repStartSub = _repDetector!.onRepStart.listen(_onRepStart);
 
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
@@ -333,6 +335,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
         state = cur.copyWith(emgOnline: false);
       }
     }
+  }
+
+  void _onRepStart(int tStartUs) {
+    _currentRepFrames.clear();
   }
 
   void _onRepBoundary(RepBoundary b) {
@@ -552,6 +558,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _sampleSub = null;
     await _repSub?.cancel();
     _repSub = null;
+    await _repStartSub?.cancel();
+    _repStartSub = null;
     // Landmark + connection subs live on ref (wired in build) and tear down
     // with the Notifier. Not closed per-session.
     await _repDetector?.dispose();
