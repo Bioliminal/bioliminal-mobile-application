@@ -2,8 +2,10 @@ enum ArmSide {
   left,
   right;
 
-  static ArmSide fromName(String name) =>
-      ArmSide.values.firstWhere((s) => s.name == name);
+  static ArmSide fromName(String name) => ArmSide.values.firstWhere(
+        (s) => s.name == name,
+        orElse: () => ArmSide.right,
+      );
 }
 
 /// Per-session pose baseline captured during reps 1–3 of the calibration

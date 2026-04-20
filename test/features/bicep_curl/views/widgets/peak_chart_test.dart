@@ -30,7 +30,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('No reps recorded'), findsOneWidget);
+      expect(find.text('NO REPS RECORDED'), findsOneWidget);
     });
 
     testWidgets('renders chart scaffold (no placeholder) with peaks',
@@ -53,7 +53,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('No reps recorded'), findsNothing);
+      expect(find.text('NO REPS RECORDED'), findsNothing);
     });
   });
 

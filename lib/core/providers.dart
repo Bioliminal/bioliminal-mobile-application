@@ -6,6 +6,7 @@ import 'package:bioliminal/core/services/capability_tier.dart';
 import 'package:bioliminal/core/services/local_storage_service.dart'
     as local_impl;
 import 'package:bioliminal/core/services/bioliminal_client.dart';
+import 'package:bioliminal/domain/models.dart';
 import 'package:bioliminal/features/camera/services/landmark_smoother.dart';
 import 'package:bioliminal/features/camera/services/pose_detector.dart';
 
@@ -39,6 +40,7 @@ class CloudSyncNotifier extends Notifier<bool> {
 
 final cloudSyncEnabledProvider = NotifierProvider<CloudSyncNotifier, bool>(
   CloudSyncNotifier.new,
+  isAutoDispose: false,
 );
 
 class PremiumNotifier extends Notifier<bool> {
@@ -49,6 +51,7 @@ class PremiumNotifier extends Notifier<bool> {
 
 final isPremiumProvider = NotifierProvider<PremiumNotifier, bool>(
   PremiumNotifier.new,
+  isAutoDispose: false,
 );
 
 // ---------------------------------------------------------------------------
@@ -80,14 +83,20 @@ class CameraDescriptionNotifier extends Notifier<CameraDescription?> {
 final cameraDescriptionProvider =
     NotifierProvider<CameraDescriptionNotifier, CameraDescription?>(
       CameraDescriptionNotifier.new,
+      isAutoDispose: false,
     );
 
-final poseDetectorProvider = Provider<PoseDetector>((ref) {
-  final config = ref.watch(poseConfigProvider);
-  final detector = MediaPipePoseDetector(config: config);
-  ref.onDispose(() => detector.dispose());
-  return detector;
-});
+final poseDetectorProvider = Provider<PoseDetector>(
+  (ref) {
+    final config = ref.watch(poseConfigProvider);
+    final detector = MediaPipePoseDetector(config: config);
+    ref.onDispose(() => detector.dispose());
+    return detector;
+  },
+  // MediaPipe PoseLandmarker holds a native model. Disposing and
+  // re-creating between screens would trigger an expensive reload.
+  isAutoDispose: false,
+);
 
 final landmarkSmootherProvider = Provider<LandmarkSmoother>((ref) {
   final smoother = OneEuroLandmarkSmoother();
@@ -97,13 +106,17 @@ final landmarkSmootherProvider = Provider<LandmarkSmoother>((ref) {
 
 final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
   (ref) => local_impl.LocalStorageService(),
+  isAutoDispose: false,
 );
 
-final bioliminalClientProvider = Provider<BioliminalClient>((ref) {
-  final client = BioliminalClient();
-  ref.onDispose(() => client.dispose());
-  return client;
-});
+final bioliminalClientProvider = Provider<BioliminalClient>(
+  (ref) {
+    final client = BioliminalClient();
+    ref.onDispose(() => client.dispose());
+    return client;
+  },
+  isAutoDispose: false,
+);
 
 // ---------------------------------------------------------------------------
 // Hardware Setup State (EMG — out of scope for the analysis-server
@@ -179,10 +192,15 @@ final isSignedInProvider = Provider<bool>((ref) {
   return profile.asData?.value != null;
 });
 
+/// All locally-persisted session records. Watched by HistoryView;
+/// invalidated from BicepCurlView after a new session is saved so the list
+/// refreshes when the user returns.
+final sessionRecordsProvider = FutureProvider<List<SessionRecord>>((ref) {
+  return ref.watch(localStorageServiceProvider).listSessionRecords();
+});
+
 /// Count of session records for display on the profile view.
 final sessionCountProvider = FutureProvider<int>((ref) async {
-  final records = await ref
-      .watch(localStorageServiceProvider)
-      .listSessionRecords();
+  final records = await ref.watch(sessionRecordsProvider.future);
   return records.length;
 });

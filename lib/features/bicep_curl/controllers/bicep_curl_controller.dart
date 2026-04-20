@@ -443,9 +443,11 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     if (decision != null) {
       _dispatcher?.dispatch(decision);
       // Only fatigue cues bump cooldown; compensation events fire
-      // independently of the cooldown clock.
+      // independently of the cooldown clock. fatigueStop is included so
+      // the stop event is logged exactly once per threshold crossing.
       if (decision.content == CueContent.fatigueFade ||
-          decision.content == CueContent.fatigueUrgent) {
+          decision.content == CueContent.fatigueUrgent ||
+          decision.content == CueContent.fatigueStop) {
         _lastCueRep = repNum;
       }
     }
@@ -458,6 +460,12 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       currentCompensating: compensating,
       emgOnline: emgOnline,
     );
+
+    // Auto-end on fatigueStop — past useful intervention window per
+    // haptic-cueing-handshake.md §"The algorithm (data-backed v1)".
+    if (decision?.content == CueContent.fatigueStop) {
+      unawaited(endSession());
+    }
   }
 
   // ---------- helpers ----------

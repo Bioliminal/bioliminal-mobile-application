@@ -1,408 +1,558 @@
-# Bioliminal Audit Report
+---
+Status: Active
+Created: 2026-04-19
+Updated: 2026-04-19
+Owner: kelsi.andrews
+---
 
-**Date:** 2026-04-08
-**Scope:** Full project — /Users/kelsiandrews/capstone
-**Engine:** Dual (Gemini + Claude)
-**Sections:** Security, Bugs, Completeness, Quality
+# Bioliminal Flutter App — Code Audit
+
+**Date:** 2026-04-19
+**Branch:** fix/audit-high-findings-2026-04-19
+**Auditor:** Claude Sonnet 4.6 (automated)
+**Scope:** Full project — all `.dart` files under `lib/`, plus `pubspec.yaml`, `analysis_options.yaml`, `android/app/build.gradle.kts`, and `ios/Runner/Info.plist`.
+
+---
 
 ## Executive Summary
 
-Bioliminal is a Flutter movement screening app with a well-designed domain model and comprehensive rule-based clinical logic. The Gemini pass found 12 issues; Claude confirmed 7, downgraded 1, and rejected 3 (false positives). Claude independently found 24 additional issues. The merged report contains 31 confirmed findings: 0 critical, 7 high, 13 medium, 11 low. The most significant issues are: (1) the entire ML pipeline is stubbed — no real pose estimation exists, (2) the privacy disclaimer contradicts the Firebase sync infrastructure, (3) authentication is never triggered so Firestore will throw on access, (4) report deep-linking is broken, and (5) there is effectively no test coverage. Score: **0/100** — high finding volume across all sections, weighted heavily by security and bugs.
+The codebase is in solid shape for a capstone demo. Architecture decisions are sound: Riverpod 3 is used consistently with properly-scoped providers, the BLE/EMG pipeline is well-isolated with correct teardown, and the camera/pose detection stack has good error-surface coverage. The prior HIGH-finding audit (commit `fea1b75`) resolved the most critical items.
 
-## Score Breakdown
+What remains is a concentrated set of real issues, none of which blocks a demo, but two of which can crash or corrupt data in specific runtime scenarios:
 
-| Section | Finding Count | Weight | Weighted Deduction | Raw Deduction |
-|---|---|---|---|---|
-| Security | 4 | 4x | 28 | 7 |
-| Bugs | 10 | 3x | 57 | 19 |
-| Completeness | 9 | 2x | 42 | 21 |
-| Quality | 8 | 1x | 11 | 11 |
-| **Total** | **31** | | **138** | **58** |
+1. **Missing `try/catch` on `PoseChannel` method calls** — an uninitialised native PoseLandmarker silently throws `PlatformException`, creating a hot retry loop that saturates the UI thread.
+2. **`firstWhere` without `orElse` on enum deserialisation** — stale on-disk data with an unknown wire value throws `StateError` at load time, crashing the history view.
 
-**Score: 0/100** (100 - 138, floored at 0)
+Everything else is medium/low: a Riverpod `ref.read` anti-pattern in a `FutureProvider` body, a missing `const` constructor, `debugPrint` calls in the waitlist service, indefinite polling in `ReportView`, and pubspec dependency pinning.
+
+**Overall Score: 7.5 / 10**
+
+The pipeline logic and state model are production-calibre. The gaps are in defensive error handling at the platform-channel boundary and a few Riverpod patterns that can manifest as stale UI data.
 
 ---
 
-## Security
+## Widget Tree & Performance
 
-### F-001 — **LOW** — Web Firebase API key unrestricted
-**File:** `lib/firebase_options.dart:49-56`
-**Source:** [claude]
+### M1 — `BicepCurlHeatmapSection` autoplay fires `setState` at ~71 fps (MEDIUM)
 
-Mobile API keys are bound to app signing and are safe to ship. The web API key, however, can be used from any origin without APK/bundle signing enforcement. Without App Check or HTTP referrer restrictions, it's exploitable.
+**File:** `lib/features/bicep_curl/views/widgets/body_heatmap.dart:117,150–153`
+
+`_frameInterval = Duration(milliseconds: 14)` drives a `Timer.periodic` that calls `setState` unconditionally, rebuilding the entire `_BicepCurlHeatmapSectionState` subtree — including both `BodyHeatmapPanel` `CustomPaint` calls and the scrub row — at ~71 fps. The widget lives inside a `SingleChildScrollView` on the debrief screen, so it does not participate in viewport clipping.
+
+`_BodyHeatmapPainter.shouldRepaint` correctly gates on field equality, so the actual repaint is bounded. The issue is the `setState` triggering widget tree reconciliation at 71 Hz for the entire section.
+
+**Fix:** Replace `setState` with a `ValueNotifier<int>` and drive only the animated subtree through `ValueListenableBuilder`:
 
 ```dart
-apiKey: 'AIzaSyB8q1jQLraMrG8_FJDQ-_aUtD1EJqGQ8_E', // web — no referrer lock
+final _sampleNotifier = ValueNotifier<int>(0);
+
+// Timer callback:
+_autoPlay = Timer.periodic(_frameInterval, (_) {
+  if (!mounted) return;
+  _sampleNotifier.value = (_sampleNotifier.value + 1) % _totalSamples;
+});
+
+// In build():
+ValueListenableBuilder<int>(
+  valueListenable: _sampleNotifier,
+  builder: (_, sample, __) {
+    final activations = MuscleActivations.fromLog(..., absoluteSample: sample, ...);
+    return Column(children: [BodyHeatmapPanel(...), ScrubRow(...)]);
+  },
+)
 ```
 
-> Given the Firebase project, When the web API key is used from an unauthorized origin, Then the request should be rejected by App Check or HTTP referrer restrictions configured in the Google Cloud console.
+Also consider wrapping `BicepCurlHeatmapSection` in a `RepaintBoundary` to isolate its raster layer from the rest of the debrief scroll.
 
 ---
 
-### F-002 — **MEDIUM** — Firestore rules allow arbitrary document shape
-**File:** `firestore.rules:4-9`
-**Source:** [claude]
+### M2 — `IntrinsicHeight` in debrief stats wall (LOW)
 
-Rules authenticate users but perform no schema validation. A compromised client can write arbitrary fields or oversized documents.
+**File:** `lib/features/bicep_curl/views/bicep_curl_debrief_view.dart:313`
 
-```
-allow read, write: if request.auth != null && request.auth.uid == uid;
-```
-
-> Given an authenticated user, When they write a document with unexpected fields or oversized data, Then Firestore rules should reject the write with a permission-denied error.
+`_StatsWall` wraps its three-column row in `IntrinsicHeight`, which forces a two-pass layout for every child. Fine for a static one-time render, but blocks future placement inside an animated or list context. No urgent action.
 
 ---
 
-### F-003 — **MEDIUM** — Storage rules allow any file type and size
-**File:** `storage.rules:3-7`
-**Source:** [claude]
+### M3 — `_CtaBar` in debrief missing `const` constructor (LOW)
 
-No `request.resource.size` or `request.resource.contentType` constraints. A malicious client could upload multi-GB non-PDF files.
+**File:** `lib/features/bicep_curl/views/bicep_curl_debrief_view.dart:645,165`
 
-```
-allow read, write: if request.auth != null && request.auth.uid == uid;
-```
-
-> Given an authenticated user, When they upload a file larger than 10MB or with a non-PDF content type, Then Storage rules should reject the upload.
+`_CtaBar` has no fields, extends `StatelessWidget`, and is instantiated without `const`. Add `const _CtaBar();` and call it as `const _CtaBar()`.
 
 ---
 
-### F-004 — **MEDIUM** — Anonymous auth with no account upgrade path
-**File:** `lib/core/services/auth_service.dart:8-13`
-**Source:** [claude]
+### M4 — `BicepCurlView` full rebuild at 100 ms during Setup phase (LOW)
 
-Anonymous auth means each install gets a throwaway uid. On reinstall or device wipe, all Firestore data is permanently lost. No linkWithCredential or upgrade flow exists.
+**File:** `lib/features/bicep_curl/views/bicep_curl_view.dart:100–126`
+
+During `BicepCurlSetup`, `_framingTicker` calls `setState(() {})` on the parent `_BicepCurlViewState` at 100 ms to refresh `_framingHoldProgress`, rebuilding the full `Scaffold` subtree at 10 Hz. The select on `appCameraControllerProvider` prevents the 30fps camera-state rebuild, but the framing ticker still drives the parent.
+
+**Fix:** Extract the framing progress indicator into its own `StatefulWidget` that owns the `Timer` and only calls `setState` on itself.
+
+---
+
+### M5 — `RepCounter` is a `ConsumerWidget` but never watches anything (LOW)
+
+**File:** `lib/features/bicep_curl/views/bicep_curl_overlays.dart:13`
+
+`RepCounter` extends `ConsumerWidget` but only calls `ref.read` in a gesture handler, never `ref.watch`. This registers a Riverpod consumer subscription with no reactive value. Convert to `StatelessWidget` and accept an `onLongPress` callback from the parent.
+
+---
+
+## State Management (riverpod)
+
+### R1 — `ref.read` inside a `FutureProvider` body (MEDIUM)
+
+**File:** `lib/features/bicep_curl/views/widgets/session_trends.dart:14–18`
 
 ```dart
-final credential = await _auth.signInAnonymously();
+final allBicepCurlSessionsProvider =
+    FutureProvider.autoDispose<List<SessionLog>>((ref) async {
+  final records = await ref
+      .read(localStorageServiceProvider)   // ← should be ref.watch
+      .listSessionRecords();
 ```
 
-> Given an anonymous user with stored assessments, When they reinstall the app, Then they should be able to link their anonymous account to a permanent identity to preserve data.
+`ref.read` inside a provider body does not create a reactive dependency. `allBicepCurlSessionsProvider` will never re-fire when `sessionRecordsProvider` is invalidated after a new session is saved in `BicepCurlView._persistAndExit`. The trends section on the debrief screen will show stale history data if the user completes a session and opens the debrief within the same app session.
+
+**Fix:**
+```dart
+final records = await ref.watch(localStorageServiceProvider).listSessionRecords();
+```
 
 ---
 
-## Bugs
+### R2 — `useHardwareModeProvider`, `hardwareSetupStepProvider`, `hardwareSyncOffsetProvider` missing `isAutoDispose: false` (LOW)
 
-### F-005 — **HIGH** — processFrame called with null as dynamic
-**File:** `lib/features/screening/controllers/screening_controller.dart:103`
-**Source:** [claude]
+**File:** `lib/core/providers.dart:118–144`
 
-The screening controller passes `null as dynamic` as a CameraImage to the mock. The mock ignores it, but the abstract interface declares a non-nullable parameter. Swapping to a real implementation will crash immediately.
+These three `NotifierProvider`s are declared without `isAutoDispose: false`. Per Riverpod 3 defaults they will auto-dispose when their last listener drops. The BLE state flows through `hardwareControllerProvider` (which is `isAutoDispose: false`) so the production path is safe, but these setup-step providers will reset to defaults if the hardware setup screen is navigated away from mid-flow.
+
+---
+
+### R3 — `_debriefSessionProvider` uses `ref.read` inside a `FutureProvider.autoDispose.family` body (LOW)
+
+**File:** `lib/features/bicep_curl/views/bicep_curl_debrief_view.dart:17–23`
+
+Same anti-pattern as R1. In practice benign (one-shot load), but inconsistent. Use `ref.watch` for clarity.
+
+---
+
+### R4 — `sessionCountProvider` pattern can be simplified (LOW)
+
+**File:** `lib/core/providers.dart:189–192`
+
+`FutureProvider` wrapping a watch on `sessionRecordsProvider.future` and returning `.length` is a common pattern but can be expressed more simply as a synchronous derivation:
 
 ```dart
-_mockLandmarkSub = mock.processFrame(null as dynamic).listen((landmarks) {
+final sessionCountProvider = Provider<AsyncValue<int>>((ref) {
+  return ref.watch(sessionRecordsProvider).whenData((r) => r.length);
+});
 ```
 
-> Given the screening controller starts a mock landmark feed, When processFrame is called, Then it should receive a valid CameraImage or the mock interface should accept a nullable parameter.
+No correctness issue with the current approach.
 
 ---
 
-### F-006 — **HIGH** — Report deep-link broken — GoRouter extra is ephemeral
-**File:** `lib/features/report/views/report_view.dart:333`
-**Source:** [claude]
+## Null Safety & Type Soundness
 
-ReportView reads the Assessment from `GoRouterState.extra`, which is in-memory only. Deep-linking to `/report/:id` (or browser refresh on web) yields "Assessment not found". The `:id` path parameter is never used to load from storage.
+### N1 — `firstWhere` without `orElse` on enum deserialisation (HIGH)
+
+**Files:**
+- `lib/features/bicep_curl/models/compensation_reference.dart:5–6` — `ArmSide.fromName`
+- `lib/features/bicep_curl/models/cue_event.dart:33–35` — `CueContent.values.firstWhere`
+- `lib/domain/models.dart:20–21` — `MovementType.fromWire`
+- `lib/domain/models.dart:158–159` — `ChainName.fromWire`
+
+All four use `firstWhere` with no `orElse`. If on-disk or wire data contains an unknown enum value (e.g., a session saved on a branch with a different `CueContent` enum, or a future firmware version using a new wire movement type), `firstWhere` throws `StateError` at the deserialization callsite. This will crash `SessionRecord.fromJson`, breaking the entire history view for all sessions stored on that device.
+
+**Fix (priority action):**
+```dart
+// ArmSide.fromName
+static ArmSide fromName(String name) =>
+    ArmSide.values.firstWhere(
+      (s) => s.name == name,
+      orElse: () => ArmSide.right,
+    );
+
+// CueContent in CueEvent.fromJson
+content: CueContent.values.firstWhere(
+  (c) => c.name == json['content'] as String,
+  orElse: () => CueContent.fatigueFade,
+),
+
+// MovementType.fromWire
+static MovementType fromWire(String value) =>
+    MovementType.values.firstWhere(
+      (m) => m.wire == value,
+      orElse: () => MovementType.bicepCurl,
+    );
+
+// ChainName.fromWire
+static ChainName fromWire(String value) =>
+    ChainName.values.firstWhere(
+      (c) => c.wire == value,
+      orElse: () => ChainName.upperLimbLocal,
+    );
+```
+
+---
+
+### N2 — Bang operator on `credential.user!` in `AuthService` without guard (MEDIUM)
+
+**File:** `lib/core/services/auth_service.dart:33–35, 44–45, 48`
 
 ```dart
-final assessment = GoRouterState.of(context).extra as Assessment?;
+await credential.user!.updateDisplayName(displayName.trim());
+return _auth.currentUser!;
 ```
 
-> Given a user navigates to /report/:id without an in-memory Assessment, When the view loads, Then it should fetch the assessment by id from LocalStorageService and display the report.
+`UserCredential.user` is nullable in the Firebase SDK contract. In practice it is non-null after a successful call, but the bang operators bypass the type system. If Firebase changes this (documented as unlikely but not contractually guaranteed), the call throws `Null check operator used on a null value` instead of a recoverable error.
+
+**Fix:**
+```dart
+final user = credential.user ??
+    (throw FirebaseAuthException(code: 'user-null', message: 'user is null after credential'));
+await user.updateDisplayName(displayName.trim());
+```
 
 ---
 
-### F-007 — **MEDIUM** — Camera controller dispose/reinit lifecycle issues
-**File:** `lib/features/camera/views/camera_view.dart:30-43`
-**Source:** [claude]
+### N3 — `dispose()` calls `stopStreaming()` without `unawaited` marker (LOW)
 
-`dispose()` calls `ref.read()` which may throw if the ProviderScope is already torn down. On `AppLifecycleState.resumed`, `requestPermission()` re-initializes without disposing the old controller first, leaking the previous CameraController.
+**File:** `lib/features/bicep_curl/views/bicep_curl_view.dart:67`
 
-> Given the app resumes from background, When requestPermission is called, Then the old CameraController should be disposed before creating a new one.
-
----
-
-### F-008 — **MEDIUM** — "Open Settings" button doesn't open settings
-**File:** `lib/features/camera/views/camera_view.dart:222-226`
-**Source:** [claude]
-
-When camera permission is permanently denied, the button calls `requestPermission()` — which will silently fail again. It should call `openAppSettings()` (from `app_settings` or similar package).
+`_cameraNotifier.stopStreaming()` is `async` and is called without `await` or `unawaited` in `dispose`. This is a fire-and-forget in a lifecycle method (correct behaviour), but it should be marked explicitly to match project style and suppress implicit-cast warnings:
 
 ```dart
-onPressed: onRetry, // onRetry = requestPermission(), not openAppSettings()
+unawaited(_cameraNotifier.stopStreaming());
 ```
-
-> Given camera permission is permanently denied, When the user taps "Open Settings", Then the OS app settings page should open.
 
 ---
 
-### F-009 — **MEDIUM** — Frame averaging assumes uniform landmark counts
-**File:** `lib/features/screening/controllers/screening_controller.dart:267-298`
-**Source:** [claude]
+## Platform & Build Configuration
 
-`_averageFrameBuffer` uses the first frame's landmark count as canonical. Frames with fewer landmarks get partially averaged, producing misleading positions for some joints.
+### P1 — `PoseChannel` method calls have no `PlatformException` handling (HIGH)
+
+**File:** `lib/features/camera/services/pose_channel.dart:18–56`
+
+All three `_channel.invokeMethod` calls (`initialize`, `processFrame`, `dispose`) are bare awaits with no `try/catch`. When the native PoseLandmarker fails to initialise (missing asset, unsupported OS version, or native exception), `initialize` throws `PlatformException`. This propagates through `MediaPipePoseDetector.processFrame` and is caught by the `onError` handler in `_handleFrame` in the camera controller:
 
 ```dart
-final landmarkCount = _frameBuffer.first.length;
+onError: (e) {
+  developer.log('Pose detection error', error: e, name: 'CameraController');
+  _isProcessing = false;
+},
 ```
 
-> Given frames with varying landmark counts, When _averageFrameBuffer runs, Then it should skip incomplete frames or average only over landmarks present in all frames.
+The error is logged and swallowed, but `_initialized` remains `false`. On the next camera frame, `processFrame` tries to call `_channel.initialize` again — and fails again. This creates a hot loop that fires a failing platform channel call on every camera frame (~30fps), saturating the method channel and degrading UI responsiveness.
 
----
-
-### F-010 — **LOW** — _topFindings selects by tracking quality, not clinical significance
-**File:** `lib/features/screening/controllers/screening_controller.dart:351-358`
-**Source:** [claude]
-
-Sorts by confidence index ascending (high first), surfacing the best-tracked findings rather than the most clinically concerning ones. In a triage tool, severity should probably take priority.
-
-> Given multiple compensations detected, When _topFindings selects the top 2, Then the selection criteria should be documented and should consider clinical significance.
-
----
-
-### F-011 — **LOW** — Enum index comparison for confidence is fragile
-**File:** `lib/domain/mocks/mock_chain_mapper.dart:280`, `lib/features/report/views/report_view.dart:260`, `lib/features/report/widgets/finding_card.dart:19`, `lib/features/report/services/pdf_generator.dart:37`
-**Source:** [both]
-
-`ConfidenceLevel` ordering (high=0, medium=1, low=2) is relied upon via `.index` comparison in 4+ locations. Reordering the enum silently breaks all of them.
-
-> Given the ConfidenceLevel enum, When worst-confidence logic runs, Then it should use an explicit comparison rather than relying on declaration order.
-
----
-
-### F-012 — **MEDIUM** — Mock pose service never disposed, leaks timer/stream
-**File:** `lib/features/screening/controllers/screening_controller.dart:97-103`
-**Source:** [both]
-
-`_startMockLandmarkFeed` creates a new `MockPoseEstimationService` each call but never disposes the previous one. The old mock's Timer and StreamController keep running.
-
-> Given the screening starts, When a mock landmark feed is created, Then the previous mock service should be disposed first.
-
----
-
-### F-013 — **MEDIUM** — Skipped movement records Duration.zero
-**File:** `lib/features/screening/controllers/screening_controller.dart:316-317`
-**Source:** [claude]
-
-`duration: current.config.duration - current.remaining` — if the user skips immediately, remaining equals config.duration, producing Duration.zero. Downstream code must handle this.
-
-> Given a movement is skipped immediately, When the Movement record is created, Then the duration should reflect that the movement was skipped, and downstream code should handle zero-duration safely.
-
----
-
-### F-014 — **LOW** — credential.user! forced unwrap
-**File:** `lib/core/services/auth_service.dart:13`
-**Source:** [gemini] *(downgraded from high to low — Firebase guarantees non-null user on successful anonymous auth)*
+**Fix:** Add a retry ceiling in `MediaPipePoseDetector`:
 
 ```dart
-return credential.user!.uid;
-```
+int _consecutiveInitFailures = 0;
+static const int _maxInitAttempts = 3;
 
-> Given signInAnonymously succeeds, When the user credential is accessed, Then user is guaranteed non-null. This is safe in practice but the `!` could be replaced with a null-aware pattern for defensive clarity.
-
----
-
-## Completeness
-
-### F-015 — **HIGH** — ML pipeline entirely stubbed
-**File:** `pubspec.yaml:15`
-**Source:** [both]
-
-`google_mlkit_pose_detection` is commented out. All landmark data comes from deterministic mocks. The core feature of an "AI movement screening app" does not exist.
-
-```yaml
-# google_mlkit_pose_detection: ^0.11.0  # ML dev adds when implementing PoseEstimationService
-```
-
-> Given a user performs a movement, When the camera streams frames, Then real ML Kit pose detection should process frames and return actual landmark positions.
-
----
-
-### F-016 — **HIGH** — Test suite is a single broken test
-**File:** `test/widget_test.dart:1-13`
-**Source:** [claude]
-
-One test checks for "SplashView" text, which will never appear because `initialLocation` is `/disclaimer`. Zero tests for chain mapping, angle calculation, screening state machine, report assembly, or serialization.
-
-```dart
-expect(find.text('SplashView'), findsOneWidget); // will fail — app starts at /disclaimer
-```
-
-> Given the test suite, When tests run, Then there should be unit tests for MockChainMapper threshold logic, ScreeningController state transitions, report assembly, and serialization round-trips.
-
----
-
-### F-017 — **HIGH** — No auth gating on any route
-**File:** `lib/core/router.dart:9-35`
-**Source:** [claude]
-
-No `redirect` guard in GoRouter. Users can navigate to `/screening` or `/report/:id` without authentication. `AuthService.signIn()` is never called anywhere. `FirestoreService._uid` will throw `StateError` on first access.
-
-> Given an unauthenticated user, When they navigate to /screening, Then the router should redirect to a sign-in flow or trigger anonymous auth first.
-
----
-
-### F-018 — **HIGH** — syncLocalAssessments never called
-**File:** `lib/core/services/firestore_service.dart:135-163`
-**Source:** [claude]
-
-The sync method exists but has no call site anywhere in the app. Assessments are saved to local storage only and never uploaded to Firestore.
-
-> Given a user completes a screening, When the assessment is saved locally, Then syncLocalAssessments should be triggered to back up data to Firestore.
-
----
-
-### F-019 — **MEDIUM** — freezed/json_serializable deps unused
-**File:** `pubspec.yaml:22-30`
-**Source:** [claude]
-
-`freezed_annotation`, `json_annotation`, `freezed`, `json_serializable`, and `build_runner` are declared but no `.g.dart` or `.freezed.dart` files exist. The code generation has never been run. Dead dependencies.
-
-> Given the project dependencies, When build_runner runs, Then generated code should be produced and used, or unused dependencies should be removed.
-
----
-
-### F-020 — **LOW** — Movement duration set to 15s (TODO: restore to 60s)
-**File:** `lib/features/screening/models/movement.dart:8`
-**Source:** [both]
-
-```dart
-this.duration = const Duration(seconds: 15), // TODO: restore to 60 for production
-```
-
-> Given a production build, When the user performs a movement, Then the duration should be 60 seconds as clinically intended.
-
----
-
-### F-021 — **LOW** — _SplashView is dead code
-**File:** `lib/core/router.dart:37-46`
-**Source:** [both]
-
-The `/` route and `_SplashView` are defined but unreachable — `initialLocation` is `/disclaimer`. The widget test expects to find it, compounding the issue (F-016).
-
-> Given the app routes, When unreachable routes exist, Then they should be removed or the initialLocation updated.
-
----
-
-### F-022 — **HIGH** — Privacy disclaimer contradicts Firebase infrastructure
-**File:** `lib/features/onboarding/views/disclaimer_view.dart:79-85`
-**Source:** [both]
-
-The disclaimer states: *"All movement analysis happens on your device. No video is stored or transmitted."* Meanwhile, `FirestoreService` uploads assessments, reports, and PDFs to Firebase. If sync is wired up (F-018), this claim becomes false.
-
-```dart
-'All movement analysis happens on your device. No video is stored or transmitted.'
-```
-
-> Given the privacy disclaimer, When Firestore sync is implemented, Then the disclaimer must accurately describe what data is transmitted, or sync must be opt-in with separate consent.
-
----
-
-### F-023 — **MEDIUM** — Auth not triggered before assessment save
-**File:** `lib/features/screening/views/screening_view.dart:24-29`
-**Source:** [claude]
-
-The screening completion handler saves to local storage (works without auth), but any future Firestore sync will fail because `_uid` throws `StateError` without authentication.
-
-> Given a screening completes, When the assessment is saved, Then the app should ensure the user is authenticated so subsequent Firestore sync has a valid uid.
-
----
-
-## Quality
-
-### F-024 — **MEDIUM** — Serialization logic duplicated across two files
-**File:** `lib/core/services/local_storage_service.dart:12-153`, `lib/core/services/firestore_service.dart:36-59`
-**Source:** [claude]
-
-Hand-written toJson/fromJson in local_storage_service.dart, plus Timestamp conversion wrappers in firestore_service.dart. Two serialization paths that must stay in sync. This is the exact problem the unused freezed/json_serializable deps (F-019) would solve.
-
-> Given domain model serialization, When a field is added or changed, Then there should be a single source of truth for serialization.
-
----
-
-### F-025 — **MEDIUM** — MockChainMapper is misnamed — contains real business logic
-**File:** `lib/domain/mocks/mock_chain_mapper.dart:1-455`
-**Source:** [both]
-
-455 lines of production clinical logic — threshold detection, chain mapping, CC/CP identification, hypermobility detection, confidence assignment, citations. Named "mock" but is the actual `ChainMapper` implementation. Risk: developers discard the "mock" when writing a "real" implementation without realizing it contains the validated rule engine.
-
-> Given the chain mapping implementation, When it contains production business logic, Then it should be named appropriately (e.g., RuleBasedChainMapper) and placed in the services directory.
-
----
-
-### F-026 — **MEDIUM** — Report assembly logic embedded in widget
-**File:** `lib/features/report/views/report_view.dart:120-233`
-**Source:** [claude]
-
-`_buildReport` is a 110-line method inside `_ReportViewState` containing clinical chain grouping, upstream driver identification, recommendation generation, and citation assembly. Untestable without rendering a widget.
-
-> Given report assembly logic, When it needs to be tested, Then it should live in a dedicated service that can be unit-tested independently.
-
----
-
-### F-027 — **LOW** — MovementInstructions returns Positioned (requires Stack parent)
-**File:** `lib/features/screening/widgets/movement_instructions.dart:20`
-**Source:** [claude]
-
-The widget's `build()` returns a `Positioned` widget, forcing the caller to use a Stack. Not enforced by types — using it in a Column would fail at runtime.
-
-> Given MovementInstructions is used in a layout, When placed outside a Stack, Then it should still render correctly.
-
----
-
-### F-028 — **LOW** — _handleFrame is a no-op
-**File:** `lib/features/camera/controllers/camera_controller.dart:132-136`
-**Source:** [claude]
-
-After the first frame triggers the mock stream, `_handleFrame` does nothing. The camera image stream runs but every frame is discarded.
-
-```dart
-void _handleFrame(CameraImage image, PoseEstimationService poseService) {
-  // poseService.addFrame(image);
+Future<List<domain.PoseLandmark>> processFrame(
+  CameraImage image, {required int rotationDegrees}) async {
+  if (!_initialized) {
+    if (_consecutiveInitFailures >= _maxInitAttempts) return const [];
+    try {
+      _initialized = await _channel.initialize(assetPath: assetPath);
+      if (_initialized) _consecutiveInitFailures = 0;
+      else _consecutiveInitFailures++;
+    } on PlatformException catch (e) {
+      _consecutiveInitFailures++;
+      developer.log('PoseChannel init failed', error: e, name: 'MediaPipePoseDetector');
+      return const [];
+    }
+    if (!_initialized) return const [];
+  }
+  try {
+    final raw = await _channel.processFrame(
+      bytes: image.planes.first.bytes,
+      width: image.width,
+      height: image.height,
+      bytesPerRow: image.planes.first.bytesPerRow,
+      rotationDegrees: rotationDegrees,
+      timestampMs: DateTime.now().millisecondsSinceEpoch,
+    );
+    if (raw == null || raw.length != 33) return const [];
+    return raw.map((m) => domain.PoseLandmark(
+      x: m['x'] ?? 0, y: m['y'] ?? 0, z: m['z'] ?? 0,
+      visibility: m['visibility'] ?? 0, presence: m['presence'] ?? 0,
+    )).toList(growable: false);
+  } on PlatformException catch (e) {
+    developer.log('PoseChannel processFrame failed', error: e, name: 'MediaPipePoseDetector');
+    return const [];
+  }
 }
 ```
 
-> Given camera streaming is active, When frames arrive, Then each frame should be processed, or the image stream should not be started until the real ML pipeline is implemented.
-
 ---
 
-### F-029 — **LOW** — _CompleteScreen may double-navigate on rebuild
-**File:** `lib/features/screening/views/screening_view.dart:264-267`
-**Source:** [claude]
+### P2 — `updateLandmarks` can be called after `stopStreaming` due to in-flight inference (MEDIUM)
 
-`Future.delayed` in `initState` navigates after 1 second. If the widget rebuilds, a second delay is scheduled. The `mounted` check prevents crashes but not duplicate scheduling.
+**File:** `lib/features/camera/controllers/camera_controller.dart:165–196, 218–224`
 
-> Given the screening completes, When the complete screen is shown, Then navigation to the report should happen exactly once.
+`_handleFrame` dispatches inference asynchronously via `.then(...)`. The `_isProcessing` flag prevents new inference from starting after `stopStreaming`, but an in-flight inference started just before `stopStreaming` can complete and call `updateLandmarks` after the state has moved to `CameraReady`. `updateLandmarks` guards on `current is CameraStreaming` before updating, so it does not corrupt state. However, `_isProcessing` remains `true` until the in-flight callback resolves, silently dropping frames if streaming is restarted immediately. This can cause a ~100ms delay before the skeleton overlay reappears after a camera toggle.
 
----
-
-### F-030 — **LOW** — Mock always generates overhead squat landmarks
-**File:** `lib/features/screening/controllers/screening_controller.dart:91-95`
-**Source:** [claude]
-
-`_startMockLandmarkFeed` hardcodes `screeningMovements.first.type` (overhead squat). As movements advance, the mock still emits squat patterns — single-leg balance, overhead reach, and forward fold all get squat landmarks.
+**Fix:** Add a generation counter to invalidate in-flight callbacks:
 
 ```dart
-final mock = MockPoseEstimationService(movementType: screeningMovements.first.type);
+int _generation = 0;
+
+Future<void> stopStreaming() async {
+  _generation++;
+  ...
+}
+
+void _handleFrame(CameraImage image) {
+  if (_isProcessing) return;
+  _isProcessing = true;
+  final gen = _generation;
+  poseDetector.processFrame(...).then((landmarks) {
+    if (gen != _generation) { _isProcessing = false; return; }
+    updateLandmarks(landmarks);
+    _isProcessing = false;
+  }, onError: (e) {
+    developer.log('Pose detection error', error: e, name: 'CameraController');
+    _isProcessing = false;
+  });
+}
 ```
 
-> Given the screening advances to single-leg balance, When landmarks are generated, Then they should match the current movement's pattern.
+---
+
+### P3 — Release build falls back to debug signing key when `key.properties` is absent (MEDIUM)
+
+**File:** `android/app/build.gradle.kts:55–69`
+
+The comment explicitly states "Not acceptable for Play Store uploads." There is no build-time guard that fails `flutter build appbundle --release` when `key.properties` is absent. A developer without the key file will produce a debug-signed AAB that Google Play rejects — but only at upload time, not at build time.
+
+**Fix:** Add a Gradle `doFirst` block that asserts the release keystore is configured:
+
+```kotlin
+tasks.whenTaskAdded { task ->
+    if (task.name == "packageRelease" || task.name == "bundleRelease") {
+        task.doFirst {
+            require(hasReleaseKeystore) {
+                "Release build requires android/key.properties. See key.properties.example."
+            }
+        }
+    }
+}
+```
 
 ---
 
-### F-031 — **LOW** — Worst-confidence logic duplicated 3x
-**File:** `lib/features/report/views/report_view.dart:258`, `lib/features/report/services/pdf_generator.dart:36`, `lib/features/report/widgets/finding_card.dart:17`
-**Source:** [claude]
+### P4 — No documented `--obfuscate` / `--split-debug-info` release build command (MEDIUM)
 
-Three identical implementations of worst-confidence-from-compensations. Should be a single extension method or utility.
+No release build script was found in the repository. The Dart symbol table is not obfuscated in any observed build configuration. For a clinical biometric app, this exposes internal class names (`BicepCurlController`, `FatigueAlgorithm`, `CompensationDetector`, etc.) in the binary.
 
-> Given confidence-level comparison, When needed in multiple places, Then it should be defined once and reused.
+**Fix:** Add a `build_release.sh`:
+
+```sh
+#!/usr/bin/env bash
+set -e
+flutter build appbundle \
+  --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/android
+flutter build ipa \
+  --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/ios
+```
+
+Commit the `build/debug-info` artifacts alongside each release for crash symbolication.
 
 ---
 
-## Appendix: Rejected Gemini Findings
+### P5 — iOS deployment target is iOS 16.0 (LOW)
 
-| Gemini Finding | Severity | Description | Rejection Reason |
-|---|---|---|---|
-| Camera setup feedback missing | medium | "No implementation or interface for feedback system" | `SetupChecklist` widget exists in `lib/features/camera/widgets/setup_checklist.dart` with full step-by-step UI |
-| PDF generation not wired | medium | "No service for generating/exporting PDFs" | `PdfGenerator` exists in `lib/features/report/services/pdf_generator.dart` and is called from `ReportView._generatePdf` |
-| Dead MockPoseEstimation class | high | "If a separate MockPoseEstimation class exists, it is orphaned" | No such class exists. The class is `MockPoseEstimationService` and is correctly referenced |
+`IPHONEOS_DEPLOYMENT_TARGET = 16.0` in the Release configuration matches the current App Store minimum as of early 2026. No action required, but worth reviewing after WWDC when Apple typically raises the floor.
+
+---
+
+## pubspec & Dependency Health
+
+### D1 — All dependencies use broad `^` constraints with no pinned `pubspec.lock` policy (LOW)
+
+**File:** `pubspec.yaml`
+
+Every dependency uses `^` (minor-compatible). `pubspec.lock` is committed, which is correct. The risk is that `flutter pub upgrade` on CI can silently advance `flutter_blue_plus`, `camera`, or `firebase_*` packages between runs, both of which have historically had breaking behavioural changes in BLE or AVFoundation wiring. Ensure CI runs `flutter pub get` (not `upgrade`) against the committed lock file.
+
+---
+
+### D2 — `flutter_web_plugins` as a direct dependency (LOW)
+
+**File:** `pubspec.yaml:12`
+
+`flutter_web_plugins` is listed explicitly (`sdk: flutter`) alongside the standard `flutter` SDK dependency. This is needed for `usePathUrlStrategy()` on web. Correct and intentional; no action needed.
+
+---
+
+## Identified Bugs and Fixes
+
+### B1 — `_summarizeWindow` relies on sorted `_envelopeBuffer` but breaks on BLE clock wrap (MEDIUM)
+
+**File:** `lib/features/bicep_curl/controllers/bicep_curl_controller.dart:466–481`
+
+```dart
+for (final s in _envelopeBuffer) {
+  if (s.tUs < tStartUs) continue;
+  if (s.tUs >= tEndUs) break;   // assumes sorted ascending
+```
+
+The break is correct only if `_envelopeBuffer` is strictly time-ordered. The wall-clock conversion `_wallEpochUs! + (batch.tUsAt(i) - _bleEpochUs!)` is monotonic under normal conditions, but if the ESP32 firmware restarts mid-session (timer reset), `tUsAt(i)` decreases below `_bleEpochUs`, producing a `wallTUs` that is earlier than prior samples. The break would then silently skip all samples beyond that point, producing a zero peak for the affected rep with no error surface.
+
+**Fix:** Replace the break with a continue (safe, slightly slower over long buffers), or add a monotonicity check in `_onSample` that resets the epoch variables on detected wrap:
+
+```dart
+// Safer scan — no assumption on ordering:
+for (final s in _envelopeBuffer) {
+  if (s.tUs < tStartUs || s.tUs >= tEndUs) continue;
+  if (s.value > peak) peak = s.value;
+  final bin = ((s.tUs - tStartUs) / binSize).floor().clamp(0, _envelopeBucketsPerRep - 1);
+  if (s.value > samples[bin]) samples[bin] = s.value;
+}
+```
+
+---
+
+### B2 — `_maybeStartSession` boolean guard cannot distinguish "session running" from "session complete" (MEDIUM)
+
+**File:** `lib/features/bicep_curl/views/bicep_curl_view.dart:45, 171–179`
+
+`_attemptedSessionStart` is set to `true` on first call and never reset. The `ref.listen` on `hardwareControllerProvider` calls `_maybeStartSession` on every state change, including reconnect events. The guard correctly prevents double-start during a session, but if the controller reaches `BicepCurlComplete` and the widget stays mounted (e.g., the `_persistAndExit` future is awaited), a BLE reconnect event during that window would call `_maybeStartSession`, which would be silently no-op'd by `_attemptedSessionStart`, preventing the expected session start if the user quickly starts a second session without navigating away.
+
+**Fix:** Replace the boolean flag with a controller-state guard:
+
+```dart
+void _maybeStartSession() {
+  final cam = ref.read(appCameraControllerProvider).value;
+  if (cam is! CameraStreaming) return;
+  final s = ref.read(bicepCurlControllerProvider);
+  if (s is! BicepCurlIdle) return;
+  ref.read(bicepCurlControllerProvider.notifier).startSession(side: widget.armSide);
+}
+```
+
+This is idempotent, self-documenting, and handles all state transitions correctly.
+
+---
+
+### B3 — `LocalStorageService._webMemory` is static — not hermetic in tests (LOW)
+
+**File:** `lib/core/services/local_storage_service.dart:19`
+
+```dart
+static final Map<String, Map<String, dynamic>> _webMemory = {};
+```
+
+The in-memory web store is shared across all instances. In production there is one singleton instance, so this is harmless. In tests, creating a fresh `LocalStorageService()` shares (and pollutes) the map from prior test runs.
+
+**Fix:** Make `_webMemory` an instance field, or accept an override map via the constructor for tests:
+
+```dart
+final Map<String, Map<String, dynamic>> _webMemory;
+LocalStorageService({Directory? directory, Map<String, Map<String, dynamic>>? webMemory})
+    : _overrideDir = directory, _webMemory = webMemory ?? {};
+```
+
+---
+
+### B4 — `WaitlistService` uses `debugPrint` in production (MEDIUM)
+
+**File:** `lib/features/waitlist/services/waitlist_service.dart:65,70`
+
+```dart
+debugPrint('waitlist firestore error: ${e.code} ${e.message}');
+debugPrint('waitlist unexpected error: $e');
+```
+
+`debugPrint` is not stripped in release builds. The `avoid_print` lint in `analysis_options.yaml` does not cover `debugPrint` (which is in `package:flutter/foundation.dart`, not `dart:core`). This writes structured error output — including Firebase exception codes and raw error messages — to the platform console in production.
+
+**Fix:**
+```dart
+import 'dart:developer' as developer;
+// Replace both debugPrint calls:
+developer.log(
+  'waitlist firestore error: ${e.code}',
+  error: e,
+  name: 'WaitlistService',
+);
+developer.log('waitlist unexpected error', error: e, name: 'WaitlistService');
+```
+
+---
+
+### B5 — GoRouter redirect performs disk I/O on main isolate at cold start (LOW)
+
+**File:** `lib/core/router.dart:64–76`
+
+The `redirect` callback is `async` and calls `storage.listSessionRecords()` (filesystem read) before the first frame renders on mobile cold launch. On devices with slow flash this creates a visible blank frame. The redirect fires only once (initial `/disclaimer` path), so impact is one-time and brief, but it blocks the navigation system during the async gap.
+
+**Fix:** Pre-fetch the session count in `main()` before `runApp` and pass it to the router via a `ProviderScope` override, making the redirect synchronous.
+
+---
+
+### B6 — `ReportView` polling has no maximum retry count (LOW)
+
+**File:** `lib/features/report/views/report_view.dart:56–62`
+
+`Timer.periodic` fires every 3 seconds indefinitely until the widget is disposed. If the server is down or the session ID is invalid, this burns battery and network with no user-visible indication that the poll has given up.
+
+**Fix:** Add a poll ceiling (e.g. 40 attempts = 2 minutes) and surface a user-visible "report unavailable" state:
+
+```dart
+int _pollCount = 0;
+static const int _maxPolls = 40;
+
+_pollingTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+  if (++_pollCount >= _maxPolls) {
+    _pollingTimer?.cancel();
+    if (mounted) setState(() => _fetchError = 'Report unavailable after 2 minutes. Tap retry.');
+    return;
+  }
+  _fetchOnce();
+});
+```
+
+---
+
+## Recommendations
+
+Priority order for a targeted fix pass (est. 2–4 hours):
+
+1. **Add `orElse` to all `firstWhere` enum deserialisations** (N1) — one `StateError` here crashes the entire history view from on-disk data. This is the only change that can affect all existing users with saved sessions.
+
+2. **Wrap `PoseChannel` calls in `try/catch PlatformException`** (P1) — prevents the hot retry loop on uninitialised native stack.
+
+3. **Switch `allBicepCurlSessionsProvider` to `ref.watch`** (R1) — fixes stale trends data within the same app session.
+
+4. **Replace `_attemptedSessionStart` boolean with controller-state check** (B2) — cleaner, covers edge cases the boolean cannot.
+
+5. **Replace `debugPrint` with `developer.log` in `WaitlistService`** (B4) — consistent logging, no production console exposure.
+
+6. **Add a release build script with `--obfuscate --split-debug-info`** (P4) — important before any public distribution.
+
+7. **Add polling ceiling to `ReportView`** (B6) — prevents indefinite battery drain.
+
+8. **Heatmap: switch to `ValueNotifier` + `ValueListenableBuilder`** (M1) — isolates the 71fps rebuild scope to the animated leaf widgets.
+
+---
+
+## Overall Score: 7.5 / 10
+
+**Rationale:** Architecture is production-calibre — sealed state classes, a clean BLE pipeline with correct teardown semantics, Riverpod 3 used consistently for the majority of providers, and a thoughtful separation of concerns between `FatigueAlgorithm`, `CueDispatcher`, and `BicepCurlController`. The prior HIGH-finding audit (commit `fea1b75`) addressed the most severe items.
+
+The remaining deductions are:
+
+- **−1.0** for two HIGH findings that can crash the app from runtime conditions: unguarded `firstWhere` on enum deserialization (N1) and missing `PlatformException` handling on the pose channel (P1)
+- **−0.5** for four MEDIUM items that manifest as stale UI data, missed error recovery, or missing release hardening (R1, N2, P2, P3, B4)
+- **−0.5** for several low-friction but real issues across performance, const constructors, and test isolation
+
+None of the above block the demo. All can be resolved in one focused session.

@@ -10,7 +10,8 @@ import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
-import '../../camera/controllers/camera_controller.dart' show AppCameraController;
+import '../../camera/controllers/camera_controller.dart'
+    show AppCameraController;
 import '../../camera/widgets/skeleton_overlay.dart';
 import '../controllers/bicep_curl_controller.dart';
 import '../models/compensation_reference.dart';
@@ -139,6 +140,9 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
       bicepCurl: complete.log.toJson(),
     );
     await ref.read(localStorageServiceProvider).saveSessionRecord(record);
+    // Refresh the shared records provider so HistoryView picks up the new
+    // session when the user returns from debrief.
+    ref.invalidate(sessionRecordsProvider);
     if (!mounted) return;
     context.go('/bicep-curl/debrief/$sessionId');
   }
@@ -180,7 +184,18 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     // Watchers — drive rebuilds.
     final controllerState = ref.watch(bicepCurlControllerProvider);
     final hardwareState = ref.watch(hardwareControllerProvider);
-    final cameraAsync = ref.watch(appCameraControllerProvider);
+
+    // Select only the streaming-state CameraController. The underlying
+    // provider emits a new CameraStreaming state on every processed frame
+    // (~30fps); watching it directly would rebuild the full Scaffold at
+    // that rate. This selector fires only when the controller identity
+    // changes (start/stop streaming, toggle camera).
+    final streamingController = ref.watch(
+      appCameraControllerProvider.select<CameraController?>((v) {
+        final s = v.value;
+        return s is CameraStreaming ? s.controller : null;
+      }),
+    );
 
     // Side-effect: persist + navigate on Complete (commit 8 routes to debrief).
     ref.listen<BicepCurlState>(bicepCurlControllerProvider, (_, next) {
@@ -190,9 +205,15 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     });
 
     // Side-effect: try starting session when BLE connects + camera streams.
-    ref.listen<HardwareConnectionState>(hardwareControllerProvider,
-        (_, _) => _maybeStartSession());
-    ref.listen(appCameraControllerProvider, (_, _) => _maybeStartSession());
+    // Selectors on the listen calls prevent them from firing 30x/sec.
+    ref.listen<HardwareConnectionState>(
+      hardwareControllerProvider,
+      (_, _) => _maybeStartSession(),
+    );
+    ref.listen<bool>(
+      appCameraControllerProvider.select((v) => v.value is CameraStreaming),
+      (_, _) => _maybeStartSession(),
+    );
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -212,7 +233,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               ),
             )
           else
-            _cameraStack(cameraAsync.value),
+            _cameraStack(streamingController),
 
           // Cue flash overlay (no-op until visualBus emits).
           Positioned.fill(
@@ -239,9 +260,8 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     );
   }
 
-  Widget _cameraStack(CameraState? cameraState) {
-    final isStreaming = cameraState is CameraStreaming;
-    if (!isStreaming) {
+  Widget _cameraStack(CameraController? controller) {
+    if (controller == null) {
       return const SizedBox.shrink();
     }
     final desc = ref.watch(cameraDescriptionProvider);
@@ -249,7 +269,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _CoverCameraPreview(controller: cameraState.controller),
+        _CoverCameraPreview(controller: controller),
         SkeletonOverlay(isFrontCamera: isFront),
       ],
     );
