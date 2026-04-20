@@ -28,22 +28,32 @@ void main() {
   });
 
   group('initialize', () {
-    test('sends asset path and returns native bool', () async {
-      handler = (_) async => true;
-      final ok = await poseChannel.initialize(
+    test('initialize sends {assetPath, delegate} to native', () async {
+      final captured = <dynamic>[];
+      final mock = MethodChannel('bioliminal.app/pose');
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(mock, (call) async {
+        captured.add(call.arguments);
+        return true;
+      });
+      final channel = PoseChannel(channel: mock);
+      final ok = await channel.initialize(
         assetPath: 'assets/models/pose_landmarker_full.task',
+        delegate: 'coreml',
       );
       expect(ok, isTrue);
-      expect(calls, hasLength(1));
-      expect(calls.single.method, 'initialize');
-      expect(calls.single.arguments, {
+      expect(captured.single, {
         'assetPath': 'assets/models/pose_landmarker_full.task',
+        'delegate': 'coreml',
       });
     });
 
     test('returns false when native returns null', () async {
       handler = (_) async => null;
-      final ok = await poseChannel.initialize(assetPath: 'irrelevant');
+      final ok = await poseChannel.initialize(
+        assetPath: 'irrelevant',
+        delegate: 'cpu',
+      );
       expect(ok, isFalse);
     });
   });

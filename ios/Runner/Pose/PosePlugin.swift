@@ -45,18 +45,19 @@ public class PosePlugin: NSObject, FlutterPlugin {
         guard let registrar = self.registrar,
               let args = call.arguments as? [String: Any],
               let assetPath = args["assetPath"] as? String else {
-            result(false)
+            DispatchQueue.main.async { result(false) }
             return
         }
+        let delegate = (args["delegate"] as? String) ?? "cpu"
         let key = registrar.lookupKey(forAsset: assetPath)
         guard let modelPath = Bundle.main.path(forResource: key, ofType: nil) else {
-            result(false)
+            DispatchQueue.main.async { result(false) }
             return
         }
         queue.async { [weak self] in
             guard let self = self else { return }
             do {
-                try self.helper.setup(modelAssetPath: modelPath)
+                try self.helper.setup(modelAssetPath: modelPath, delegate: delegate)
                 DispatchQueue.main.async { result(true) }
             } catch {
                 DispatchQueue.main.async { result(false) }

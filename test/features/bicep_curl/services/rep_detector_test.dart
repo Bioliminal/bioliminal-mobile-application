@@ -37,6 +37,28 @@ void main() {
     await detector.dispose();
   });
 
+  test('RepDetector emits a rep-start signal on ExtremaAmplitudeGate armed→descending', () async {
+    final detector = RepDetector();
+    final starts = <int>[];
+    final sub = detector.onRepStart.listen((tUs) => starts.add(tUs));
+
+    int t = 0;
+    void feed(double angle) {
+      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      t += 33333;
+    }
+    // Stationary pre-rep.
+    for (var i = 0; i < 5; i++) feed(170);
+    // Begin curl — at some frame angle drops below 130, should fire rep-start.
+    for (var i = 0; i < 8; i++) feed(170 - i * 11.0);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(starts, isNotEmpty);
+    expect(starts.length, 1); // exactly one rep-start per descent
+    await sub.cancel();
+    await detector.dispose();
+  });
+
   test('RepDetector counts two reps when the cycle repeats', () async {
     final detector = RepDetector();
     final boundaries = <RepBoundary>[];
