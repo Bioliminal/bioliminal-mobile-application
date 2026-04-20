@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
+import '../../camera/services/landmark_smoother.dart';
 import '../../../core/services/sample_batch.dart';
 import '../../../domain/models.dart';
 import '../models/compensation_reference.dart';
@@ -133,6 +134,11 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   CueDispatcher? _dispatcher;
   TtsSpeaker? _tts;
 
+  // Cached smoother reference — populated in build() so it is safe to call
+  // in _teardown() even when invoked from ref.onDispose (where ref.read is
+  // forbidden by Riverpod's lifecycle guard).
+  LandmarkSmoother? _smoother;
+
   // Subscriptions.
   // Pose-landmark and hardware-connection listeners are wired in [build] so
   // their subscription lifetime equals the Notifier's. Every `ref.listen`
@@ -178,6 +184,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
   @override
   BicepCurlState build() {
+    // Cache smoother here — ref.read is forbidden inside onDispose callbacks
+    // (Riverpod lifecycle guard), so _teardown must use the cached reference.
+    _smoother = ref.read(landmarkSmootherProvider);
     // See the subscription-field note above for why these live here.
     // Handlers no-op when state isn't Calibrating/Active.
     ref.listen<List<PoseLandmark>>(
@@ -537,6 +546,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   Future<void> _teardown({bool keepVisualBus = false}) async {
     _idleTimer?.cancel();
     _idleTimer = null;
+    // Use cached _smoother — ref.read is forbidden in onDispose callbacks.
+    _smoother?.reset();
     await _sampleSub?.cancel();
     _sampleSub = null;
     await _repSub?.cancel();
