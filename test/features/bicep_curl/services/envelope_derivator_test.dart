@@ -45,8 +45,11 @@ void main() {
       }
       final mean = sumOut / n;
       final ripple = (maxOut - minOut) / mean;
-      expect(ripple, lessThan(0.05),
-          reason: 'unexpectedly large 200 Hz ripple: $ripple');
+      expect(
+        ripple,
+        lessThan(0.05),
+        reason: 'unexpectedly large 200 Hz ripple: $ripple',
+      );
     });
 
     test('reset clears IIR state', () {
@@ -68,6 +71,8 @@ void main() {
         channelCount: 3,
         samplesPerChannel: 50,
         flags: 0,
+        repCount: 0,
+        cueEvent: 0,
         raw: Uint16List.fromList(List<int>.filled(50, 2048)),
         rect: Uint16List(50),
         env: Uint16List(50),

@@ -8,18 +8,22 @@ import 'sample_batch.dart';
 
 enum HardwareConnectionState { disconnected, scanning, connecting, connected }
 
-/// BLE bridge to the ESP32 firmware (sketch `bicep_realtime`).
+/// BLE bridge to the ESP32 firmware (sketch `bicep_autonomous`, hardware-led
+/// mode).
 ///
-/// Subscribes to FF02 NOTIFY for the 308-byte raw EMG stream and writes cue
-/// payloads to FF04. Decoded packets are exposed as a broadcast
-/// [Stream<SampleBatch>]; sequence-number gaps are surfaced separately so
-/// downstream UI can light a "dropped packet" badge without parsing every
-/// batch.
+/// Subscribes to FF02 NOTIFY for the 310-byte raw EMG stream. In this branch
+/// the app is near read-only on FF04 — the only writes it makes are
+/// `SET_SESSION_STATE(Calibrating)` on session start and
+/// `SET_SESSION_STATE(Idle)` on end. The firmware owns rep counting, fatigue
+/// detection, and cue firing inside the session; the app consumes
+/// `repCount` and `cueEvent` fields from every packet.
 ///
 /// Protocol contract:
 /// - Service: `FF01`
-/// - Notify char: `FF02` (308 B @ 40 Hz, raw + rect + env @ 2 kHz)
-/// - Write char:  `FF04` (variable, opcodes 0x10/0x11/0x12)
+/// - Notify char: `FF02` (310 B @ 40 Hz, raw + rect + env @ 2 kHz, plus
+///   rep_count + cue_event in the 10-byte header)
+/// - Write char:  `FF04` (opcode 0x12 SET_SESSION_STATE only; other opcodes
+///   are ignored by the autonomous firmware and stubbed to no-op here)
 class HardwareController extends Notifier<HardwareConnectionState> {
   StreamSubscription<List<ScanResult>>? _scanSubscription;
   StreamSubscription<List<int>>? _notifySubscription;
@@ -33,7 +37,20 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   final _seqGapController = StreamController<int>.broadcast();
   Stream<int> get seqGapStream => _seqGapController.stream;
 
+  // Firmware-driven session counters, exposed as incremental streams so the
+  // UI can react only when they change (not on every 25 ms packet tick).
+  final _repCountController = StreamController<int>.broadcast();
+  Stream<int> get repCountStream => _repCountController.stream;
+
+  // Broadcasts once per firmware cue fire (cue_event bit0 transitions low→high
+  // in the packet header). Payload is void because the cue type is not
+  // surfaced by the autonomous firmware — the flash indicator only needs the
+  // event timing.
+  final _cueEventController = StreamController<void>.broadcast();
+  Stream<void> get cueEventStream => _cueEventController.stream;
+
   int? _lastSeqNum;
+  int? _lastRepCount;
   int _malformedPacketCount = 0;
 
   // Remembered FF04 SET_SESSION_STATE value so we can resync firmware after a
@@ -60,6 +77,8 @@ class HardwareController extends Notifier<HardwareConnectionState> {
       _targetDevice?.disconnect();
       _rawEmgController.close();
       _seqGapController.close();
+      _repCountController.close();
+      _cueEventController.close();
     });
     return HardwareConnectionState.disconnected;
   }
@@ -92,6 +111,7 @@ class HardwareController extends Notifier<HardwareConnectionState> {
     state = HardwareConnectionState.connecting;
     _targetDevice = device;
     _lastSeqNum = null;
+    _lastRepCount = null;
     _notifyCharFound = false;
     _commandChar = null;
 
@@ -102,6 +122,7 @@ class HardwareController extends Notifier<HardwareConnectionState> {
         if (s == BluetoothConnectionState.disconnected) {
           _commandChar = null;
           _lastSeqNum = null;
+          _lastRepCount = null;
           _notifyCharFound = false;
           state = HardwareConnectionState.disconnected;
         }
@@ -177,6 +198,14 @@ class HardwareController extends Notifier<HardwareConnectionState> {
     }
     _lastSeqNum = batch.seqNum;
 
+    if (_lastRepCount != batch.repCount) {
+      _lastRepCount = batch.repCount;
+      _repCountController.add(batch.repCount);
+    }
+    if (batch.cueFired) {
+      _cueEventController.add(null);
+    }
+
     _rawEmgController.add(batch);
   }
 
@@ -200,44 +229,16 @@ class HardwareController extends Notifier<HardwareConnectionState> {
     }
   }
 
-  // Pre-computed cue payloads from haptic-cueing-handshake.md §"BLE protocol".
-  // Kept here for BleDebugView smoke testing; production cue dispatch should go
-  // through CueDispatcher → Cue.writeTo() so v2 pressure cues plug in cleanly.
-  static const List<int> _payloadFatigueFade = [
-    0x10,
-    0x00,
-    0xB4,
-    0x02,
-    0xC8,
-    0x00,
-    0x96,
-    0x00,
-  ];
-  static const List<int> _payloadFatigueUrgent = [
-    0x10,
-    0x00,
-    0xE6,
-    0x02,
-    0xC8,
-    0x00,
-    0x96,
-    0x00,
-  ];
-  static const List<int> _payloadFormAlert = [
-    0x10,
-    0x00,
-    0xE6,
-    0x03,
-    0x64,
-    0x00,
-    0x50,
-    0x00,
-  ];
+  // Cue-firing helpers are **no-ops** in the hardware-led branch. The
+  // autonomous firmware decides when to buzz based on its own fatigue
+  // tracking; the app doesn't push PULSE_BURST (0x10) or STOP_HAPTIC (0x11)
+  // anymore. The helpers are kept so existing call sites compile, but they
+  // return immediately without touching the BLE stack.
+  Future<void> fireFatigueFade() async {}
+  Future<void> fireFatigueUrgent() async {}
+  Future<void> fireFormAlert() async {}
+  Future<void> stopHaptic([int motorIdx = 0]) async {}
 
-  Future<void> fireFatigueFade() => sendCommand(_payloadFatigueFade);
-  Future<void> fireFatigueUrgent() => sendCommand(_payloadFatigueUrgent);
-  Future<void> fireFormAlert() => sendCommand(_payloadFormAlert);
-  Future<void> stopHaptic([int motorIdx = 0]) => sendCommand([0x11, motorIdx]);
   Future<void> setSessionState(int sessionState) {
     _lastSessionState = sessionState;
     return sendCommand([0x12, sessionState]);
@@ -255,4 +256,12 @@ final rawEmgStreamProvider = StreamProvider<SampleBatch>((ref) {
 
 final seqGapStreamProvider = StreamProvider<int>((ref) {
   return ref.watch(hardwareControllerProvider.notifier).seqGapStream;
+});
+
+final hardwareRepCountStreamProvider = StreamProvider<int>((ref) {
+  return ref.watch(hardwareControllerProvider.notifier).repCountStream;
+});
+
+final hardwareCueEventStreamProvider = StreamProvider<void>((ref) {
+  return ref.watch(hardwareControllerProvider.notifier).cueEventStream;
 });

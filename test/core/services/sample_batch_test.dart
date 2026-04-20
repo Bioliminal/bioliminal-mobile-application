@@ -6,11 +6,13 @@ import 'package:bioliminal/core/services/sample_batch.dart';
 
 void main() {
   group('SampleBatch.decode', () {
-    test('decodes a well-formed 308-byte packet', () {
+    test('decodes a well-formed 310-byte packet with rep + cue fields', () {
       final bytes = _buildPacket(
         seqNum: 42,
         tUsStart: 1234567,
         flags: 0x05, // raw + env clip
+        repCount: 7,
+        cueEvent: 0x01,
         rawFill: 1000,
         rectFill: 2000,
         envFill: 3000,
@@ -27,6 +29,9 @@ void main() {
       expect(batch.clipRect, isFalse);
       expect(batch.clipEnv, isTrue);
       expect(batch.clippedAny, isTrue);
+      expect(batch.repCount, 7);
+      expect(batch.cueEvent, 0x01);
+      expect(batch.cueFired, isTrue);
       expect(batch.raw.length, 50);
       expect(batch.raw.first, 1000);
       expect(batch.rect.first, 2000);
@@ -36,8 +41,11 @@ void main() {
     });
 
     test('returns null on wrong length', () {
-      expect(SampleBatch.decode(List<int>.filled(307, 0)), isNull);
       expect(SampleBatch.decode(List<int>.filled(309, 0)), isNull);
+      expect(SampleBatch.decode(List<int>.filled(311, 0)), isNull);
+      // Legacy 308-byte packets are now rejected — the autonomous firmware
+      // always sends 310 bytes.
+      expect(SampleBatch.decode(List<int>.filled(308, 0)), isNull);
       expect(SampleBatch.decode(<int>[]), isNull);
     });
 
@@ -46,18 +54,42 @@ void main() {
         seqNum: 0,
         tUsStart: 0,
         flags: 0,
+        repCount: 0,
+        cueEvent: 0,
         channelCount: 6,
       );
       expect(SampleBatch.decode(bytes), isNull);
     });
 
     test('reads samples little-endian', () {
-      final bytes = _buildPacket(seqNum: 0, tUsStart: 0, flags: 0);
-      // Overwrite the first RAW sample with 0x0102 little-endian = bytes 0x02, 0x01.
-      bytes[8] = 0x02;
-      bytes[9] = 0x01;
+      final bytes = _buildPacket(
+        seqNum: 0,
+        tUsStart: 0,
+        flags: 0,
+        repCount: 0,
+        cueEvent: 0,
+      );
+      // Overwrite the first RAW sample with 0x0102 little-endian.
+      // RAW now starts at offset 10 (header grew 8 → 10).
+      bytes[10] = 0x02;
+      bytes[11] = 0x01;
       final batch = SampleBatch.decode(bytes)!;
       expect(batch.raw[0], 0x0102);
+    });
+
+    test('cueFired honors bit0 only', () {
+      // cueEvent = 0x02 (bit1 set, bit0 clear) → cueFired false; other bits
+      // are reserved so we don't want them to light up the overlay by mistake.
+      final bytes = _buildPacket(
+        seqNum: 0,
+        tUsStart: 0,
+        flags: 0,
+        repCount: 0,
+        cueEvent: 0x02,
+      );
+      final batch = SampleBatch.decode(bytes)!;
+      expect(batch.cueEvent, 0x02);
+      expect(batch.cueFired, isFalse);
     });
   });
 }
@@ -66,6 +98,8 @@ List<int> _buildPacket({
   required int seqNum,
   required int tUsStart,
   required int flags,
+  required int repCount,
+  required int cueEvent,
   int channelCount = 3,
   int samplesPerChannel = 50,
   int rawFill = 0,
@@ -79,6 +113,8 @@ List<int> _buildPacket({
   view.setUint8(5, channelCount);
   view.setUint8(6, samplesPerChannel);
   view.setUint8(7, flags);
+  view.setUint8(8, repCount);
+  view.setUint8(9, cueEvent);
 
   void fill(int byteOffset, int value) {
     for (var i = 0; i < samplesPerChannel; i++) {
@@ -86,9 +122,9 @@ List<int> _buildPacket({
     }
   }
 
-  fill(8, rawFill);
-  fill(108, rectFill);
-  fill(208, envFill);
+  fill(10, rawFill);
+  fill(110, rectFill);
+  fill(210, envFill);
 
   return out;
 }

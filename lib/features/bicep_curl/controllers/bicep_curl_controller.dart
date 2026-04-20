@@ -81,16 +81,15 @@ class BicepCurlActive extends BicepCurlState {
     double? currentDropFraction,
     bool? currentCompensating,
     bool? emgOnline,
-  }) =>
-      BicepCurlActive(
-        reps: reps ?? this.reps,
-        ref: ref ?? this.ref,
-        lastCueRep: lastCueRep ?? this.lastCueRep,
-        cueHistory: cueHistory ?? this.cueHistory,
-        currentDropFraction: currentDropFraction ?? this.currentDropFraction,
-        currentCompensating: currentCompensating ?? this.currentCompensating,
-        emgOnline: emgOnline ?? this.emgOnline,
-      );
+  }) => BicepCurlActive(
+    reps: reps ?? this.reps,
+    ref: ref ?? this.ref,
+    lastCueRep: lastCueRep ?? this.lastCueRep,
+    cueHistory: cueHistory ?? this.cueHistory,
+    currentDropFraction: currentDropFraction ?? this.currentDropFraction,
+    currentCompensating: currentCompensating ?? this.currentCompensating,
+    emgOnline: emgOnline ?? this.emgOnline,
+  );
 }
 
 class BicepCurlComplete extends BicepCurlState {
@@ -101,6 +100,25 @@ class BicepCurlComplete extends BicepCurlState {
 class BicepCurlError extends BicepCurlState {
   const BicepCurlError({required this.message});
   final String message;
+}
+
+// ---------------------------------------------------------------------------
+// Rep-count reconciliation
+// ---------------------------------------------------------------------------
+
+/// Snapshot of CV-vs-firmware rep count. CV is authoritative; hardware
+/// count is diagnostic. [disagreeing] flips when the gap crosses the
+/// controller's threshold — drives a subtle UI indicator near the rep
+/// counter and a `developer.log` line under name `RepCountReconciler`.
+class RepCountReconciliation {
+  const RepCountReconciliation.agreed({required this.cv, required this.hw})
+      : disagreeing = false;
+  const RepCountReconciliation.disagreed({required this.cv, required this.hw})
+      : disagreeing = true;
+
+  final int cv;
+  final int hw;
+  final bool disagreeing;
 }
 
 // ---------------------------------------------------------------------------
@@ -128,6 +146,19 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   /// view filters by recency when rendering.
   final ValueNotifier<CueEvent?> visualBus = ValueNotifier(null);
 
+  /// Rep-count reconciliation state. CV is authoritative (Aaron's
+  /// RepDecisionPolicy pipeline); firmware's rep_count field on FF02 is
+  /// supplemental. When the two drift by [_repDisagreementThreshold] or
+  /// more, this notifier flips to disagreeing — drives a subtle UI
+  /// indicator next to the rep counter. Also see [_onHardwareRepCount].
+  final ValueNotifier<RepCountReconciliation> repReconciliation =
+      ValueNotifier(const RepCountReconciliation.agreed(cv: 0, hw: 0));
+
+  /// Drift threshold for surfacing a disagreement: a gap of 1 is routine
+  /// packet-boundary noise (firmware counter ticks over half a packet ahead
+  /// of the CV boundary), ≥2 is a real divergence worth showing.
+  static const int _repDisagreementThreshold = 2;
+
   // Pipeline pieces (lazily constructed in startSession; nulled on teardown).
   EnvelopeDerivator? _envelope;
   RepDetector? _repDetector;
@@ -152,7 +183,19 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // to an EnvelopeDerivator/RepDetector created in startSession.
   StreamSubscription<SampleBatch>? _sampleSub;
   StreamSubscription<RepBoundary>? _repSub;
+  // Hardware-led mode: listen to the firmware's autonomous cue event (bit0
+  // in the FF02 cue_event byte) and translate it into a visualBus pulse so
+  // the on-screen flash fires in sync with the motor.
+  StreamSubscription<void>? _hardwareCueSub;
+  // CV rep-start boundary (from RepDetector.onRepStart). Clears the per-rep
+  // pose frame buffer so the current rep doesn't leak frames from the prior
+  // one.
   StreamSubscription<int>? _repStartSub;
+  // NOTE: firmware rep_count is consumed directly inside [_onSample] (from
+  // the FF02 packet header), not via HardwareController.repCountStream.
+  // The dedicated stream is redundant — SampleBatch.repCount is the same
+  // signal before HardwareController's rising-edge filter — and using the
+  // raw value here keeps reconciliation in a single place.
 
   // Wall-clock buffer of envelope samples (for per-rep peak extraction).
   final Queue<_TimedEnvelope> _envelopeBuffer = Queue<_TimedEnvelope>();
@@ -161,8 +204,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // Pose frames captured during the current rep window — used to build the
   // compensation reference (during calibration reps 1–3) and per-rep
   // PoseDelta (during Active).
-  final List<List<PoseLandmark>> _currentRepFrames =
-      <List<PoseLandmark>>[];
+  final List<List<PoseLandmark>> _currentRepFrames = <List<PoseLandmark>>[];
   final List<List<PoseLandmark>> _calibrationFramesForRef =
       <List<PoseLandmark>>[];
 
@@ -209,7 +251,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     required ArmSide side,
     CueProfile? profile,
   }) async {
-    if (state is! BicepCurlIdle && state is! BicepCurlComplete &&
+    if (state is! BicepCurlIdle &&
+        state is! BicepCurlComplete &&
         state is! BicepCurlError) {
       developer.log(
         'startSession ignored — already in $state',
@@ -222,8 +265,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _side = side;
     _profile = profile ?? CueProfile.intermediate();
     _sessionStartedAt = DateTime.now();
-    _bleDroppedDuringSet =
-        hardwareState != HardwareConnectionState.connected;
+    _bleDroppedDuringSet = hardwareState != HardwareConnectionState.connected;
     _envelope = EnvelopeDerivator();
     _repDetector = RepDetector();
     _envelopeBuffer.clear();
@@ -233,6 +275,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _lastCueRep = -999;
     _bleEpochUs = null;
     _wallEpochUs = null;
+    _cvRepCount = 0;
+    _lastHardwareRepCount = 0;
+    repReconciliation.value =
+        const RepCountReconciliation.agreed(cv: 0, hw: 0);
 
     final hardware = ref.read(hardwareControllerProvider.notifier);
     _tts = TtsSpeaker();
@@ -246,10 +292,53 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
     _sampleSub = hardware.rawEmgStream.listen(_onSample);
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
+    _hardwareCueSub = hardware.cueEventStream.listen((_) => _onHardwareCue());
     _repStartSub = _repDetector!.onRepStart.listen(_onRepStart);
 
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
+  }
+
+  /// Fires when the autonomous firmware sets bit0 of the packet's cue_event
+  /// byte. Drives the full-screen flash; the cue was already logged by the
+  /// dispatcher (if any on-device decision preceded it) or is an
+  /// untagged firmware-originated event. The visual layer doesn't care
+  /// which source triggered it — the flash is the flash.
+  void _onHardwareCue() {
+    final event = CueEvent(
+      repNum: _lastHardwareRepCount,
+      content: CueContent.fatigueUrgent,
+      firedAt: DateTime.now(),
+      channelsFired: const {'haptic', 'visual'},
+    );
+    visualBus.value = event;
+  }
+
+  /// Firmware-reported rep count from the latest FF02 packet header.
+  /// Advisory only — CV is authoritative.
+  int _lastHardwareRepCount = 0;
+
+  /// Cumulative CV rep count over the session (calibration + active reps).
+  /// Bumped on every [_onRepBoundary]; authoritative per the architectural
+  /// decision documented on [repReconciliation].
+  int _cvRepCount = 0;
+
+  void _updateReconciliation() {
+    final cv = _cvRepCount;
+    final hw = _lastHardwareRepCount;
+    final delta = (cv - hw).abs();
+    final disagreeing = delta >= _repDisagreementThreshold;
+    if (disagreeing) {
+      developer.log(
+        'rep count disagreement cv=$cv hw=$hw delta=$delta',
+        name: 'RepCountReconciler',
+      );
+      repReconciliation.value =
+          RepCountReconciliation.disagreed(cv: cv, hw: hw);
+    } else {
+      repReconciliation.value =
+          RepCountReconciliation.agreed(cv: cv, hw: hw);
+    }
   }
 
   /// Called by the live view once the framing-check passes. Transitions
@@ -282,8 +371,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     if (state is BicepCurlIdle || state is BicepCurlComplete) return;
     final log = _buildLog();
     final hardware = ref.read(hardwareControllerProvider.notifier);
+    // Hardware-led mode: single FF04 write on session end tells firmware to
+    // gate off sampling. Firmware's own onDisconnect/Idle path stops any
+    // in-flight motor; no separate stopHaptic() needed.
     await hardware.setSessionState(0);
-    await hardware.stopHaptic();
     await _teardown(keepVisualBus: true);
     state = BicepCurlComplete(log: log);
   }
@@ -292,7 +383,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   Future<void> cancel() async {
     final hardware = ref.read(hardwareControllerProvider.notifier);
     await hardware.setSessionState(0);
-    await hardware.stopHaptic();
     await _teardown();
     state = const BicepCurlIdle();
   }
@@ -300,6 +390,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // ---------- internal stream handlers ----------
 
   void _onSample(SampleBatch batch) {
+    if (batch.repCount != _lastHardwareRepCount) {
+      _lastHardwareRepCount = batch.repCount;
+      _updateReconciliation();
+    }
     final env = _envelope;
     if (env == null) return;
     _bleEpochUs ??= batch.tUsStart;
@@ -310,10 +404,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       final wallTUs = _wallEpochUs! + (batch.tUsAt(i) - _bleEpochUs!);
       _envelopeBuffer.add(_TimedEnvelope(wallTUs, values[i]));
     }
-    final cutoff = DateTime.now().microsecondsSinceEpoch -
-        _envelopeBufferRetentionUs;
-    while (_envelopeBuffer.isNotEmpty &&
-        _envelopeBuffer.first.tUs < cutoff) {
+    final cutoff =
+        DateTime.now().microsecondsSinceEpoch - _envelopeBufferRetentionUs;
+    while (_envelopeBuffer.isNotEmpty && _envelopeBuffer.first.tUs < cutoff) {
       _envelopeBuffer.removeFirst();
     }
   }
@@ -349,6 +442,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     } else if (s is BicepCurlActive) {
       _handleActiveRep(s, b, summary.peak, summary.samples);
     }
+    // CV rep boundary means the authoritative counter just ticked.
+    // Bump and re-reconcile against the firmware's last reported count.
+    _cvRepCount += 1;
+    _updateReconciliation();
     _currentRepFrames.clear();
     _resetIdleTimer();
   }
@@ -380,8 +477,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
         _calibrationFramesForRef,
         _side,
       );
-      final hardware = this.ref.read(hardwareControllerProvider.notifier);
-      hardware.setSessionState(2); // 2 = Active
+      // Hardware-led mode: firmware self-advances Calibrating → Active after
+      // its own 5 s internal timer. We no longer write SET_SESSION_STATE(2).
       state = BicepCurlActive(
         reps: reps,
         ref: ref,
@@ -432,11 +529,11 @@ class BicepCurlController extends Notifier<BicepCurlState> {
             compensationActive: compensating,
           )
         : (compensating
-            ? CueDecision(
-                content: CueContent.compensationDetected,
-                repNum: repNum,
-              )
-            : null);
+              ? CueDecision(
+                  content: CueContent.compensationDetected,
+                  repNum: repNum,
+                )
+              : null);
 
     final dropFraction = _latestDropFraction(peaks);
 
@@ -479,8 +576,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     int tStartUs,
     int tEndUs,
   ) {
-    final samples =
-        List<double>.filled(_envelopeBucketsPerRep, 0.0);
+    final samples = List<double>.filled(_envelopeBucketsPerRep, 0.0);
     var peak = 0.0;
     if (tEndUs <= tStartUs) return (peak: peak, samples: samples);
     final binSize = (tEndUs - tStartUs) / _envelopeBucketsPerRep;
@@ -488,9 +584,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       if (s.tUs < tStartUs) continue;
       if (s.tUs >= tEndUs) break;
       if (s.value > peak) peak = s.value;
-      final bin = ((s.tUs - tStartUs) / binSize)
-          .floor()
-          .clamp(0, _envelopeBucketsPerRep - 1);
+      final bin = ((s.tUs - tStartUs) / binSize).floor().clamp(
+        0,
+        _envelopeBucketsPerRep - 1,
+      );
       if (s.value > samples[bin]) samples[bin] = s.value;
     }
     return (peak: peak, samples: samples);
@@ -515,10 +612,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
 
   double _latestDropFraction(List<double> peaks) {
     if (peaks.length < 2) return 0.0;
-    final windowStart =
-        peaks.length - _profile.baselineWindow < 0
-            ? 0
-            : peaks.length - _profile.baselineWindow;
+    final windowStart = peaks.length - _profile.baselineWindow < 0
+        ? 0
+        : peaks.length - _profile.baselineWindow;
     var baseline = peaks[windowStart];
     for (var i = windowStart + 1; i < peaks.length; i++) {
       if (peaks[i] > baseline) baseline = peaks[i];
@@ -542,8 +638,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     final reps = s is BicepCurlActive
         ? s.reps
         : s is BicepCurlCalibrating
-            ? s.reps
-            : <RepRecord>[];
+        ? s.reps
+        : <RepRecord>[];
     final ref = s is BicepCurlActive ? s.ref : null;
     return SessionLog(
       reps: reps,
@@ -566,6 +662,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _sampleSub = null;
     await _repSub?.cancel();
     _repSub = null;
+    await _hardwareCueSub?.cancel();
+    _hardwareCueSub = null;
     await _repStartSub?.cancel();
     _repStartSub = null;
     // Landmark + connection subs live on ref (wired in build) and tear down
@@ -580,7 +678,11 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _envelopeBuffer.clear();
     _currentRepFrames.clear();
     _calibrationFramesForRef.clear();
-    if (!keepVisualBus) visualBus.value = null;
+    if (!keepVisualBus) {
+      visualBus.value = null;
+      repReconciliation.value =
+          const RepCountReconciliation.agreed(cv: 0, hw: 0);
+    }
   }
 }
 
@@ -600,3 +702,23 @@ final lastCompletedSessionLogProvider = Provider<SessionLog?>((ref) {
   final s = ref.watch(bicepCurlControllerProvider);
   return s is BicepCurlComplete ? s.log : null;
 });
+
+/// Authoritative CV rep count surfaced to UI widgets (RepCounter). Derived
+/// from the controller's state so calibration reps and active reps both
+/// contribute. Hardware rep count is intentionally NOT read here — it lives
+/// on [repReconciliationProvider] for the disagreement indicator.
+final cvRepCountProvider = Provider<int>((ref) {
+  final s = ref.watch(bicepCurlControllerProvider);
+  if (s is BicepCurlCalibrating) return s.repsCompleted;
+  if (s is BicepCurlActive) return s.reps.length;
+  if (s is BicepCurlComplete) return s.log.reps.length;
+  return 0;
+});
+
+/// Live snapshot of rep-count reconciliation state (CV vs firmware). Flips
+/// to `disagreeing=true` when the two counters drift past the controller's
+/// threshold. Consumed by the RepCounter's subtle amber-dot indicator.
+final repReconciliationProvider =
+    Provider<ValueListenable<RepCountReconciliation>>(
+  (ref) => ref.watch(bicepCurlControllerProvider.notifier).repReconciliation,
+);

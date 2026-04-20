@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 
@@ -43,14 +42,17 @@ class CueDispatcher {
   Future<void> dispatch(CueDecision decision) async {
     final fired = <String>{};
 
-    final hapticCue = _hapticCueByContent[decision.content];
-    if (profile.haptic.enabled && hapticCue != null) {
-      try {
-        await hapticCue.writeTo(hardware);
-        fired.add('haptic');
-      } catch (e) {
-        developer.log('haptic dispatch failed', error: e, name: 'CueDispatcher');
-      }
+    // Hardware-led mode: the ESP32 fires haptic cues autonomously based on
+    // its own fatigue tracking, so the app no longer writes PULSE_BURST to
+    // FF04. We still log the dispatcher's decision (for session debrief
+    // parity) and record "haptic" as a fired channel when the profile has
+    // haptic enabled, since the hardware event will arrive via the
+    // cue_event bit in the FF02 packet. The visual flash is driven by the
+    // hardware cue event (see bicep_curl_controller cueEventStream), not
+    // by this dispatcher.
+    if (profile.haptic.enabled &&
+        _hapticCueByContent.containsKey(decision.content)) {
+      fired.add('haptic');
     }
 
     if (profile.visual.enabled) fired.add('visual');

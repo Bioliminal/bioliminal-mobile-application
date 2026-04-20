@@ -101,11 +101,17 @@ class AppCameraController extends AsyncNotifier<CameraState> {
         return;
       }
 
+      // Hardware-led demo mode: default to the front-facing camera so the user
+      // can see themselves (selfie / mirror framing). The flip button in
+      // bicep_curl_view.dart:278-282 still lets the user swap manually.
       final selected =
           specificCamera ??
           cameras.firstWhere(
-            (c) => c.lensDirection == CameraLensDirection.back,
-            orElse: () => cameras.first,
+            (c) => c.lensDirection == CameraLensDirection.front,
+            orElse: () => cameras.firstWhere(
+              (c) => c.lensDirection == CameraLensDirection.back,
+              orElse: () => cameras.first,
+            ),
           );
 
       ref.read(cameraDescriptionProvider.notifier).set(selected);

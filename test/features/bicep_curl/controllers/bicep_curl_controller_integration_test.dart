@@ -31,92 +31,173 @@ import 'package:bioliminal/features/bicep_curl/services/pose_math.dart';
 /// - View rendering — out of scope.
 void main() {
   group('BicepCurlController integration', () {
-    test('walks Idle → Setup → Calibrating → Active with real rep events',
-        () async {
-      final harness = _ControllerHarness();
-      addTearDown(harness.dispose);
+    test(
+      'walks Idle → Setup → Calibrating → Active with real rep events',
+      () async {
+        final harness = _ControllerHarness();
+        addTearDown(harness.dispose);
 
-      final controller = harness.controller;
+        final controller = harness.controller;
 
-      // Sanity: starts at Idle.
-      expect(harness.state, isA<BicepCurlIdle>());
+        // Sanity: starts at Idle.
+        expect(harness.state, isA<BicepCurlIdle>());
 
-      await controller.startSession(side: ArmSide.right);
-      expect(harness.state, isA<BicepCurlSetup>());
+        await controller.startSession(side: ArmSide.right);
+        expect(harness.state, isA<BicepCurlSetup>());
 
-      // View signals framing-check passed.
-      controller.markFramingComplete();
-      expect(harness.state, isA<BicepCurlCalibrating>());
+        // View signals framing-check passed.
+        controller.markFramingComplete();
+        expect(harness.state, isA<BicepCurlCalibrating>());
 
-      // Walk five complete reps. Each rep emits both a stream of
-      // synthetic SampleBatches (so the envelope buffer fills) and a
-      // sequence of pose frames (so the rep detector fires a boundary).
-      for (var rep = 0; rep < 5; rep++) {
-        await harness.runRep(repIdx: rep);
-      }
+        // Walk five complete reps. Each rep emits both a stream of
+        // synthetic SampleBatches (so the envelope buffer fills) and a
+        // sequence of pose frames (so the rep detector fires a boundary).
+        for (var rep = 0; rep < 5; rep++) {
+          await harness.runRep(repIdx: rep);
+        }
 
-      // Five calibration reps complete → transition to Active with a
-      // compensation reference built from the calibration frames.
-      expect(harness.state, isA<BicepCurlActive>());
-      final active = harness.state as BicepCurlActive;
-      expect(active.reps.length, 5);
-      expect(active.ref.armSide, ArmSide.right);
+        // Five calibration reps complete → transition to Active with a
+        // compensation reference built from the calibration frames.
+        expect(harness.state, isA<BicepCurlActive>());
+        final active = harness.state as BicepCurlActive;
+        expect(active.reps.length, 5);
+        expect(active.ref.armSide, ArmSide.right);
 
-      // Each rep's envelope segment should be present and 50 samples.
-      for (final r in active.reps) {
-        expect(r.envelopeSamples, isNotNull);
-        expect(r.envelopeSamples!.length, 50);
-      }
+        // Each rep's envelope segment should be present and 50 samples.
+        for (final r in active.reps) {
+          expect(r.envelopeSamples, isNotNull);
+          expect(r.envelopeSamples!.length, 50);
+        }
 
-      // One more rep — Active should accumulate a 6th rep.
-      await harness.runRep(repIdx: 5);
-      final after = harness.state as BicepCurlActive;
-      expect(after.reps.length, 6);
-    });
+        // One more rep — Active should accumulate a 6th rep.
+        await harness.runRep(repIdx: 5);
+        final after = harness.state as BicepCurlActive;
+        expect(after.reps.length, 6);
+      },
+    );
 
-    test('endSession produces a Complete state with the accumulated log',
-        () async {
-      final harness = _ControllerHarness();
-      addTearDown(harness.dispose);
+    test(
+      'endSession produces a Complete state with the accumulated log',
+      () async {
+        final harness = _ControllerHarness();
+        addTearDown(harness.dispose);
 
-      await harness.controller.startSession(side: ArmSide.right);
-      harness.controller.markFramingComplete();
-      for (var rep = 0; rep < 5; rep++) {
-        await harness.runRep(repIdx: rep);
-      }
+        await harness.controller.startSession(side: ArmSide.right);
+        harness.controller.markFramingComplete();
+        for (var rep = 0; rep < 5; rep++) {
+          await harness.runRep(repIdx: rep);
+        }
 
-      await harness.controller.endSession();
+        await harness.controller.endSession();
 
-      expect(harness.state, isA<BicepCurlComplete>());
-      final complete = harness.state as BicepCurlComplete;
-      expect(complete.log.reps.length, 5);
-      expect(complete.log.armSide, ArmSide.right);
-      expect(complete.log.bleDroppedDuringSet, isFalse);
-    });
+        expect(harness.state, isA<BicepCurlComplete>());
+        final complete = harness.state as BicepCurlComplete;
+        expect(complete.log.reps.length, 5);
+        expect(complete.log.armSide, ArmSide.right);
+        expect(complete.log.bleDroppedDuringSet, isFalse);
+      },
+    );
 
-    test('BLE drop mid-set flips emgOnline=false but session continues',
-        () async {
-      final harness = _ControllerHarness();
-      addTearDown(harness.dispose);
+    test(
+      'repReconciliation flips to disagreeing when hw drifts ≥2 from cv',
+      () async {
+        final harness = _ControllerHarness();
+        addTearDown(harness.dispose);
 
-      await harness.controller.startSession(side: ArmSide.right);
-      harness.controller.markFramingComplete();
-      for (var rep = 0; rep < 5; rep++) {
-        await harness.runRep(repIdx: rep);
-      }
-      expect((harness.state as BicepCurlActive).emgOnline, isTrue);
+        await harness.controller.startSession(side: ArmSide.right);
+        harness.controller.markFramingComplete();
 
-      // Simulate BLE drop; controller's connection-state listener should
-      // mark emgOnline=false.
-      harness.fakeHardware.simulateDisconnect();
-      await Future<void>.delayed(Duration.zero);
+        final notifier = harness.controller.repReconciliation;
 
-      // Run one more rep to trigger a state copyWith that picks up the
-      // new emgOnline value.
-      await harness.runRep(repIdx: 5);
-      expect((harness.state as BicepCurlActive).emgOnline, isFalse);
-    });
+        // Drive a CV rep. runRep emits SampleBatches carrying repCount=0, so
+        // hw stays at 0 while cv ticks to 1 — delta=1 (below threshold).
+        await harness.runRep(repIdx: 0);
+        expect(notifier.value.cv, 1);
+        expect(notifier.value.hw, 0);
+        expect(notifier.value.disagreeing, isFalse);
+
+        // Firmware races ahead while the user is mid-rep — emit a bare
+        // SampleBatch carrying repCount=5, bypassing the full runRep flow.
+        harness.fakeHardware.emitBatch(
+          SampleBatch(
+            seqNum: 200,
+            tUsStart: 5000000,
+            channelCount: 3,
+            samplesPerChannel: 50,
+            flags: 0,
+            repCount: 5,
+            cueEvent: 0,
+            raw: Uint16List(50),
+            rect: Uint16List(50),
+            env: Uint16List(50),
+          ),
+        );
+        await _microflush();
+        expect(notifier.value.hw, 5);
+        expect(notifier.value.cv, 1);
+        expect(notifier.value.disagreeing, isTrue,
+            reason: 'cv=1 hw=5 delta=4 >= threshold');
+
+        // CV catches up within 1 of hw — back to agreed.
+        await harness.runRep(repIdx: 1);
+        await harness.runRep(repIdx: 2);
+        await harness.runRep(repIdx: 3);
+        // runRep's SampleBatches set hw to the new repIdx on the way through;
+        // its last rep is idx=3 so repCount in the sample batches = 3, leaving
+        // hw=3 when the CV count reaches 4. Emit one more same-count packet so
+        // hw doesn't regress.
+        harness.fakeHardware.emitBatch(
+          SampleBatch(
+            seqNum: 201,
+            tUsStart: 10000000,
+            channelCount: 3,
+            samplesPerChannel: 50,
+            flags: 0,
+            repCount: 5,
+            cueEvent: 0,
+            raw: Uint16List(50),
+            rect: Uint16List(50),
+            env: Uint16List(50),
+          ),
+        );
+        await _microflush();
+        expect(notifier.value.cv, 4);
+        expect(notifier.value.hw, 5);
+        expect(notifier.value.disagreeing, isFalse,
+            reason: 'delta=1 is within noise band');
+      },
+    );
+
+    test(
+      'BLE drop mid-set flips emgOnline=false but session continues',
+      () async {
+        final harness = _ControllerHarness();
+        addTearDown(harness.dispose);
+
+        await harness.controller.startSession(side: ArmSide.right);
+        harness.controller.markFramingComplete();
+        for (var rep = 0; rep < 5; rep++) {
+          await harness.runRep(repIdx: rep);
+        }
+        expect((harness.state as BicepCurlActive).emgOnline, isTrue);
+
+        // Simulate BLE drop; controller's connection-state listener should
+        // mark emgOnline=false.
+        harness.fakeHardware.simulateDisconnect();
+        await Future<void>.delayed(Duration.zero);
+
+        // Run one more rep to trigger a state copyWith that picks up the
+        // new emgOnline value.
+        await harness.runRep(repIdx: 5);
+        expect((harness.state as BicepCurlActive).emgOnline, isFalse);
+      },
+    );
   });
+}
+
+Future<void> _microflush() async {
+  await Future<void>.delayed(Duration.zero);
+  await Future<void>.delayed(Duration.zero);
 }
 
 // ---------------------------------------------------------------------------
@@ -140,8 +221,9 @@ class _ControllerHarness {
     // wired in build()), at which point landmark updates stop flowing.
     _ctrlSub = container.listen(bicepCurlControllerProvider, (_, _) {});
     controller = container.read(bicepCurlControllerProvider.notifier);
-    fakeHardware = container.read(hardwareControllerProvider.notifier)
-        as _FakeHardwareController;
+    fakeHardware =
+        container.read(hardwareControllerProvider.notifier)
+            as _FakeHardwareController;
   }
 
   late final ProviderContainer container;
@@ -150,8 +232,7 @@ class _ControllerHarness {
   late final _TestLandmarksNotifier landmarks;
   late final ProviderSubscription<BicepCurlState> _ctrlSub;
 
-  BicepCurlState get state =>
-      container.read(bicepCurlControllerProvider);
+  BicepCurlState get state => container.read(bicepCurlControllerProvider);
 
   /// Drives one rep through the controller: emits a synthetic envelope
   /// segment via the BLE stream, then walks the pose detector through a
@@ -164,16 +245,22 @@ class _ControllerHarness {
     // Each batch has the same constant excursion — the envelope shape
     // doesn't matter for the state transitions we're testing here.
     for (var b = 0; b < 120; b++) {
-      fakeHardware.emitBatch(SampleBatch(
-        seqNum: (repIdx * 120 + b) & 0xFF,
-        tUsStart: tStartUs + b * 25000, // 25 ms apart
-        channelCount: 3,
-        samplesPerChannel: 50,
-        flags: 0,
-        raw: Uint16List.fromList(List<int>.filled(50, 2548)), // 500 above midpoint
-        rect: Uint16List(50),
-        env: Uint16List(50),
-      ));
+      fakeHardware.emitBatch(
+        SampleBatch(
+          seqNum: (repIdx * 120 + b) & 0xFF,
+          tUsStart: tStartUs + b * 25000, // 25 ms apart
+          channelCount: 3,
+          samplesPerChannel: 50,
+          flags: 0,
+          repCount: repIdx,
+          cueEvent: 0,
+          raw: Uint16List.fromList(
+            List<int>.filled(50, 2548),
+          ), // 500 above midpoint
+          rect: Uint16List(50),
+          env: Uint16List(50),
+        ),
+      );
     }
     await _flush();
 
@@ -216,15 +303,27 @@ class _ControllerHarness {
 
 class _FakeHardwareController extends HardwareController {
   final _stream = StreamController<SampleBatch>.broadcast();
+  final _repStream = StreamController<int>.broadcast();
+  final _cueStream = StreamController<void>.broadcast();
 
   @override
   HardwareConnectionState build() {
-    ref.onDispose(_stream.close);
+    ref.onDispose(() {
+      _stream.close();
+      _repStream.close();
+      _cueStream.close();
+    });
     return HardwareConnectionState.connected;
   }
 
   @override
   Stream<SampleBatch> get rawEmgStream => _stream.stream;
+
+  @override
+  Stream<int> get repCountStream => _repStream.stream;
+
+  @override
+  Stream<void> get cueEventStream => _cueStream.stream;
 
   @override
   Future<void> sendCommand(List<int> bytes) async {}
@@ -266,9 +365,19 @@ List<PoseLandmark> _armAtAngle(double angleDeg) {
     const PoseLandmark(x: 0, y: 0, z: 0, visibility: 1, presence: 1),
   );
   landmarks[kRightShoulder] = const PoseLandmark(
-      x: 0, y: 0, z: 0, visibility: 1, presence: 1);
+    x: 0,
+    y: 0,
+    z: 0,
+    visibility: 1,
+    presence: 1,
+  );
   landmarks[kRightElbow] = const PoseLandmark(
-      x: 1, y: 0, z: 0, visibility: 1, presence: 1);
+    x: 1,
+    y: 0,
+    z: 0,
+    visibility: 1,
+    presence: 1,
+  );
   landmarks[kRightWrist] = PoseLandmark(
     x: 1.0 + math.cos(theta),
     y: math.sin(theta),
@@ -278,10 +387,25 @@ List<PoseLandmark> _armAtAngle(double angleDeg) {
   );
   // Hips needed for torso pitch math during compensation reference build.
   landmarks[kLeftShoulder] = const PoseLandmark(
-      x: -0.5, y: 0, z: 0, visibility: 1, presence: 1);
+    x: -0.5,
+    y: 0,
+    z: 0,
+    visibility: 1,
+    presence: 1,
+  );
   landmarks[kLeftHip] = const PoseLandmark(
-      x: -0.5, y: 1, z: 0, visibility: 1, presence: 1);
+    x: -0.5,
+    y: 1,
+    z: 0,
+    visibility: 1,
+    presence: 1,
+  );
   landmarks[kRightHip] = const PoseLandmark(
-      x: 0.5, y: 1, z: 0, visibility: 1, presence: 1);
+    x: 0.5,
+    y: 1,
+    z: 0,
+    visibility: 1,
+    presence: 1,
+  );
   return landmarks;
 }
