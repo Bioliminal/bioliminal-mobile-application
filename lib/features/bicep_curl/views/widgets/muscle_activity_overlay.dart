@@ -80,7 +80,6 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
               painter: _SparklinePainter(
                 values: List<double>.from(_ring),
                 color: BioliminalTheme.accent,
-                maxValue: 4095, // 12-bit ADC ceiling
               ),
               size: Size.infinite,
             ),
@@ -92,19 +91,28 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
 }
 
 class _SparklinePainter extends CustomPainter {
-  _SparklinePainter({
-    required this.values,
-    required this.color,
-    required this.maxValue,
-  });
+  _SparklinePainter({required this.values, required this.color});
 
   final List<double> values;
   final Color color;
-  final double maxValue;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
+
+    // Auto-scale the window so signal fills vertical space regardless of
+    // MyoWare gain-pot setting. We use observed min/max instead of the
+    // 12-bit ADC ceiling — the envelope on real curls rarely spans more
+    // than 10-20% of the 0-4095 range, which made the static-scale version
+    // look like a flat line.
+    var lo = values.first;
+    var hi = values.first;
+    for (final v in values) {
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
+    }
+    final range = (hi - lo).clamp(1.0, double.infinity);
+
     final line = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
@@ -121,8 +129,9 @@ class _SparklinePainter extends CustomPainter {
 
     for (var i = 0; i < values.length; i++) {
       final x = i * dx;
-      final norm = (values[i] / maxValue).clamp(0.0, 1.0);
-      final y = size.height - norm * size.height;
+      final norm = ((values[i] - lo) / range).clamp(0.0, 1.0);
+      // Leave a ~10% margin at top/bottom so the peak doesn't clip the edge.
+      final y = size.height - (0.1 + 0.8 * norm) * size.height;
       if (i == 0) {
         path.moveTo(x, y);
         fillPath.moveTo(x, size.height);

@@ -381,13 +381,23 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
       );
     }
     if (s is BicepCurlCalibrating) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          RepCounter(repCount: s.repsCompleted, label: 'CALIBRATION'),
-          const SizedBox(height: 16),
-          _EndSetButton(onPressed: _endSet),
-        ],
+      // Show muscle activity during calibration too so the user sees the
+      // signal from rep 1 onward (firmware's calibration-phase peak tracking
+      // runs in parallel to the app's pose-driven calibration counter).
+      final repCountAsync = ref.watch(hardwareRepCountStreamProvider);
+      final hardwareRepCount = repCountAsync.asData?.value ?? s.repsCompleted;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const MuscleActivityOverlay(),
+            const SizedBox(height: 14),
+            RepCounter(repCount: hardwareRepCount, label: 'CALIBRATION'),
+            const SizedBox(height: 16),
+            _EndSetButton(onPressed: _endSet),
+          ],
+        ),
       );
     }
     return const SizedBox.shrink();
