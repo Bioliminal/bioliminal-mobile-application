@@ -354,46 +354,24 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   }
 
   Widget _hudBottom(BicepCurlState s) {
-    if (s is BicepCurlActive) {
-      // Hardware-led mode: rep count comes from the firmware header, not
-      // from the pose-driven RepDetector. Fatigue bar is removed — firmware
-      // owns that decision now and surfaces it via the cue flash. The muscle
-      // activity sparkline is the always-on baseline feedback; the
-      // CompensationBadge only surfaces when form is wrong.
-      final repCountAsync = ref.watch(hardwareRepCountStreamProvider);
-      final repCount = repCountAsync.asData?.value ?? s.reps.length;
+    // Hardware-led mode: the firmware owns rep counting and cue firing. The
+    // phone UI is intentionally minimal — muscle activity sparkline, an
+    // accent-coloured flash when the hardware fires a cue, and a
+    // compensation badge when form is wrong. Rep counter removed (the
+    // firmware's rep count isn't yet reliable enough to show to a user
+    // without doing more tuning, and the hardware loop doesn't need the
+    // phone to display it).
+    if (s is BicepCurlActive || s is BicepCurlCalibrating) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (s.currentCompensating) ...[
+            if (s is BicepCurlActive && s.currentCompensating) ...[
               const CompensationBadge(),
               const SizedBox(height: 12),
             ],
             const MuscleActivityOverlay(),
-            const SizedBox(height: 14),
-            RepCounter(repCount: repCount, label: 'REPS'),
-            const SizedBox(height: 16),
-            _EndSetButton(onPressed: _endSet),
-          ],
-        ),
-      );
-    }
-    if (s is BicepCurlCalibrating) {
-      // Show muscle activity during calibration too so the user sees the
-      // signal from rep 1 onward (firmware's calibration-phase peak tracking
-      // runs in parallel to the app's pose-driven calibration counter).
-      final repCountAsync = ref.watch(hardwareRepCountStreamProvider);
-      final hardwareRepCount = repCountAsync.asData?.value ?? s.repsCompleted;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const MuscleActivityOverlay(),
-            const SizedBox(height: 14),
-            RepCounter(repCount: hardwareRepCount, label: 'CALIBRATION'),
             const SizedBox(height: 16),
             _EndSetButton(onPressed: _endSet),
           ],
