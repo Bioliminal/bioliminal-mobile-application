@@ -17,6 +17,7 @@ import '../controllers/bicep_curl_controller.dart';
 import '../models/compensation_reference.dart';
 import '../services/pose_math.dart';
 import 'bicep_curl_overlays.dart';
+import 'widgets/muscle_activity_overlay.dart';
 
 /// Live bicep curl session view.
 ///
@@ -131,8 +132,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
       if (mounted) context.go('/history');
       return;
     }
-    final sessionId =
-        'bicep_${complete.log.startedAt.millisecondsSinceEpoch}';
+    final sessionId = 'bicep_${complete.log.startedAt.millisecondsSinceEpoch}';
     final record = SessionRecord(
       sessionId: sessionId,
       movement: 'bicep_curl',
@@ -149,8 +149,9 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
 
   bool _armVisible(List<PoseLandmark> landmarks) {
     if (landmarks.length != 33) return false;
-    final shoulder =
-        widget.armSide == ArmSide.left ? kLeftShoulder : kRightShoulder;
+    final shoulder = widget.armSide == ArmSide.left
+        ? kLeftShoulder
+        : kRightShoulder;
     final elbow = widget.armSide == ArmSide.left ? kLeftElbow : kRightElbow;
     final wrist = widget.armSide == ArmSide.left ? kLeftWrist : kRightWrist;
     return landmarks[shoulder].visibility > _minVisibility &&
@@ -238,9 +239,7 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
           // Cue flash overlay (no-op until visualBus emits).
           Positioned.fill(
             child: CueFlashIndicator(
-              bus: ref
-                  .read(bicepCurlControllerProvider.notifier)
-                  .visualBus,
+              bus: ref.read(bicepCurlControllerProvider.notifier).visualBus,
             ),
           ),
 
@@ -301,31 +300,32 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               ref.read(appCameraControllerProvider.notifier).toggleCamera();
             },
           ),
-          Consumer(builder: (context, ref, _) {
-            final hw = ref.watch(hardwareControllerProvider);
-            final connected = hw == HardwareConnectionState.connected;
-            return IconButton(
-              icon: Icon(
-                connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
-                color: connected ? BioliminalTheme.accent : Colors.white54,
-              ),
-              tooltip: connected
-                  ? 'Garment connected — EMG fatigue tracking on'
-                  : 'Optional: connect Bioliminal Garment for EMG fatigue tracking',
-              onPressed: connected
-                  ? null
-                  : () => ref
-                      .read(hardwareControllerProvider.notifier)
-                      .startScan(),
-            );
-          }),
+          Consumer(
+            builder: (context, ref, _) {
+              final hw = ref.watch(hardwareControllerProvider);
+              final connected = hw == HardwareConnectionState.connected;
+              return IconButton(
+                icon: Icon(
+                  connected
+                      ? Icons.bluetooth_connected
+                      : Icons.bluetooth_disabled,
+                  color: connected ? BioliminalTheme.accent : Colors.white54,
+                ),
+                tooltip: connected
+                    ? 'Garment connected — EMG fatigue tracking on'
+                    : 'Optional: connect Bioliminal Garment for EMG fatigue tracking',
+                onPressed: connected
+                    ? null
+                    : () => ref
+                          .read(hardwareControllerProvider.notifier)
+                          .startScan(),
+              );
+            },
+          ),
           const Spacer(),
           if (s is BicepCurlCalibrating)
-            StatusBadge(
-              text: 'CALIBRATING ${s.repsCompleted}/5',
-            ),
-          if (s is BicepCurlActive)
-            const StatusBadge(text: 'ACTIVE'),
+            StatusBadge(text: 'CALIBRATING ${s.repsCompleted}/5'),
+          if (s is BicepCurlActive) const StatusBadge(text: 'ACTIVE'),
         ],
       ),
     );
@@ -355,6 +355,13 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
 
   Widget _hudBottom(BicepCurlState s) {
     if (s is BicepCurlActive) {
+      // Hardware-led mode: rep count comes from the firmware header, not
+      // from the pose-driven RepDetector. Fatigue bar is removed — firmware
+      // owns that decision now and surfaces it via the cue flash. The muscle
+      // activity sparkline is the always-on baseline feedback; the
+      // CompensationBadge only surfaces when form is wrong.
+      final repCountAsync = ref.watch(hardwareRepCountStreamProvider);
+      final repCount = repCountAsync.asData?.value ?? s.reps.length;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -364,12 +371,9 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               const CompensationBadge(),
               const SizedBox(height: 12),
             ],
-            FatigueBar(
-              dropFraction: s.currentDropFraction,
-              emgOnline: s.emgOnline,
-            ),
+            const MuscleActivityOverlay(),
             const SizedBox(height: 14),
-            RepCounter(repCount: s.reps.length, label: 'REPS'),
+            RepCounter(repCount: repCount, label: 'REPS'),
             const SizedBox(height: 16),
             _EndSetButton(onPressed: _endSet),
           ],
