@@ -32,6 +32,7 @@ class CueEvent {
         repNum: json['rep_num'] as int,
         content: CueContent.values.firstWhere(
           (c) => c.name == json['content'] as String,
+          orElse: () => CueContent.fatigueFade,
         ),
         firedAt: DateTime.parse(json['fired_at'] as String),
         channelsFired: Set.unmodifiable(

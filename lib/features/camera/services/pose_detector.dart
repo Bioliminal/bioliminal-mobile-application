@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
+import 'package:flutter/services.dart';
 
 import '../../../domain/models.dart' as domain;
 import 'pose_channel.dart';
@@ -37,6 +39,11 @@ class MediaPipePoseDetector implements PoseDetector {
   final String assetPath;
   final PoseChannel _channel;
   bool _initialized = false;
+  int _consecutiveInitFailures = 0;
+
+  /// Cap on init attempts — prevents a failing native init from looping at
+  /// ~30fps when the camera stream is live.
+  static const int _maxInitAttempts = 3;
 
   @override
   Future<List<domain.PoseLandmark>> processFrame(
@@ -44,19 +51,47 @@ class MediaPipePoseDetector implements PoseDetector {
     required int rotationDegrees,
   }) async {
     if (!_initialized) {
-      _initialized = await _channel.initialize(assetPath: assetPath);
+      if (_consecutiveInitFailures >= _maxInitAttempts) return const [];
+      try {
+        _initialized = await _channel.initialize(assetPath: assetPath);
+        if (_initialized) {
+          _consecutiveInitFailures = 0;
+        } else {
+          _consecutiveInitFailures++;
+        }
+      } on PlatformException catch (e, stack) {
+        _consecutiveInitFailures++;
+        developer.log(
+          'PoseChannel init failed',
+          error: e,
+          stackTrace: stack,
+          name: 'MediaPipePoseDetector',
+        );
+        return const [];
+      }
       if (!_initialized) return const [];
     }
 
     final plane = image.planes.first;
-    final raw = await _channel.processFrame(
-      bytes: plane.bytes,
-      width: image.width,
-      height: image.height,
-      bytesPerRow: plane.bytesPerRow,
-      rotationDegrees: rotationDegrees,
-      timestampMs: DateTime.now().millisecondsSinceEpoch,
-    );
+    final List<Map<String, double>> raw;
+    try {
+      raw = await _channel.processFrame(
+        bytes: plane.bytes,
+        width: image.width,
+        height: image.height,
+        bytesPerRow: plane.bytesPerRow,
+        rotationDegrees: rotationDegrees,
+        timestampMs: DateTime.now().millisecondsSinceEpoch,
+      );
+    } on PlatformException catch (e, stack) {
+      developer.log(
+        'PoseChannel processFrame failed',
+        error: e,
+        stackTrace: stack,
+        name: 'MediaPipePoseDetector',
+      );
+      return const [];
+    }
 
     // Drop partial detections — server 422s anything that isn't exactly 33.
     if (raw.length != 33) return const [];
@@ -77,7 +112,16 @@ class MediaPipePoseDetector implements PoseDetector {
   @override
   Future<void> dispose() async {
     if (_initialized) {
-      await _channel.dispose();
+      try {
+        await _channel.dispose();
+      } on PlatformException catch (e, stack) {
+        developer.log(
+          'PoseChannel dispose failed',
+          error: e,
+          stackTrace: stack,
+          name: 'MediaPipePoseDetector',
+        );
+      }
       _initialized = false;
     }
   }

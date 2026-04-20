@@ -18,7 +18,10 @@ enum MovementType {
   final String wire;
 
   static MovementType fromWire(String value) =>
-      MovementType.values.firstWhere((m) => m.wire == value);
+      MovementType.values.firstWhere(
+        (m) => m.wire == value,
+        orElse: () => MovementType.bicepCurl,
+      );
 }
 
 /// A single BlazePose landmark.
@@ -155,8 +158,10 @@ enum ChainName {
   const ChainName(this.wire);
   final String wire;
 
-  static ChainName fromWire(String value) =>
-      ChainName.values.firstWhere((c) => c.wire == value);
+  static ChainName fromWire(String value) => ChainName.values.firstWhere(
+        (c) => c.wire == value,
+        orElse: () => ChainName.upperLimbLocal,
+      );
 }
 
 enum ObservationSeverity { info, concern, flag }
