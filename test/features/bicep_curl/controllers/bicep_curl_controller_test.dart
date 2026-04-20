@@ -14,7 +14,8 @@ void main() {
       expect(state, isA<BicepCurlIdle>());
     });
 
-    test('startSession surfaces Error when BLE is not connected', () async {
+    test('startSession proceeds vision-only when BLE is not connected',
+        () async {
       final container = ProviderContainer();
       addTearDown(container.dispose);
 
@@ -22,12 +23,11 @@ void main() {
           container.read(bicepCurlControllerProvider.notifier);
       await controller.startSession(side: ArmSide.right);
 
+      // No garment → session enters Setup (framing check). Vision-only
+      // rep counting + compensation cues run; fatigue bar greys out once
+      // Active begins (emgOnline=false driven by _bleDroppedDuringSet).
       final state = container.read(bicepCurlControllerProvider);
-      expect(state, isA<BicepCurlError>());
-      expect(
-        (state as BicepCurlError).message.toLowerCase(),
-        contains('garment'),
-      );
+      expect(state, isA<BicepCurlSetup>());
     });
 
     test('cycleProfile rotates intermediate → advanced → beginner', () async {

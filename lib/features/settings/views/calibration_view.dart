@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
@@ -9,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
+import '../../camera/controllers/camera_controller.dart' show AppCameraController;
 import '../../camera/widgets/skeleton_overlay.dart';
 
 // ---------------------------------------------------------------------------
@@ -79,16 +81,21 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
   DateTime? _readySince;
   Timer? _holdTicker;
 
+  // Captured so dispose() can clean up without touching `ref` — Riverpod 3
+  // disallows ref access during dispose.
+  late final AppCameraController _cameraNotifier;
+
   @override
   void initState() {
     super.initState();
+    _cameraNotifier = ref.read(appCameraControllerProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrap());
   }
 
   @override
   void dispose() {
     _holdTicker?.cancel();
-    ref.read(appCameraControllerProvider.notifier).stopStreaming();
+    _cameraNotifier.stopStreaming();
     super.dispose();
   }
 
@@ -513,11 +520,21 @@ class _CameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     var scale = size.aspectRatio * controller.value.aspectRatio;
     if (scale < 1) scale = 1 / scale;
-    return ClipRect(
+    final isFront =
+        controller.description.lensDirection == CameraLensDirection.front;
+    final preview = ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
+    if (isFront && Platform.isIOS) {
+      return Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
+        child: preview,
+      );
+    }
+    return preview;
   }
 }

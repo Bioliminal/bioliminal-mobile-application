@@ -149,7 +149,8 @@ class SessionPayload {
 enum ChainName {
   superficialBackLine('superficial_back_line'),
   backFunctionalLine('back_functional_line'),
-  frontFunctionalLine('front_functional_line');
+  frontFunctionalLine('front_functional_line'),
+  upperLimbLocal('upper_limb_local');
 
   const ChainName(this.wire);
   final String wire;
