@@ -2,10 +2,12 @@ import 'package:camera/camera.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:bioliminal/core/services/auth_service.dart';
+import 'package:bioliminal/core/services/capability_tier.dart';
 import 'package:bioliminal/core/services/local_storage_service.dart'
     as local_impl;
 import 'package:bioliminal/core/services/bioliminal_client.dart';
 import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/camera/services/landmark_smoother.dart';
 import 'package:bioliminal/features/camera/services/pose_detector.dart';
 
 // Re-export camera providers so screening can import from one place.
@@ -19,6 +21,11 @@ export 'package:bioliminal/features/camera/controllers/camera_controller.dart'
         CameraPermissionDenied,
         CameraError,
         CameraUninitialized;
+
+// Re-export capability/config types so consumers import from one place.
+export 'package:bioliminal/core/services/capability_tier.dart'
+    show CapabilityTier, PoseConfig, PoseDelegate, PosePlatform,
+         deviceCapabilityProvider, poseConfigProvider;
 
 // ---------------------------------------------------------------------------
 // Cloud sync opt-in toggle — false by default (offline-first).
@@ -81,7 +88,8 @@ final cameraDescriptionProvider =
 
 final poseDetectorProvider = Provider<PoseDetector>(
   (ref) {
-    final detector = MediaPipePoseDetector();
+    final config = ref.watch(poseConfigProvider);
+    final detector = MediaPipePoseDetector(config: config);
     ref.onDispose(() => detector.dispose());
     return detector;
   },
@@ -89,6 +97,12 @@ final poseDetectorProvider = Provider<PoseDetector>(
   // re-creating between screens would trigger an expensive reload.
   isAutoDispose: false,
 );
+
+final landmarkSmootherProvider = Provider<LandmarkSmoother>((ref) {
+  final smoother = OneEuroLandmarkSmoother();
+  ref.onDispose(smoother.reset);
+  return smoother;
+});
 
 final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(
   (ref) => local_impl.LocalStorageService(),

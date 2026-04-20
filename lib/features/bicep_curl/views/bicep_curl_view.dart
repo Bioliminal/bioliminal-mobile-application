@@ -354,14 +354,15 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   }
 
   Widget _hudBottom(BicepCurlState s) {
-    // Hardware-led mode: the firmware owns rep counting and cue firing. The
-    // phone UI is intentionally minimal — muscle activity sparkline, an
-    // accent-coloured flash when the hardware fires a cue, and a
-    // compensation badge when form is wrong. Rep counter removed (the
-    // firmware's rep count isn't yet reliable enough to show to a user
-    // without doing more tuning, and the hardware loop doesn't need the
-    // phone to display it).
+    // Hybrid rep-counting mode: CV (Aaron's RepDecisionPolicy) is the
+    // authoritative rep count shown to the user. Firmware rep count arrives
+    // on FF02 as an observational stream — surfaced only via a subtle amber
+    // dot next to the counter when it drifts past the reconciliation
+    // threshold. Muscle sparkline + compensation badge remain from Rajat's
+    // hardware-led UI; fatigue bar stays removed (firmware owns fatigue).
     if (s is BicepCurlActive || s is BicepCurlCalibrating) {
+      final cvRepCount = ref.watch(cvRepCountProvider);
+      final label = s is BicepCurlCalibrating ? 'CALIBRATING' : 'REPS';
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
@@ -371,6 +372,11 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               const CompensationBadge(),
               const SizedBox(height: 12),
             ],
+            _RepCounterWithReconciliation(
+              repCount: cvRepCount,
+              label: label,
+            ),
+            const SizedBox(height: 12),
             const MuscleActivityOverlay(),
             const SizedBox(height: 16),
             _EndSetButton(onPressed: _endSet),
@@ -409,6 +415,59 @@ class _EndSetButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Wraps the [RepCounter] with a subtle amber dot in the top-right corner
+/// that activates when the firmware-reported rep count drifts from the CV
+/// count. Inactive/invisible by default — the user never sees it unless the
+/// two counters materially disagree.
+class _RepCounterWithReconciliation extends ConsumerWidget {
+  const _RepCounterWithReconciliation({
+    required this.repCount,
+    required this.label,
+  });
+
+  final int repCount;
+  final String label;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reconciliation = ref.watch(repReconciliationProvider);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        RepCounter(repCount: repCount, label: label),
+        Positioned(
+          top: -4,
+          right: -4,
+          child: ValueListenableBuilder<RepCountReconciliation>(
+            valueListenable: reconciliation,
+            builder: (_, value, _) {
+              if (!value.disagreeing) return const SizedBox.shrink();
+              return Tooltip(
+                message:
+                    'Hardware rep count differs: ${value.hw} vs ${value.cv}',
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.amber,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.amber.withValues(alpha: 0.6),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

@@ -15,9 +15,13 @@ class PoseChannel {
 
   /// Load the asset and instantiate the native PoseLandmarker.
   /// Idempotent — second call replaces the existing instance on native side.
-  Future<bool> initialize({required String assetPath}) async {
+  Future<bool> initialize({
+    required String assetPath,
+    required String delegate,
+  }) async {
     final ok = await _channel.invokeMethod<bool>('initialize', {
       'assetPath': assetPath,
+      'delegate': delegate,
     });
     return ok ?? false;
   }

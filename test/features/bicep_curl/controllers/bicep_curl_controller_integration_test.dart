@@ -99,6 +99,76 @@ void main() {
     );
 
     test(
+      'repReconciliation flips to disagreeing when hw drifts ≥2 from cv',
+      () async {
+        final harness = _ControllerHarness();
+        addTearDown(harness.dispose);
+
+        await harness.controller.startSession(side: ArmSide.right);
+        harness.controller.markFramingComplete();
+
+        final notifier = harness.controller.repReconciliation;
+
+        // Drive a CV rep. runRep emits SampleBatches carrying repCount=0, so
+        // hw stays at 0 while cv ticks to 1 — delta=1 (below threshold).
+        await harness.runRep(repIdx: 0);
+        expect(notifier.value.cv, 1);
+        expect(notifier.value.hw, 0);
+        expect(notifier.value.disagreeing, isFalse);
+
+        // Firmware races ahead while the user is mid-rep — emit a bare
+        // SampleBatch carrying repCount=5, bypassing the full runRep flow.
+        harness.fakeHardware.emitBatch(
+          SampleBatch(
+            seqNum: 200,
+            tUsStart: 5000000,
+            channelCount: 3,
+            samplesPerChannel: 50,
+            flags: 0,
+            repCount: 5,
+            cueEvent: 0,
+            raw: Uint16List(50),
+            rect: Uint16List(50),
+            env: Uint16List(50),
+          ),
+        );
+        await _microflush();
+        expect(notifier.value.hw, 5);
+        expect(notifier.value.cv, 1);
+        expect(notifier.value.disagreeing, isTrue,
+            reason: 'cv=1 hw=5 delta=4 >= threshold');
+
+        // CV catches up within 1 of hw — back to agreed.
+        await harness.runRep(repIdx: 1);
+        await harness.runRep(repIdx: 2);
+        await harness.runRep(repIdx: 3);
+        // runRep's SampleBatches set hw to the new repIdx on the way through;
+        // its last rep is idx=3 so repCount in the sample batches = 3, leaving
+        // hw=3 when the CV count reaches 4. Emit one more same-count packet so
+        // hw doesn't regress.
+        harness.fakeHardware.emitBatch(
+          SampleBatch(
+            seqNum: 201,
+            tUsStart: 10000000,
+            channelCount: 3,
+            samplesPerChannel: 50,
+            flags: 0,
+            repCount: 5,
+            cueEvent: 0,
+            raw: Uint16List(50),
+            rect: Uint16List(50),
+            env: Uint16List(50),
+          ),
+        );
+        await _microflush();
+        expect(notifier.value.cv, 4);
+        expect(notifier.value.hw, 5);
+        expect(notifier.value.disagreeing, isFalse,
+            reason: 'delta=1 is within noise band');
+      },
+    );
+
+    test(
       'BLE drop mid-set flips emgOnline=false but session continues',
       () async {
         final harness = _ControllerHarness();
@@ -123,6 +193,11 @@ void main() {
       },
     );
   });
+}
+
+Future<void> _microflush() async {
+  await Future<void>.delayed(Duration.zero);
+  await Future<void>.delayed(Duration.zero);
 }
 
 // ---------------------------------------------------------------------------
@@ -228,15 +303,27 @@ class _ControllerHarness {
 
 class _FakeHardwareController extends HardwareController {
   final _stream = StreamController<SampleBatch>.broadcast();
+  final _repStream = StreamController<int>.broadcast();
+  final _cueStream = StreamController<void>.broadcast();
 
   @override
   HardwareConnectionState build() {
-    ref.onDispose(_stream.close);
+    ref.onDispose(() {
+      _stream.close();
+      _repStream.close();
+      _cueStream.close();
+    });
     return HardwareConnectionState.connected;
   }
 
   @override
   Stream<SampleBatch> get rawEmgStream => _stream.stream;
+
+  @override
+  Stream<int> get repCountStream => _repStream.stream;
+
+  @override
+  Stream<void> get cueEventStream => _cueStream.stream;
 
   @override
   Future<void> sendCommand(List<int> bytes) async {}

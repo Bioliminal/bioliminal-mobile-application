@@ -24,3 +24,8 @@ shipped by Google as a flatbuffer/zip bundle containing two TFLite models
 landmarks on-device. See `bioliminal-ops/operations/handover/mobile/model/`
 for variant rationale and `blazepose_landmark_order.md` for the canonical
 landmark index table.
+
+| File | Size (bytes) | SHA-256 | Source |
+|---|---:|---|---|
+| `pose_landmarker_heavy.task` | ~29 MB | `<pending fetch — run sha256sum on downloaded file and update>` | `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_heavy/float16/latest/pose_landmarker_heavy.task` |
+| `pose_landmarker_lite.task` | ~3 MB | `<pending fetch — run sha256sum on downloaded file and update>` | `https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/latest/pose_landmarker_lite.task` |

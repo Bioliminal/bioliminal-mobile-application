@@ -173,21 +173,28 @@ class AppCameraController extends AsyncNotifier<CameraState> {
     _isProcessing = true;
 
     final poseDetector = ref.read(poseDetectorProvider);
+    final smoother = ref.read(landmarkSmootherProvider);
     final description = ref.read(cameraDescriptionProvider);
     final sensorOrientation = description?.sensorOrientation ?? 0;
     final lensDirection =
         description?.lensDirection ?? CameraLensDirection.back;
 
-    // Calculate rotation based on sensor orientation and lens.
     final rotationDegrees = (lensDirection == CameraLensDirection.front)
         ? (360 - sensorOrientation) % 360
         : sensorOrientation;
+
+    // Capture tUs at handler entry (≈frame arrival), NOT inside .then() —
+    // the One-Euro filter's adaptive cutoff depends on accurate dt.
+    final tUs = DateTime.now().microsecondsSinceEpoch;
 
     poseDetector
         .processFrame(image, rotationDegrees: rotationDegrees)
         .then(
           (landmarks) {
-            updateLandmarks(landmarks);
+            final smoothed = landmarks.isEmpty
+                ? landmarks
+                : smoother.smooth(landmarks, tUs: tUs);
+            updateLandmarks(smoothed);
             _isProcessing = false;
           },
           onError: (e) {
@@ -208,6 +215,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
     try {
       await current.controller.stopImageStream();
+      ref.read(landmarkSmootherProvider).reset();
       state = AsyncData(CameraReady(controller: current.controller));
     } catch (e) {
       state = AsyncData(CameraError(message: 'Failed to stop streaming: $e'));
@@ -216,6 +224,7 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
   /// Release all camera resources.
   Future<void> disposeCamera() async {
+    ref.read(landmarkSmootherProvider).reset();
     await _releaseCamera();
     state = const AsyncData(CameraUninitialized());
   }
