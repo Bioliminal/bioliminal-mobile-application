@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:camera/camera.dart';
 
+import '../../../core/services/capability_tier.dart';
 import '../../../domain/models.dart' as domain;
 import 'pose_channel.dart';
 
@@ -21,22 +22,30 @@ abstract class PoseDetector {
 
 /// Real pose detector — BlazePose Full via direct MediaPipe Tasks.
 ///
-/// Bridges to native MediaPipe Tasks via [PoseChannel]. Asset
-/// `assets/models/pose_landmarker_full.task` (SHA-256 in
-/// `assets/models/CHECKSUMS.md`) is loaded lazily on first frame.
+/// Bridges to native MediaPipe Tasks via [PoseChannel]. Asset path and
+/// delegate are supplied via [PoseConfig] (defaults to Full model + CPU).
+/// Asset SHA-256 in `assets/models/CHECKSUMS.md`; loaded lazily on first frame.
 ///
 /// Google ML Kit is excluded from ship (beta, no SLA) per the
 /// model-commercial-viability matrix §9 — do not re-introduce
 /// `google_mlkit_pose_detection` as the binding.
 class MediaPipePoseDetector implements PoseDetector {
   MediaPipePoseDetector({
-    this.assetPath = 'assets/models/pose_landmarker_full.task',
+    PoseConfig? config,
     PoseChannel? channel,
-  }) : _channel = channel ?? PoseChannel();
+  })  : _config = config ??
+            const PoseConfig(
+              modelAssetPath: 'assets/models/pose_landmarker_full.task',
+              delegate: PoseDelegate.cpu,
+            ),
+        _channel = channel ?? PoseChannel();
 
-  final String assetPath;
+  final PoseConfig _config;
   final PoseChannel _channel;
   bool _initialized = false;
+
+  String get assetPath => _config.modelAssetPath;
+  PoseDelegate get delegate => _config.delegate;
 
   @override
   Future<List<domain.PoseLandmark>> processFrame(
@@ -44,7 +53,10 @@ class MediaPipePoseDetector implements PoseDetector {
     required int rotationDegrees,
   }) async {
     if (!_initialized) {
-      _initialized = await _channel.initialize(assetPath: assetPath);
+      _initialized = await _channel.initialize(
+        assetPath: _config.modelAssetPath,
+        delegate: _config.delegate.wireName,
+      );
       if (!_initialized) return const [];
     }
 
