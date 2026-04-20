@@ -28,11 +28,16 @@ class RepDetector {
 
   final RepDecisionPolicy _policy;
   final _controller = StreamController<RepBoundary>.broadcast();
+  final _startController = StreamController<int>.broadcast();
+
   Stream<RepBoundary> get boundaries => _controller.stream;
+  Stream<int> get onRepStart => _startController.stream;
 
   void addPoseFrame(int tUs, List<PoseLandmark> landmarks, ArmSide side) {
     final event = _policy.feedFrame(tUs: tUs, landmarks: landmarks, side: side);
-    if (event is RepCompleteEvent) {
+    if (event is RepStartedEvent) {
+      _startController.add(event.tStartUs);
+    } else if (event is RepCompleteEvent) {
       _controller.add(RepBoundary(
         repNum: event.repNum,
         tStartUs: event.tStartUs,
@@ -44,6 +49,7 @@ class RepDetector {
 
   Future<void> dispose() async {
     _policy.reset();
+    await _startController.close();
     await _controller.close();
   }
 }
