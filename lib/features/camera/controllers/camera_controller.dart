@@ -85,8 +85,13 @@ class AppCameraController extends AsyncNotifier<CameraState> {
 
   /// Request camera permission by attempting to list + initialize.
   Future<void> requestPermission({CameraDescription? specificCamera}) async {
-    state = const AsyncValue.loading();
+    // Clear the preserved previous value BEFORE disposing the controller.
+    // AsyncValue.loading() keeps state.value pointing at the old
+    // CameraStreaming; if we dispose first, CameraPreview rebuilds against
+    // a disposed controller and throws. Render-nothing state first.
+    state = const AsyncData(CameraUninitialized());
     await _releaseCamera();
+    state = const AsyncValue.loading();
     try {
       final cameras = await availableCameras();
       if (cameras.isEmpty) {

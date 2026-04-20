@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme.dart';
+import '../../../landing/widgets/marketing_tokens.dart';
 import '../../models/compensation_reference.dart';
 import '../../models/session_log.dart';
 
@@ -211,12 +212,12 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
     return Column(
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
               child: _PanelLabeled(
+                index: '01',
                 title: 'MEASURED',
-                subtitle: 'Real EMG · biceps brachii',
+                subtitle: 'REAL EMG · BICEPS BRACHII',
                 child: BodyHeatmapPanel(
                   activations: activations,
                   mode: HeatmapMode.measured,
@@ -227,8 +228,9 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
             const SizedBox(width: 10),
             Expanded(
               child: _PanelLabeled(
+                index: '02',
                 title: 'INFERRED',
-                subtitle: 'Estimated from pose · synergists',
+                subtitle: 'POSE SYNERGISTS · ESTIMATED',
                 child: BodyHeatmapPanel(
                   activations: activations,
                   mode: HeatmapMode.inferred,
@@ -255,43 +257,75 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
 
 class _PanelLabeled extends StatelessWidget {
   const _PanelLabeled({
+    required this.index,
     required this.title,
     required this.subtitle,
     required this.child,
   });
 
+  final String index;
   final String title;
   final String subtitle;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 12),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
+        color: Colors.black.withValues(alpha: 0.32),
+        border: Border.all(color: MarketingPalette.hairline, width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 11,
-              letterSpacing: 2,
-              fontWeight: FontWeight.w600,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  index,
+                  style: mktMono(
+                    10,
+                    color: MarketingPalette.signal,
+                    letterSpacing: 1.6,
+                    weight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 12,
+                  height: 1,
+                  color: MarketingPalette.signal,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: mktMono(
+                      11,
+                      color: MarketingPalette.text,
+                      letterSpacing: 2.6,
+                      weight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white38, fontSize: 9),
-          ),
-          const SizedBox(height: 8),
-          AspectRatio(aspectRatio: 0.7, child: child),
-        ],
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: mktMono(
+                8,
+                color: MarketingPalette.subtle,
+                letterSpacing: 1.6,
+                weight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 10),
+            AspectRatio(aspectRatio: 0.7, child: child),
+          ],
+        ),
       ),
     );
   }
@@ -318,34 +352,49 @@ class _ScrubRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final repStr = repNumber.toString().padLeft(2, '0');
+    final totalStr = repCount.toString().padLeft(2, '0');
     return Row(
       children: [
         IconButton(
-          icon: Icon(playing ? Icons.pause : Icons.play_arrow,
-              color: Colors.white, size: 20),
+          icon: Icon(
+            playing ? Icons.pause : Icons.play_arrow,
+            color: MarketingPalette.text,
+            size: 18,
+          ),
           onPressed: onTogglePlay,
           padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
         ),
         const SizedBox(width: 10),
         Text(
-          'REP $repNumber/$repCount',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            letterSpacing: 1.5,
-            fontFamily: 'IBMPlexMono',
+          'REP',
+          style: mktMono(
+            9,
+            color: MarketingPalette.subtle,
+            letterSpacing: 2.2,
+            weight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 6),
+        Text(
+          '$repStr / $totalStr',
+          style: mktMono(
+            12,
+            color: MarketingPalette.text,
+            letterSpacing: 1.4,
+            weight: FontWeight.w500,
           ),
         ),
         const SizedBox(width: 14),
         Expanded(
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
-              trackHeight: 2,
+              trackHeight: 1,
               thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 6),
+                  const RoundSliderThumbShape(enabledThumbRadius: 5),
               activeTrackColor: BioliminalTheme.accent,
-              inactiveTrackColor: Colors.white12,
+              inactiveTrackColor: MarketingPalette.hairline,
               thumbColor: BioliminalTheme.accent,
               overlayShape: SliderComponentShape.noOverlay,
             ),

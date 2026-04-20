@@ -192,8 +192,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     return const BicepCurlIdle();
   }
 
-  /// Begin a session. Camera must already be streaming; BLE must be
-  /// connected (returns [BicepCurlError] otherwise).
+  /// Begin a session. Camera must already be streaming. Garment is
+  /// optional — when not connected, the set runs vision-only (pose-based
+  /// rep counting + compensation cues; fatigue bar greyed out).
   Future<void> startSession({
     required ArmSide side,
     CueProfile? profile,
@@ -208,17 +209,11 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     }
 
     final hardwareState = ref.read(hardwareControllerProvider);
-    if (hardwareState != HardwareConnectionState.connected) {
-      state = const BicepCurlError(
-        message: 'Connect Bioliminal Garment before starting a set',
-      );
-      return;
-    }
-
     _side = side;
     _profile = profile ?? CueProfile.intermediate();
     _sessionStartedAt = DateTime.now();
-    _bleDroppedDuringSet = false;
+    _bleDroppedDuringSet =
+        hardwareState != HardwareConnectionState.connected;
     _envelope = EnvelopeDerivator();
     _repDetector = RepDetector();
     _envelopeBuffer.clear();

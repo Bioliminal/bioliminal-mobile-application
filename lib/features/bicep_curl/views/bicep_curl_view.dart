@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
 import '../../../core/theme.dart';
 import '../../../domain/models.dart';
+import '../../camera/controllers/camera_controller.dart' show AppCameraController;
 import '../../camera/widgets/skeleton_overlay.dart';
 import '../controllers/bicep_curl_controller.dart';
 import '../models/compensation_reference.dart';
@@ -43,20 +45,27 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   DateTime? _framingReadySince;
   Timer? _framingTicker;
 
+  // Captured in initState so dispose() can clean up without touching `ref`.
+  // Riverpod 3 disallows ref access during dispose.
+  late final AppCameraController _cameraNotifier;
+  late final BicepCurlController _bicepNotifier;
+
   static const Duration _framingHoldDuration = Duration(seconds: 1);
   static const double _minVisibility = 0.6;
 
   @override
   void initState() {
     super.initState();
+    _cameraNotifier = ref.read(appCameraControllerProvider.notifier);
+    _bicepNotifier = ref.read(bicepCurlControllerProvider.notifier);
     WidgetsBinding.instance.addPostFrameCallback((_) => _bootstrapCamera());
   }
 
   @override
   void dispose() {
     _framingTicker?.cancel();
-    ref.read(appCameraControllerProvider.notifier).stopStreaming();
-    unawaited(ref.read(bicepCurlControllerProvider.notifier).cancel());
+    _cameraNotifier.stopStreaming();
+    unawaited(_bicepNotifier.cancel());
     super.dispose();
   }
 
@@ -152,12 +161,11 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     return (ms / _framingHoldDuration.inMilliseconds).clamp(0, 1);
   }
 
-  /// Called by ref.listen when the BLE connection comes up. Kicks off
-  /// the session if we're idle and the camera is streaming.
+  /// Kicks off the session as soon as the camera is streaming. Garment is
+  /// optional — if BLE connects later, the controller's hardware listener
+  /// clears `_bleDroppedDuringSet` semantics on its own.
   void _maybeStartSession() {
     if (_attemptedSessionStart) return;
-    final hardware = ref.read(hardwareControllerProvider);
-    if (hardware != HardwareConnectionState.connected) return;
     final cam = ref.read(appCameraControllerProvider).value;
     if (cam is! CameraStreaming) return;
 
@@ -273,6 +281,24 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
               ref.read(appCameraControllerProvider.notifier).toggleCamera();
             },
           ),
+          Consumer(builder: (context, ref, _) {
+            final hw = ref.watch(hardwareControllerProvider);
+            final connected = hw == HardwareConnectionState.connected;
+            return IconButton(
+              icon: Icon(
+                connected ? Icons.bluetooth_connected : Icons.bluetooth_disabled,
+                color: connected ? BioliminalTheme.accent : Colors.white54,
+              ),
+              tooltip: connected
+                  ? 'Garment connected — EMG fatigue tracking on'
+                  : 'Optional: connect Bioliminal Garment for EMG fatigue tracking',
+              onPressed: connected
+                  ? null
+                  : () => ref
+                      .read(hardwareControllerProvider.notifier)
+                      .startScan(),
+            );
+          }),
           const Spacer(),
           if (s is BicepCurlCalibrating)
             StatusBadge(
@@ -286,11 +312,6 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   }
 
   Widget _hudCenter(BicepCurlState s, HardwareConnectionState hw) {
-    if (hw != HardwareConnectionState.connected) {
-      return _ConnectGarmentCta(onConnect: () {
-        ref.read(hardwareControllerProvider.notifier).startScan();
-      });
-    }
     if (s is BicepCurlSetup) {
       return FramingCheckOverlay(
         holdProgress: _framingHoldProgress,
@@ -329,49 +350,52 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
             ),
             const SizedBox(height: 14),
             RepCounter(repCount: s.reps.length, label: 'REPS'),
+            const SizedBox(height: 16),
+            _EndSetButton(onPressed: _endSet),
           ],
         ),
       );
     }
     if (s is BicepCurlCalibrating) {
-      return RepCounter(repCount: s.repsCompleted, label: 'CALIBRATION');
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          RepCounter(repCount: s.repsCompleted, label: 'CALIBRATION'),
+          const SizedBox(height: 16),
+          _EndSetButton(onPressed: _endSet),
+        ],
+      );
     }
     return const SizedBox.shrink();
   }
+
+  Future<void> _endSet() async {
+    await ref.read(bicepCurlControllerProvider.notifier).endSession();
+  }
 }
 
-class _ConnectGarmentCta extends StatelessWidget {
-  const _ConnectGarmentCta({required this.onConnect});
-  final VoidCallback onConnect;
+class _EndSetButton extends StatelessWidget {
+  const _EndSetButton({required this.onPressed});
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(Icons.bluetooth_searching,
-              color: Colors.white, size: 28),
-          const SizedBox(height: 8),
-          const Text(
-            'Connect Bioliminal Garment',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+    return SizedBox(
+      width: 220,
+      child: FilledButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.stop_circle_outlined),
+        label: const Text('END SET'),
+        style: FilledButton.styleFrom(
+          backgroundColor: BioliminalTheme.accent,
+          foregroundColor: Colors.black,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 1.2,
           ),
-          const SizedBox(height: 12),
-          ElevatedButton(
-            onPressed: onConnect,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: BioliminalTheme.accent,
-              foregroundColor: Colors.black,
-            ),
-            child: const Text('SCAN'),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -389,11 +413,24 @@ class _CoverCameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     var scale = size.aspectRatio * controller.value.aspectRatio;
     if (scale < 1) scale = 1 / scale;
-    return ClipRect(
+    final isFront =
+        controller.description.lensDirection == CameraLensDirection.front;
+    // Android camerax mirrors front-preview by default; iOS AVFoundation
+    // does not. Force-mirror on iOS so the selfie-style view is consistent
+    // across platforms and aligns with SkeletonOverlay's front-camera flip.
+    final preview = ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
+    if (isFront && Platform.isIOS) {
+      return Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
+        child: preview,
+      );
+    }
+    return preview;
   }
 }
