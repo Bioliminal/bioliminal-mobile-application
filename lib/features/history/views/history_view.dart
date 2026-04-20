@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
-import '../../../core/theme.dart';
+import '../../../core/widgets/mobile_action_button.dart';
+import '../../landing/widgets/marketing_tokens.dart';
+import '../../landing/widgets/premium_atmosphere.dart';
 import '../../../domain/models.dart';
 
 final _sessionRecordsProvider = FutureProvider.autoDispose<List<SessionRecord>>(
@@ -21,49 +23,83 @@ class HistoryView extends ConsumerWidget {
     final asyncRecords = ref.watch(_sessionRecordsProvider);
 
     return Scaffold(
-      backgroundColor: BioliminalTheme.screenBackground,
-      body: SafeArea(
-        child: Column(
-          children: [
-            const _PageHeader(),
-            Expanded(
-              child: asyncRecords.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      'Failed to load history: $e',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-                data: (records) => records.isEmpty
-                    ? const _EmptyState()
-                    : _SessionList(records: records),
+      backgroundColor: MarketingPalette.bg,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Positioned.fill(
+            child: IgnorePointer(
+              child: AtmosphereGlow(
+                color: SectionTint.cyan,
+                center: Alignment(-0.9, -0.85),
+                peak: 0.06,
               ),
             ),
-            const _NewScanBar(),
-          ],
-        ),
+          ),
+          SafeArea(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const _PageHeader(),
+                const _Hairline(),
+                Expanded(
+                  child: asyncRecords.when(
+                    loading: () => const Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                    error: (e, _) => Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Failed to load sessions: $e',
+                          style: mktBody(14, color: MarketingPalette.muted),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                    data: (records) => records.isEmpty
+                        ? const _EmptyState()
+                        : _SessionList(records: records),
+                  ),
+                ),
+                const _Hairline(),
+                const _NewScanBar(),
+              ],
+            ),
+          ),
+          const Positioned.fill(
+            child: IgnorePointer(child: FilmGrainOverlay()),
+          ),
+        ],
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Header — meta row + Fraunces headline + hardware status strip
+// ---------------------------------------------------------------------------
 
 class _PageHeader extends StatelessWidget {
   const _PageHeader();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 22),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('SESSIONS', style: theme.textTheme.headlineLarge),
-          const SizedBox(height: 12),
+          Text(
+            'Sessions',
+            style: mktDisplay(
+              36,
+              weight: FontWeight.w500,
+              letterSpacing: -1.4,
+              height: 0.95,
+            ),
+          ),
+          const SizedBox(height: 14),
           const _HardwareStatusRow(),
         ],
       ),
@@ -76,7 +112,6 @@ class _HardwareStatusRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final state = ref.watch(hardwareControllerProvider);
 
     final Color color;
@@ -85,25 +120,27 @@ class _HardwareStatusRow extends ConsumerWidget {
 
     switch (state) {
       case HardwareConnectionState.connected:
-        color = theme.colorScheme.secondary;
-        label = 'CONNECTED';
+        color = MarketingPalette.signal;
+        label = 'GARMENT LINK · CONNECTED';
         action = null;
       case HardwareConnectionState.scanning:
       case HardwareConnectionState.connecting:
-        color = Colors.orange;
-        label = 'SEARCHING';
+        color = MarketingPalette.warn;
+        label = 'GARMENT LINK · SEARCHING';
         action = null;
       case HardwareConnectionState.disconnected:
-        color = Colors.white.withValues(alpha: 0.3);
-        label = 'OFFLINE';
+        color = MarketingPalette.subtle;
+        label = 'GARMENT LINK · OFFLINE';
         action = 'TAP TO PAIR';
     }
 
+    final offline = state == HardwareConnectionState.disconnected;
+
     return InkWell(
-      onTap: state == HardwareConnectionState.disconnected
+      onTap: offline
           ? () => ref.read(hardwareControllerProvider.notifier).startScan()
           : null,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.zero,
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
@@ -116,24 +153,29 @@ class _HardwareStatusRow extends ConsumerWidget {
             const SizedBox(width: 10),
             Text(
               label,
-              style: theme.textTheme.labelSmall?.copyWith(
+              style: mktMono(
+                10,
                 color: color,
-                letterSpacing: 2.0,
-                fontWeight: FontWeight.w600,
+                letterSpacing: 2.2,
+                weight: FontWeight.w600,
               ),
             ),
             if (action != null) ...[
-              Text(
-                '  ·  ',
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Container(
+                  width: 10,
+                  height: 1,
+                  color: MarketingPalette.hairline,
                 ),
               ),
               Text(
                 action,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  letterSpacing: 2.0,
+                style: mktMono(
+                  10,
+                  color: MarketingPalette.muted,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w500,
                 ),
               ),
             ],
@@ -144,35 +186,81 @@ class _HardwareStatusRow extends ConsumerWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Empty state
+// ---------------------------------------------------------------------------
+
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.fromLTRB(24, 60, 24, 40),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.timeline, size: 80, color: theme.colorScheme.secondary),
-          const SizedBox(height: 48),
           Text(
-            'No sessions\nyet',
-            style: theme.textTheme.headlineLarge,
-            textAlign: TextAlign.center,
+            '// AWAITING FIRST CAPTURE',
+            style: mktMono(
+              10,
+              color: MarketingPalette.subtle,
+              letterSpacing: 2.6,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
-            'Complete your first capture to see your analysis here.',
-            style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white70),
-            textAlign: TextAlign.center,
+            'No sessions\nyet.',
+            style: mktDisplay(
+              40,
+              weight: FontWeight.w500,
+              letterSpacing: -1.6,
+              height: 0.95,
+            ),
+          ),
+          const SizedBox(height: 24),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Text(
+              'Every session you capture lands here — peak envelope, cue '
+              'history, form trajectory. Complete your first set to open '
+              'this view.',
+              style: mktBody(
+                15,
+                color: MarketingPalette.muted,
+                height: 1.55,
+              ),
+            ),
+          ),
+          const SizedBox(height: 40),
+          Row(
+            children: [
+              Container(
+                width: 18,
+                height: 1,
+                color: MarketingPalette.signal,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'TAP NEW SCAN TO BEGIN',
+                style: mktMono(
+                  10,
+                  color: MarketingPalette.muted,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Session list
+// ---------------------------------------------------------------------------
 
 class _SessionList extends StatelessWidget {
   const _SessionList({required this.records});
@@ -181,94 +269,107 @@ class _SessionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
       itemCount: records.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 12),
-      itemBuilder: (context, i) => _SessionCard(record: records[i]),
+      separatorBuilder: (_, _) => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 4),
+        child: _Hairline(),
+      ),
+      itemBuilder: (context, i) => _SessionRow(record: records[i]),
     );
   }
 }
 
-class _SessionCard extends StatelessWidget {
-  const _SessionCard({required this.record});
+class _SessionRow extends StatelessWidget {
+  const _SessionRow({required this.record});
   final SessionRecord record;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isBicepCurl = record.movement == 'bicep_curl';
     final report = record.report;
     final bicepCurl = record.bicepCurl;
 
-    final _CardStatus status;
-    final String summary;
+    final String statusLabel;
+    final Color statusColor;
     final String tapDestination;
 
     if (isBicepCurl && bicepCurl != null) {
       final reps = (bicepCurl['reps'] as List?)?.length ?? 0;
-      final cueCount = (bicepCurl['cue_events'] as List?)?.length ?? 0;
-      final bleDropped = bicepCurl['ble_dropped_during_set'] as bool? ?? false;
-      status = _CardStatus(
-        label: '$reps REPS',
-        color: theme.colorScheme.secondary,
-      );
-      summary = bleDropped
-          ? '$cueCount cues fired · BLE dropped mid-set'
-          : '$cueCount cues fired across the set';
+      statusLabel = '$reps REPS';
+      statusColor = MarketingPalette.signal;
       tapDestination = '/bicep-curl/debrief/${record.sessionId}';
     } else {
       final passed = report?.movementSection.qualityReport.passed;
-      status = switch (passed) {
-        true => _CardStatus(
-          label: 'PASSED',
-          color: theme.colorScheme.secondary,
-        ),
-        false => const _CardStatus(label: 'REJECTED', color: Colors.redAccent),
-        null => const _CardStatus(label: 'PENDING', color: Colors.white38),
+      (statusLabel, statusColor) = switch (passed) {
+        true => ('PASSED', MarketingPalette.signal),
+        false => ('REJECTED', MarketingPalette.error),
+        null => ('PENDING', MarketingPalette.subtle),
       };
-      summary = report != null
-          ? _truncate(report.overallNarrative, 140)
-          : 'Waiting for server analysis...';
       tapDestination = '/report/${record.sessionId}';
     }
 
     return InkWell(
-      onTap: () => context.go(tapDestination),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BioliminalTheme.glassEffect,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      onTap: () => context.push(tapDestination),
+      borderRadius: BorderRadius.zero,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                Text(
-                  record.movement.replaceAll('_', ' ').toUpperCase(),
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    color: Colors.white,
-                    letterSpacing: 2.0,
-                    fontWeight: FontWeight.w700,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _movementTitle(record.movement),
+                    style: mktDisplay(
+                      22,
+                      weight: FontWeight.w500,
+                      letterSpacing: -0.6,
+                      height: 1,
+                    ),
                   ),
-                ),
-                const Spacer(),
-                status,
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              _formatDate(record.capturedAt.toLocal()),
-              style: theme.textTheme.bodySmall?.copyWith(color: Colors.white38),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              summary,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.white70,
-                height: 1.4,
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        _formatDate(record.capturedAt.toLocal()),
+                        style: mktMono(
+                          10,
+                          color: MarketingPalette.muted,
+                          letterSpacing: 1.8,
+                          weight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        '   ·   ',
+                        style: mktMono(
+                          10,
+                          color: MarketingPalette.subtle,
+                          letterSpacing: 1.8,
+                        ),
+                      ),
+                      Text(
+                        statusLabel,
+                        style: mktMono(
+                          10,
+                          color: statusColor,
+                          letterSpacing: 2.0,
+                          weight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(width: 12),
+            const Icon(
+              Icons.chevron_right,
+              size: 22,
+              color: MarketingPalette.subtle,
             ),
           ],
         ),
@@ -277,32 +378,9 @@ class _SessionCard extends StatelessWidget {
   }
 }
 
-class _CardStatus extends StatelessWidget {
-  const _CardStatus({required this.label, required this.color});
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        border: Border.all(color: color.withValues(alpha: 0.4)),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: color,
-          letterSpacing: 1.5,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-}
+// ---------------------------------------------------------------------------
+// New scan bar
+// ---------------------------------------------------------------------------
 
 class _NewScanBar extends StatelessWidget {
   const _NewScanBar();
@@ -310,39 +388,69 @@ class _NewScanBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton(
-          onPressed: () => context.go('/sets'),
-          child: const Text('NEW SCAN'),
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 18),
+      child: Row(
+        children: [
+          Expanded(
+            child: MobileActionButton(
+              label: 'NEW SCAN',
+              filled: true,
+              onTap: () => context.go('/sets'),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-String _truncate(String text, int max) {
-  if (text.length <= max) return text;
-  return '${text.substring(0, max).trimRight()}…';
+// ---------------------------------------------------------------------------
+// Shared primitives
+// ---------------------------------------------------------------------------
+
+class _Hairline extends StatelessWidget {
+  const _Hairline();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(height: 1, color: MarketingPalette.hairline);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Formatting
+// ---------------------------------------------------------------------------
+
+String _movementTitle(String wire) {
+  switch (wire) {
+    case 'bicep_curl':
+      return 'Bicep curl';
+    case 'overhead_squat':
+      return 'Overhead squat';
+    case 'single_leg_squat':
+      return 'Single-leg squat';
+    case 'push_up':
+      return 'Push-up';
+    case 'rollup':
+      return 'Rollup';
+  }
+  final words = wire.replaceAll('_', ' ').split(' ');
+  if (words.isEmpty) return wire;
+  final first = words.first;
+  final head = first.isEmpty
+      ? first
+      : '${first[0].toUpperCase()}${first.substring(1)}';
+  final rest = words.skip(1).join(' ');
+  return rest.isEmpty ? head : '$head $rest';
 }
 
 String _formatDate(DateTime dt) {
-  final months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
+  const months = [
+    'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
   ];
   final hh = dt.hour.toString().padLeft(2, '0');
   final mm = dt.minute.toString().padLeft(2, '0');
-  return '${months[dt.month - 1]} ${dt.day}, ${dt.year} · $hh:$mm';
+  return '${months[dt.month - 1]} ${dt.day.toString().padLeft(2, '0')} '
+      '${dt.year}  ·  $hh:$mm';
 }
