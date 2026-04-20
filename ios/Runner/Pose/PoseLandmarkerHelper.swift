@@ -24,6 +24,12 @@ final class PoseLandmarkerHelper {
         default:
             options.baseOptions.delegate = .CPU
         }
+        NSLog(
+            "[PoseLandmarkerHelper] setup: requestedDelegate=%@ resolvedDelegate=%@ modelAssetPath=%@",
+            delegate,
+            String(describing: options.baseOptions.delegate),
+            modelAssetPath
+        )
         options.runningMode = .video
         options.numPoses = 1
         options.minPoseDetectionConfidence = 0.5

@@ -36,6 +36,10 @@ class PoseLandmarkerHelper(private val context: Context) {
             "gpu" -> Delegate.GPU
             else -> Delegate.CPU  // "cpu" and any unrecognized token default to CPU
         }
+        android.util.Log.i(
+            "PoseLandmarkerHelper",
+            "setup: requestedDelegate=$delegate resolvedDelegate=$mpDelegate modelAssetPath=$modelAssetPath"
+        )
         val options = PoseLandmarker.PoseLandmarkerOptions.builder()
             .setBaseOptions(
                 BaseOptions.builder()
