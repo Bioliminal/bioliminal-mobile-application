@@ -36,6 +36,17 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   int? _lastSeqNum;
   int _malformedPacketCount = 0;
 
+  // Remembered FF04 SET_SESSION_STATE value so we can resync firmware after a
+  // BLE reconnect. Firmware resets to Idle on disconnect; without this, the
+  // app reconnects, the user keeps curling, and no FF02 packets arrive because
+  // the firmware gate is still closed.
+  int? _lastSessionState;
+
+  // Set to true once FF02 NOTIFY is armed during service discovery. Paired
+  // with a non-null _commandChar check to detect a silent discovery failure
+  // (peripheral advertised FF01 but is missing one of the characteristics).
+  bool _notifyCharFound = false;
+
   static const String _serviceUuid = 'FF01';
   static const String _notifyCharUuid = 'FF02';
   static const String _writeCharUuid = 'FF04';
@@ -81,15 +92,17 @@ class HardwareController extends Notifier<HardwareConnectionState> {
     state = HardwareConnectionState.connecting;
     _targetDevice = device;
     _lastSeqNum = null;
+    _notifyCharFound = false;
+    _commandChar = null;
 
     try {
       await device.connect();
-      state = HardwareConnectionState.connected;
 
       _connectionSubscription = device.connectionState.listen((s) {
         if (s == BluetoothConnectionState.disconnected) {
           _commandChar = null;
           _lastSeqNum = null;
+          _notifyCharFound = false;
           state = HardwareConnectionState.disconnected;
         }
       });
@@ -106,15 +119,42 @@ class HardwareController extends Notifier<HardwareConnectionState> {
           }
         }
       }
+
+      if (!_notifyCharFound || _commandChar == null) {
+        developer.log(
+          'BLE discovery incomplete (FF02=$_notifyCharFound, FF04=${_commandChar != null}); disconnecting',
+          name: 'HardwareController',
+        );
+        await device.disconnect();
+        return;
+      }
+
+      state = HardwareConnectionState.connected;
+
+      // Firmware resets to Idle on disconnect. If we had a session state in
+      // flight (Calibrating/Active) before the drop, re-assert it so sampling
+      // and FF02 notifications resume without the user restarting the set.
+      final lastState = _lastSessionState;
+      if (lastState != null) {
+        developer.log(
+          'resyncing SET_SESSION_STATE=$lastState after connect',
+          name: 'HardwareController',
+        );
+        await sendCommand([0x12, lastState]);
+      }
     } catch (e) {
       developer.log('BLE connect error', error: e, name: 'HardwareController');
       state = HardwareConnectionState.disconnected;
     }
   }
 
-  Future<void> _subscribeToNotify(BluetoothCharacteristic characteristic) async {
+  Future<void> _subscribeToNotify(
+    BluetoothCharacteristic characteristic,
+  ) async {
+    await _notifySubscription?.cancel();
     await characteristic.setNotifyValue(true);
     _notifySubscription = characteristic.lastValueStream.listen(_onPacket);
+    _notifyCharFound = true;
   }
 
   void _onPacket(List<int> bytes) {
@@ -163,20 +203,45 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   // Pre-computed cue payloads from haptic-cueing-handshake.md §"BLE protocol".
   // Kept here for BleDebugView smoke testing; production cue dispatch should go
   // through CueDispatcher → Cue.writeTo() so v2 pressure cues plug in cleanly.
-  static const List<int> _payloadFatigueFade =
-      [0x10, 0x00, 0xB4, 0x02, 0xC8, 0x00, 0x96, 0x00];
-  static const List<int> _payloadFatigueUrgent =
-      [0x10, 0x00, 0xE6, 0x02, 0xC8, 0x00, 0x96, 0x00];
-  static const List<int> _payloadFormAlert =
-      [0x10, 0x00, 0xE6, 0x03, 0x64, 0x00, 0x50, 0x00];
+  static const List<int> _payloadFatigueFade = [
+    0x10,
+    0x00,
+    0xB4,
+    0x02,
+    0xC8,
+    0x00,
+    0x96,
+    0x00,
+  ];
+  static const List<int> _payloadFatigueUrgent = [
+    0x10,
+    0x00,
+    0xE6,
+    0x02,
+    0xC8,
+    0x00,
+    0x96,
+    0x00,
+  ];
+  static const List<int> _payloadFormAlert = [
+    0x10,
+    0x00,
+    0xE6,
+    0x03,
+    0x64,
+    0x00,
+    0x50,
+    0x00,
+  ];
 
   Future<void> fireFatigueFade() => sendCommand(_payloadFatigueFade);
   Future<void> fireFatigueUrgent() => sendCommand(_payloadFatigueUrgent);
   Future<void> fireFormAlert() => sendCommand(_payloadFormAlert);
-  Future<void> stopHaptic([int motorIdx = 0]) =>
-      sendCommand([0x11, motorIdx]);
-  Future<void> setSessionState(int sessionState) =>
-      sendCommand([0x12, sessionState]);
+  Future<void> stopHaptic([int motorIdx = 0]) => sendCommand([0x11, motorIdx]);
+  Future<void> setSessionState(int sessionState) {
+    _lastSessionState = sessionState;
+    return sendCommand([0x12, sessionState]);
+  }
 }
 
 final hardwareControllerProvider =
