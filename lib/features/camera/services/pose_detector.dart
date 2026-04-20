@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:camera/camera.dart';
 
@@ -43,22 +44,38 @@ class MediaPipePoseDetector implements PoseDetector {
   final PoseConfig _config;
   final PoseChannel _channel;
   bool _initialized = false;
+  bool _initFailed = false;
 
   String get assetPath => _config.modelAssetPath;
   PoseDelegate get delegate => _config.delegate;
+
+  /// True after a failed [PoseChannel.initialize] call.
+  /// Overlay will remain empty until the app is restarted.
+  bool get initFailed => _initFailed;
 
   @override
   Future<List<domain.PoseLandmark>> processFrame(
     CameraImage image, {
     required int rotationDegrees,
   }) async {
-    if (!_initialized) {
+    if (!_initialized && !_initFailed) {
       _initialized = await _channel.initialize(
         assetPath: _config.modelAssetPath,
         delegate: _config.delegate.wireName,
       );
-      if (!_initialized) return const [];
+      if (!_initialized) {
+        _initFailed = true;
+        developer.log(
+          'Pose landmarker init failed — model asset missing or delegate '
+          'unsupported. assetPath=${_config.modelAssetPath} '
+          'delegate=${_config.delegate.wireName}. '
+          'Overlay will remain empty until app restart.',
+          name: 'MediaPipePoseDetector',
+          level: 1000, // SEVERE
+        );
+      }
     }
+    if (_initFailed) return const [];
 
     final plane = image.planes.first;
     final raw = await _channel.processFrame(
