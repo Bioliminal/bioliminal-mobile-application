@@ -23,7 +23,15 @@ class CompensationDetector {
     ArmSide side,
   ) {
     if (calibrationFrames.isEmpty) {
-      throw StateError('Cannot build compensation reference from zero frames');
+      // No pose frames landed during calibration (degraded lighting, late
+      // channel init, or very fast reps). Return a zero-drift baseline so
+      // compensation thresholds don't fire falsely and the session can
+      // continue instead of crashing on a StateError.
+      return CompensationReference(
+        shoulderYRef: 0.0,
+        torsoPitchDegRef: 0.0,
+        armSide: side,
+      );
     }
     var sumShoulderY = 0.0;
     var sumPitch = 0.0;
