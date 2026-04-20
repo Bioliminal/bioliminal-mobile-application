@@ -12,10 +12,18 @@ final class PoseLandmarkerHelper {
 
     private var landmarker: PoseLandmarker?
 
-    func setup(modelAssetPath: String) throws {
+    func setup(modelAssetPath: String, delegate: String) throws {
         close()
         let options = PoseLandmarkerOptions()
         options.baseOptions.modelAssetPath = modelAssetPath
+        switch delegate.lowercased() {
+        case "coreml":
+            options.baseOptions.delegate = .CoreML
+        case "gpu":
+            options.baseOptions.delegate = .GPU
+        default:
+            options.baseOptions.delegate = .CPU
+        }
         options.runningMode = .video
         options.numPoses = 1
         options.minPoseDetectionConfidence = 0.5
