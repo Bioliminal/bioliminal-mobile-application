@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/providers.dart';
-import '../../landing/widgets/instrument_button.dart';
+import '../../../core/widgets/mobile_action_button.dart';
 import '../../landing/widgets/marketing_tokens.dart';
 import '../../landing/widgets/premium_atmosphere.dart';
 import '../models/compensation_reference.dart' show ArmSide;
@@ -67,7 +67,7 @@ class BicepCurlDebriefView extends ConsumerWidget {
                     ),
                   );
                 }
-                return _DebriefBody(log: log, sessionId: sessionId);
+                return _DebriefBody(log: log);
               },
             ),
           ),
@@ -81,10 +81,9 @@ class BicepCurlDebriefView extends ConsumerWidget {
 }
 
 class _DebriefBody extends StatelessWidget {
-  const _DebriefBody({required this.log, required this.sessionId});
+  const _DebriefBody({required this.log});
 
   final SessionLog log;
-  final String sessionId;
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +91,11 @@ class _DebriefBody extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _PageHeader(log: log, sessionId: sessionId),
+        _PageHeader(log: log),
         const _Hairline(),
         Expanded(
           child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -173,9 +173,8 @@ class _DebriefBody extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _PageHeader extends StatelessWidget {
-  const _PageHeader({required this.log, required this.sessionId});
+  const _PageHeader({required this.log});
   final SessionLog log;
-  final String sessionId;
 
   @override
   Widget build(BuildContext context) {
@@ -190,60 +189,18 @@ class _PageHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              _BackChevron(onTap: () => context.go('/history')),
-              const SizedBox(width: 4),
-              Expanded(
-                child: Text(
-                  'SESSION / ${_shortId(sessionId)}',
-                  style: mktMono(
-                    10,
-                    color: MarketingPalette.subtle,
-                    letterSpacing: 2.2,
-                    weight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Text(
-                _formatMetaDate(log.startedAt.toLocal()),
-                style: mktMono(
-                  10,
-                  color: MarketingPalette.subtle,
-                  letterSpacing: 2.2,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
+          _BackChevron(onTap: () => _goBack(context)),
+          const SizedBox(height: 12),
           Padding(
             padding: const EdgeInsets.only(left: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.baseline,
-              textBaseline: TextBaseline.alphabetic,
-              children: [
-                Text(
-                  'Debriefed',
-                  style: mktDisplay(
-                    52,
-                    italic: true,
-                    weight: FontWeight.w500,
-                    letterSpacing: -2,
-                    height: 0.95,
-                    color: MarketingPalette.signal,
-                  ),
-                ),
-                Text(
-                  '.',
-                  style: mktDisplay(
-                    52,
-                    weight: FontWeight.w500,
-                    letterSpacing: -2,
-                    height: 0.95,
-                  ),
-                ),
-              ],
+            child: Text(
+              'Debrief',
+              style: mktDisplay(
+                36,
+                weight: FontWeight.w500,
+                letterSpacing: -1.4,
+                height: 0.95,
+              ),
             ),
           ),
           const SizedBox(height: 14),
@@ -693,17 +650,15 @@ class _CtaBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: InstrumentButton(
+            child: MobileActionButton(
               label: 'DONE',
-              hint: '↖ HISTORY',
-              onTap: () => context.go('/history'),
+              onTap: () => _goBack(context),
             ),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: InstrumentButton(
+            child: MobileActionButton(
               label: 'ANOTHER SET',
-              hint: '↗',
               filled: true,
               onTap: () => context.go('/sets'),
             ),
@@ -730,14 +685,21 @@ class _Hairline extends StatelessWidget {
   }
 }
 
+/// Prefer `pop` when the nav stack has something to return to (entered from
+/// history list via push). Fall back to a direct `go('/history')` for the
+/// replace-semantic entry from the live bicep-curl view — in that case
+/// there is no live-view page to return to.
+void _goBack(BuildContext context) {
+  if (context.canPop()) {
+    context.pop();
+  } else {
+    context.go('/history');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Formatting helpers
 // ---------------------------------------------------------------------------
-
-String _shortId(String id) {
-  if (id.length <= 18) return id.toUpperCase();
-  return '${id.substring(0, 6)}…${id.substring(id.length - 6)}'.toUpperCase();
-}
 
 String _durationValue(Duration d) {
   if (d.inMinutes == 0) return d.inSeconds.toString();
@@ -747,13 +709,4 @@ String _durationValue(Duration d) {
 
 String _durationUnit(Duration d) {
   return d.inMinutes == 0 ? 'SEC' : 'MIN';
-}
-
-String _formatMetaDate(DateTime dt) {
-  final mm = dt.month.toString().padLeft(2, '0');
-  final dd = dt.day.toString().padLeft(2, '0');
-  final yy = (dt.year % 100).toString().padLeft(2, '0');
-  final hh = dt.hour.toString().padLeft(2, '0');
-  final mi = dt.minute.toString().padLeft(2, '0');
-  return 'REV. $mm.$dd.$yy · $hh:$mi';
 }

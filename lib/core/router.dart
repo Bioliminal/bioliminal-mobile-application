@@ -31,6 +31,33 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorHistoryKey = GlobalKey<NavigatorState>();
 final _shellNavigatorSettingsKey = GlobalKey<NavigatorState>();
 
+/// Direction-free page transition matching the instrument-panel aesthetic:
+/// pure fade, no scale, no slide. Symmetric on forward and reverse so
+/// `context.go` (replace) and `context.pop` read identically — neither
+/// can feel like it's animating in the "wrong direction" because there
+/// is no direction.
+Page<dynamic> _instrumentPage({
+  required LocalKey key,
+  required Widget child,
+  String? name,
+}) {
+  return CustomTransitionPage<void>(
+    key: key,
+    name: name,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+      return FadeTransition(opacity: curved, child: child);
+    },
+  );
+}
+
 final goRouter = GoRouter(
   initialLocation: kIsWeb ? '/' : '/disclaimer',
   navigatorKey: _rootNavigatorKey,
@@ -49,7 +76,7 @@ final goRouter = GoRouter(
     return null;
   },
   routes: [
-    // Marketing routes — web-style navigation (no mobile slide transition).
+    // Marketing routes — web-style navigation (no transition).
     GoRoute(
       path: '/',
       parentNavigatorKey: _rootNavigatorKey,
@@ -86,79 +113,121 @@ final goRouter = GoRouter(
       pageBuilder: (context, state) =>
           const NoTransitionPage(child: WaitlistView()),
     ),
+
+    // App routes — unified instrument-panel fade transition.
     GoRoute(
       path: '/disclaimer',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const DisclaimerView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const DisclaimerView(),
+      ),
     ),
     GoRoute(
       path: '/auth-options',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const AuthOptionsView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const AuthOptionsView(),
+      ),
     ),
     GoRoute(
       path: '/report/:id',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => ReportView(id: state.pathParameters['id']!),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: ReportView(id: state.pathParameters['id']!),
+      ),
     ),
     GoRoute(
       path: '/login',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const LoginView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const LoginView(),
+      ),
     ),
     GoRoute(
       path: '/sign-up',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SignUpView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const SignUpView(),
+      ),
     ),
     GoRoute(
       path: '/sign-in',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SignInView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const SignInView(),
+      ),
     ),
     GoRoute(
       path: '/profile',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const ProfileView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const ProfileView(),
+      ),
     ),
     GoRoute(
       path: '/calibration',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const CalibrationView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const CalibrationView(),
+      ),
     ),
     GoRoute(
       path: '/ble-debug',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const BleDebugView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const BleDebugView(),
+      ),
     ),
     GoRoute(
       path: '/sets',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) => const SetPickerView(),
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: const SetPickerView(),
+      ),
     ),
     GoRoute(
       path: '/bicep-curl',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
+      pageBuilder: (context, state) {
         final side = state.uri.queryParameters['side'] == 'left'
             ? ArmSide.left
             : ArmSide.right;
-        return BicepCurlView(armSide: side);
+        return _instrumentPage(
+          key: state.pageKey,
+          child: BicepCurlView(armSide: side),
+        );
       },
     ),
     GoRoute(
       path: '/bicep-curl/debrief/:id',
       parentNavigatorKey: _rootNavigatorKey,
-      builder: (context, state) {
-        return BicepCurlDebriefView(sessionId: state.pathParameters['id']!);
-      },
+      pageBuilder: (context, state) => _instrumentPage(
+        key: state.pageKey,
+        child: BicepCurlDebriefView(sessionId: state.pathParameters['id']!),
+      ),
     ),
 
-    // Shell routes for bottom nav
-    StatefulShellRoute.indexedStack(
+    // Shell routes for bottom nav — branches cross-fade instead of hard-cut.
+    StatefulShellRoute(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state, navigationShell) {
         return MainScaffold(navigationShell: navigationShell);
+      },
+      navigatorContainerBuilder: (context, navigationShell, children) {
+        return _ShellCrossfade(
+          currentIndex: navigationShell.currentIndex,
+          children: children,
+        );
       },
       branches: [
         StatefulShellBranch(
@@ -166,7 +235,10 @@ final goRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/history',
-              builder: (context, state) => const HistoryView(),
+              pageBuilder: (context, state) => _instrumentPage(
+                key: state.pageKey,
+                child: const HistoryView(),
+              ),
             ),
           ],
         ),
@@ -175,7 +247,10 @@ final goRouter = GoRouter(
           routes: [
             GoRoute(
               path: '/settings',
-              builder: (context, state) => const SettingsView(),
+              pageBuilder: (context, state) => _instrumentPage(
+                key: state.pageKey,
+                child: const SettingsView(),
+              ),
             ),
           ],
         ),
@@ -183,3 +258,34 @@ final goRouter = GoRouter(
     ),
   ],
 );
+
+/// Stacks all shell branches at once and cross-fades between them when the
+/// bottom nav index changes. Keeps every branch mounted so scroll/state is
+/// preserved (same guarantee as `StatefulShellRoute.indexedStack`).
+class _ShellCrossfade extends StatelessWidget {
+  const _ShellCrossfade({
+    required this.currentIndex,
+    required this.children,
+  });
+
+  final int currentIndex;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        for (var i = 0; i < children.length; i++)
+          IgnorePointer(
+            ignoring: currentIndex != i,
+            child: AnimatedOpacity(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              opacity: currentIndex == i ? 1.0 : 0.0,
+              child: children[i],
+            ),
+          ),
+      ],
+    );
+  }
+}
