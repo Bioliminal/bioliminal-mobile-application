@@ -1,0 +1,4 @@
+storePassword=changeme
+keyPassword=changeme
+keyAlias=bioliminal
+storeFile=/absolute/path/to/bioliminal-release.jks

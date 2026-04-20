@@ -9,18 +9,12 @@ import '../../landing/widgets/marketing_tokens.dart';
 import '../../landing/widgets/premium_atmosphere.dart';
 import '../../../domain/models.dart';
 
-final _sessionRecordsProvider = FutureProvider.autoDispose<List<SessionRecord>>(
-  (ref) {
-    return ref.read(localStorageServiceProvider).listSessionRecords();
-  },
-);
-
 class HistoryView extends ConsumerWidget {
   const HistoryView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncRecords = ref.watch(_sessionRecordsProvider);
+    final asyncRecords = ref.watch(sessionRecordsProvider);
 
     return Scaffold(
       backgroundColor: MarketingPalette.bg,
