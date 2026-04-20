@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/theme.dart';
+import '../../../landing/widgets/marketing_tokens.dart';
 import '../../models/cue_decision.dart';
 import '../../models/cue_event.dart';
 
@@ -12,57 +13,102 @@ class CueTimeline extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (events.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 12),
-        child: Text(
-          'No cues fired this set.',
-          style: TextStyle(color: Colors.white54),
-        ),
+      return Row(
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: MarketingPalette.subtle,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'NO CUES FIRED',
+            style: mktMono(
+              10,
+              color: MarketingPalette.subtle,
+              letterSpacing: 2.4,
+              weight: FontWeight.w600,
+            ),
+          ),
+        ],
       );
     }
+    final rows = <Widget>[];
+    for (var i = 0; i < events.length; i++) {
+      if (i > 0) {
+        rows.add(Container(
+          height: 1,
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          color: MarketingPalette.hairline,
+        ));
+      }
+      rows.add(_row(events[i], index: i + 1));
+    }
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (final e in events) _row(e),
-      ],
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: rows,
     );
   }
 
-  Widget _row(CueEvent e) {
+  Widget _row(CueEvent e, {required int index}) {
     final color = _cueColor(e.content);
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Row(
         children: [
+          SizedBox(
+            width: 22,
+            child: Text(
+              index.toString().padLeft(2, '0'),
+              style: mktMono(
+                10,
+                color: MarketingPalette.subtle,
+                letterSpacing: 1.4,
+                weight: FontWeight.w500,
+              ),
+            ),
+          ),
           Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            'REP ${e.repNum}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontFamily: 'IBMPlexMono',
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            _label(e.content),
-            style: TextStyle(
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
               color: color,
-              letterSpacing: 1.5,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
+              shape: BoxShape.circle,
             ),
           ),
-          const Spacer(),
+          const SizedBox(width: 14),
+          Text(
+            'REP ${e.repNum.toString().padLeft(2, '0')}',
+            style: mktMono(
+              11,
+              color: MarketingPalette.text,
+              letterSpacing: 1.4,
+              weight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(width: 18),
+          Expanded(
+            child: Text(
+              _label(e.content),
+              style: mktMono(
+                10,
+                color: color,
+                letterSpacing: 2.8,
+                weight: FontWeight.w700,
+              ),
+            ),
+          ),
           if (e.channelsFired.isNotEmpty)
             Text(
               e.channelsFired.join(' · ').toUpperCase(),
-              style: const TextStyle(color: Colors.white38, fontSize: 10),
+              style: mktMono(
+                9,
+                color: MarketingPalette.subtle,
+                letterSpacing: 1.8,
+              ),
             ),
         ],
       ),

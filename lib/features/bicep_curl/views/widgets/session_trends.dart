@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/providers.dart';
 import '../../../../core/theme.dart';
+import '../../../landing/widgets/marketing_tokens.dart';
 import '../../models/cue_decision.dart';
 import '../../models/session_log.dart';
 
@@ -25,7 +26,7 @@ final allBicepCurlSessionsProvider =
   return logs;
 });
 
-/// Three mini sparkline cards: form score, first fade rep, peak EMG.
+/// Three hairline-separated trend rows: form score, first fade rep, peak EMG.
 /// Surfaces the "are you improving" signal the per-session debrief
 /// can't show on its own. Renders an empty-state below 2 sessions.
 class SessionTrends extends ConsumerWidget {
@@ -36,12 +37,12 @@ class SessionTrends extends ConsumerWidget {
     final asyncSessions = ref.watch(allBicepCurlSessionsProvider);
     return asyncSessions.when(
       loading: () => const SizedBox(
-        height: 100,
+        height: 80,
         child: Center(child: CircularProgressIndicator()),
       ),
       error: (e, _) => Text(
         'Failed to load trends: $e',
-        style: const TextStyle(color: Colors.white54, fontSize: 12),
+        style: mktMono(10, color: MarketingPalette.subtle, letterSpacing: 1.4),
       ),
       data: (sessions) {
         if (sessions.length < 2) return const _NotEnoughSessions();
@@ -62,23 +63,25 @@ class SessionTrends extends ConsumerWidget {
           }
         }
         final maxPeaks = sessions
-            .map((s) =>
-                s.peaks.isEmpty ? 0.0 : s.peaks.reduce((a, b) => a > b ? a : b))
+            .map((s) => s.peaks.isEmpty
+                ? 0.0
+                : s.peaks.reduce((a, b) => a > b ? a : b))
             .toList();
 
         return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _TrendCard(
+            _TrendRow(
               label: 'FORM SCORE',
               unit: '%',
               values: formScores,
               format: (v) => v.toStringAsFixed(0),
               higherIsBetter: true,
             ),
-            const SizedBox(height: 10),
-            _TrendCard(
-              label: 'FIRST FADE REP',
-              unit: '',
+            _Hairline(),
+            _TrendRow(
+              label: 'FIRST FADE',
+              unit: 'REP',
               values: firstFades.map((p) => p.value).toList(),
               format: (v) {
                 final p = firstFades.firstWhere(
@@ -91,10 +94,10 @@ class SessionTrends extends ConsumerWidget {
               },
               higherIsBetter: true,
             ),
-            const SizedBox(height: 10),
-            _TrendCard(
+            _Hairline(),
+            _TrendRow(
               label: 'PEAK EMG',
-              unit: '',
+              unit: 'ENV',
               values: maxPeaks,
               format: (v) => v.toStringAsFixed(0),
               higherIsBetter: true,
@@ -118,16 +121,41 @@ class SessionTrends extends ConsumerWidget {
   }
 }
 
+class _Hairline extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(height: 1, color: MarketingPalette.hairline);
+  }
+}
+
 class _NotEnoughSessions extends StatelessWidget {
   const _NotEnoughSessions();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Text(
-        'Trends appear after your second session.',
-        style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: const BoxDecoration(
+              color: MarketingPalette.subtle,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Text(
+            'TRENDS UNLOCK AFTER SESSION 02',
+            style: mktMono(
+              10,
+              color: MarketingPalette.subtle,
+              letterSpacing: 2.4,
+              weight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -139,8 +167,8 @@ class _FadePoint {
   final bool faded;
 }
 
-class _TrendCard extends StatelessWidget {
-  const _TrendCard({
+class _TrendRow extends StatelessWidget {
+  const _TrendRow({
     required this.label,
     required this.unit,
     required this.values,
@@ -164,59 +192,86 @@ class _TrendCard extends StatelessWidget {
     // for regressing. Avoids the classic red/green deuteranopia trap.
     // Arrows still carry the same signal redundantly.
     final deltaColor = delta == 0
-        ? Colors.white54
+        ? MarketingPalette.subtle
         : improved
             ? const Color(0xFF56B4E9) // sky blue
             : const Color(0xFFE69F00); // orange
-    final arrow = delta == 0 ? '' : (delta > 0 ? '↑' : '↓');
+    final arrow = delta == 0 ? '—' : (delta > 0 ? '↑' : '↓');
+    final displayed = format(latest);
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white12),
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(
-            width: 110,
+            width: 108,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 10,
-                    letterSpacing: 1.5,
+                  style: mktMono(
+                    9,
+                    color: MarketingPalette.muted,
+                    letterSpacing: 2.4,
+                    weight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      '${format(latest)}$unit',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontFamily: 'IBMPlexMono',
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.bottomLeft,
+                        child: Text(
+                          displayed,
+                          style: mktDisplay(
+                            32,
+                            weight: FontWeight.w500,
+                            letterSpacing: -1.6,
+                            height: 0.9,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Text(
-                      arrow,
-                      style: TextStyle(color: deltaColor, fontSize: 14),
+                    const SizedBox(width: 4),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Text(
+                        unit,
+                        style: mktMono(
+                          9,
+                          color: MarketingPalette.subtle,
+                          letterSpacing: 1.6,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(child: SizedBox(height: 40, child: _Sparkline(values: values))),
+          const SizedBox(width: 14),
+          Expanded(
+            child: SizedBox(height: 42, child: _Sparkline(values: values)),
+          ),
+          const SizedBox(width: 14),
+          SizedBox(
+            width: 22,
+            child: Text(
+              arrow,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: deltaColor,
+                fontFamily: 'IBMPlexMono',
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -251,11 +306,20 @@ class _Sparkline extends StatelessWidget {
             isCurved: true,
             preventCurveOverShooting: true,
             color: BioliminalTheme.accent,
-            barWidth: 1.8,
-            dotData: const FlDotData(show: false),
+            barWidth: 1.5,
+            dotData: FlDotData(
+              show: true,
+              checkToShowDot: (spot, bar) =>
+                  spot.x == (values.length - 1).toDouble(),
+              getDotPainter: (spot, _, _, _) => FlDotCirclePainter(
+                radius: 2.5,
+                color: BioliminalTheme.accent,
+                strokeWidth: 0,
+              ),
+            ),
             belowBarData: BarAreaData(
               show: true,
-              color: BioliminalTheme.accent.withValues(alpha: 0.15),
+              color: BioliminalTheme.accent.withValues(alpha: 0.1),
             ),
           ),
         ],
