@@ -30,13 +30,17 @@ class PoseLandmarkerHelper(private val context: Context) {
 
     private var landmarker: PoseLandmarker? = null
 
-    fun setup(modelAssetPath: String) {
+    fun setup(modelAssetPath: String, delegate: String) {
         close()
+        val mpDelegate = when (delegate.lowercase()) {
+            "gpu" -> Delegate.GPU
+            else -> Delegate.CPU  // "cpu" and any unrecognized token default to CPU
+        }
         val options = PoseLandmarker.PoseLandmarkerOptions.builder()
             .setBaseOptions(
                 BaseOptions.builder()
                     .setModelAssetPath(modelAssetPath)
-                    .setDelegate(Delegate.CPU)
+                    .setDelegate(mpDelegate)
                     .build()
             )
             .setRunningMode(RunningMode.VIDEO)

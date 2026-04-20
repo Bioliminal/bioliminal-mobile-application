@@ -64,15 +64,15 @@ class PosePlugin : FlutterPlugin, MethodCallHandler {
         val ctx = context
         val assets = flutterAssets
         val assetPath = call.argument<String>("assetPath")
+        val delegate = call.argument<String>("delegate") ?: "cpu"
         if (ctx == null || assets == null || assetPath == null) {
             result.success(false)
             return
         }
-        // Resolve Flutter asset to the path MediaPipe can read via AssetManager.
         val resolved = assets.getAssetFilePathByName(assetPath)
         executor.submit {
             try {
-                val newHelper = PoseLandmarkerHelper(ctx).apply { setup(resolved) }
+                val newHelper = PoseLandmarkerHelper(ctx).apply { setup(resolved, delegate) }
                 helper?.close()
                 helper = newHelper
                 replyOnMain(result, true)
