@@ -67,6 +67,7 @@ class ExtremaAmplitudeGatePolicy implements RepDecisionPolicy {
   double _startAngle = 0.0;
   int _tBottomUs = 0;
   double _bottomAngle = 180.0;
+  double _lastObservedAngle = 0.0;
 
   @override
   RepDecisionEvent? feedFrame({
@@ -80,11 +81,14 @@ class ExtremaAmplitudeGatePolicy implements RepDecisionPolicy {
         if (angle < armedAngleDeg - minDropToStartDeg) {
           _phase = _Phase.descending;
           _tStartUs = tUs;
-          _startAngle = armedAngleDeg;
+          _startAngle = _lastObservedAngle;
           _tBottomUs = tUs;
           _bottomAngle = angle;
           return RepStartedEvent(tStartUs: tUs);
         }
+        // Track peak armed angle — reflects the arm's resting/top position
+        // before the rep begins rather than any mid-descent intermediate value.
+        if (angle > _lastObservedAngle) _lastObservedAngle = angle;
         return null;
       case _Phase.descending:
         if (angle < _bottomAngle) {
@@ -137,6 +141,7 @@ class ExtremaAmplitudeGatePolicy implements RepDecisionPolicy {
     _startAngle = 0.0;
     _tBottomUs = 0;
     _bottomAngle = 180.0;
+    _lastObservedAngle = 0.0;
   }
 }
 

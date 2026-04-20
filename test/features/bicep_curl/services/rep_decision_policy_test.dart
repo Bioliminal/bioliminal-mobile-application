@@ -87,6 +87,32 @@ void main() {
       expect(events.whereType<RepCompleteEvent>().toList(), isEmpty);
     });
 
+    test('RepCompleteEvent.startAngle reflects the actual angle observed just before armed→descending (not a constant)', () {
+      final policy = ExtremaAmplitudeGatePolicy.bicepCurl();
+      int t = 0;
+      RepCompleteEvent? done;
+      // Pre-rep idle below the top (e.g. 165°) — still armed because 165° > 130° threshold.
+      for (var i = 0; i < 5; i++) {
+        final e = policy.feedFrame(tUs: t, landmarks: _armAtAngle(165), side: ArmSide.right);
+        if (e is RepCompleteEvent) done = e;
+        t += 33333;
+      }
+      // Clean curl from 165° down to 60° and back to 170°.
+      for (var i = 0; i < 11; i++) {
+        final e = policy.feedFrame(tUs: t, landmarks: _armAtAngle(165 - i * 9.5), side: ArmSide.right);
+        if (e is RepCompleteEvent) done = e;
+        t += 33333;
+      }
+      for (var i = 0; i < 12; i++) {
+        final e = policy.feedFrame(tUs: t, landmarks: _armAtAngle(60 + i * 9.5), side: ArmSide.right);
+        if (e is RepCompleteEvent) done = e;
+        t += 33333;
+      }
+      expect(done, isNotNull);
+      // 165° was the last-observed angle at armed→descending transition.
+      expect(done!.startAngle, closeTo(165, 1.0));
+    });
+
     test('reset() clears state so a subsequent sweep counts from 1', () {
       final policy = ExtremaAmplitudeGatePolicy.bicepCurl();
       int t = 0;
