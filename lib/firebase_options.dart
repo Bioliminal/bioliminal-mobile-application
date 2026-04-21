@@ -69,7 +69,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '567938947764',
     projectId: 'bioliminal',
     storageBucket: 'bioliminal.firebasestorage.app',
-    iosBundleId: 'com.bioliminal.app',
+    iosBundleId: 'com.rajatarora.bioliminal',
   );
 
 }

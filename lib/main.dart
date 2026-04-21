@@ -1,16 +1,16 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
 import 'core/router.dart';
 import 'core/theme.dart';
-import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   usePathUrlStrategy();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // Firebase init skipped: this build is personal-signed with a bundle ID
+  // not registered in the Firebase project, and the iOS SDK throws during
+  // native init. Cloud sync is opt-in, so the offline-first flow is unaffected.
   runApp(const ProviderScope(child: BioliminalApp()));
 }
 
