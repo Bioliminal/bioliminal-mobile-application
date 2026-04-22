@@ -1,5 +1,9 @@
 # Bioliminal — Marketing Plan
 
+> **HISTORICAL — scoped to the 4/20 demo.** The 4/20 demo shipped; the star/waitlist targets below are from that cycle and are not the current success metric. Current focus is the showcase **Thu 2026-04-23 16:40** (live, 10 min + 3 Q&A, 4 ppl). Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 ## Primary goal
 
 **100 GitHub stars + waitlist signups on bioliminal.web.app by demo day (Monday 4/20).**

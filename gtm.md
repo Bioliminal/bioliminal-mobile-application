@@ -1,5 +1,9 @@
 # Go-to-Market Plan: 100 GitHub Stars in 3 Weeks
 
+> **HISTORICAL — 3-week capstone GTM sprint, pre-demo.** Targets and timeline predate the 4/20 demo (which shipped) and the 4/21 amendment. Current focus is the showcase **Thu 2026-04-23 16:40** (live, 10 min + 3 Q&A, 4 ppl). Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 ## Passing Criteria
 - **Target**: 100 GitHub stars (vs 50 paying users — stars is the faster path)
 - **Timeline**: 3 weeks from capstone start

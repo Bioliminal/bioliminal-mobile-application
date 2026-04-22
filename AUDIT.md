@@ -1,11 +1,16 @@
 ---
-Status: Active
+Status: Historical
 Created: 2026-04-19
 Updated: 2026-04-19
 Owner: kelsi.andrews
 ---
 
 # Bioliminal Flutter App — Code Audit
+
+> **HISTORICAL — 4/19 pre-demo snapshot.** Audit was taken the day before the 4/20 demo, which shipped. Findings do not reflect the 4/21 amendment (pose-authoritative rep counting, cue_event enum, flutter_tts, continuous-gradient firmware cueing) or work in flight for the showcase **Thu 2026-04-23 16:40**. Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 
 **Date:** 2026-04-19
 **Branch:** fix/audit-high-findings-2026-04-19

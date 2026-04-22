@@ -1,5 +1,9 @@
 # Bioliminal Hardware Buy List — Final Revision
 
+> **PARTIALLY STALE — MDF/MNF withdrawn.** Any references to MDF (median frequency) / MNF below as a live signal are out of date: MDF was withdrawn permanently as unreliable on the 4/20 hardware per `bioliminal-ops/operations/handovers/2026-04-21-ml-ratification-response.md` §5. Fatigue for the showcase is driven by firmware-side features, not MDF. BOM/budget content still applies. Authoritative showcase scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 **Date:** April 8, 2026 | **Budget:** ~$745 | **Location:** Austin, TX
 
 ---

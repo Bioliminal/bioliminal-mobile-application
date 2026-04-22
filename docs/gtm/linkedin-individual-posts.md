@@ -1,5 +1,9 @@
 # LinkedIn Individual Posts — Bioliminal Launch
 
+> **HISTORICAL — 4/15 launch artifact.** Drafted for the 4/15 social-media launch ahead of the 4/20 demo, which has since shipped. Current focus is the showcase **Thu 2026-04-23 16:40** (live, 10 min + 3 Q&A, 4 ppl). Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 Tag all 4 members. One primary CTA: waitlist.
 
 LinkedIn handles:

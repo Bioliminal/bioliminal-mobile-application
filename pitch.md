@@ -1,5 +1,9 @@
 # MoveScope: AI Movement Screening with Fascial Chain Intelligence
 
+> **HISTORICAL — post-showcase product vision.** Describes the 4-movement fascial-chain screening product. That scope is post-showcase: the near-term deliverable is the showcase **Thu 2026-04-23 16:40** — single-movement bicep curl, pose-authoritative rep counting, three-channel cueing, no-hardware pose-only path. Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 ## The Problem
 
 Movement screening costs $150-2,000 and requires a trained professional. Most athletes — especially youth and recreational — never get screened. They find out something's wrong when they get hurt.

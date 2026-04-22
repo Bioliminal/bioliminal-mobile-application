@@ -1,5 +1,9 @@
 # Bioliminal — Project Goals
 
+> **HISTORICAL — full product vision, not the showcase scope.** The pillars below describe the post-showcase product. The near-term deliverable is the showcase **Thu 2026-04-23 16:40** (bicep curl, pose-authoritative rep counting, continuous-gradient firmware cueing + cue_event enum, phone TTS, no-hardware pose-only path). Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 ## What we do
 
 Bioliminal is a closed-loop training system for muscle activation. Surface EMG

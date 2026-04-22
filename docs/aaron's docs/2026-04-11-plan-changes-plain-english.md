@@ -1,8 +1,10 @@
 # Plan Changes — Plain English Summary
 
-> ⚠️ **STALE SCOPE — DO NOT TREAT AS CURRENT.** This doc describes the **post-demo full product** (4-movement protocol, WHAM+OpenCap pipeline, 20–30 subject calibration dataset). It is **not** the 4/20 demo scope. The demo is a single bicep curl with BlazePose + 2-ch sEMG + rule YAML — see `projects/bioliminal/CLAUDE.md` § Current Focus and `bioliminal/bioliminal/README.md` (group README) for authoritative demo definition.
+> ⚠️ **STALE SCOPE — DO NOT TREAT AS CURRENT.** This doc describes the **post-showcase full product** (4-movement protocol, WHAM+OpenCap pipeline, 20–30 subject calibration dataset). It is **not** the current showcase scope.
 >
-> The WHAM+OpenCap pipeline choice is also contested and unconfirmed by Aaron. Reconciliation deferred until after 4/20.
+> Current focus is the showcase **Thu 2026-04-23 16:40** — single-movement bicep curl, **pose-authoritative rep counting** (per the 4/21 amendment at `bioliminal-ops/decisions/2026-04-21-pose-authoritative-rep-counting.md`), continuous-gradient firmware cueing + cue_event enum (FF02 byte 9), phone TTS verbal channel, and the no-hardware pose-only path. The 4/20 demo shipped (firmware-led rep counting, hardware in-loop). Authoritative scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+>
+> The WHAM+OpenCap pipeline choice remains contested and unconfirmed by Aaron — superseded for showcase purposes by the model commercial-viability matrix (`RnD_Server/docs/research/model-commercial-viability-matrix-2026-04-16.md`). Reconciliation deferred until after the showcase.
 
 ---
 

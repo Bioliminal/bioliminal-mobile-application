@@ -1,5 +1,9 @@
 # Lifting Sciences for Injury Prevention — Complete Research Document
 
+> **PARTIALLY STALE — MDF/MNF withdrawn.** Any references to MDF (median frequency) / MNF as live fatigue signals are out of date: MDF was withdrawn permanently as unreliable on the 4/20 hardware per `bioliminal-ops/operations/handovers/2026-04-21-ml-ratification-response.md` §5. Literature synthesis and DOK taxonomy still stand. Authoritative showcase scope: `bioliminal-ops/decisions/2026-04-22-showcase-scope.md`.
+
+---
+
 **Last updated:** 2026-04-08
 **Status:** DOK 1 + DOK 2 complete for all 30 subcategories. DOK 3 Insights and DOK 4 SPOVs pending.
 **Product architecture:** Camera-first free app + premium EMG compression garment companion
