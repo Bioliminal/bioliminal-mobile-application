@@ -17,9 +17,7 @@ final class PoseLandmarkerHelper {
         let options = PoseLandmarkerOptions()
         options.baseOptions.modelAssetPath = modelAssetPath
         switch delegate.lowercased() {
-        case "coreml":
-            options.baseOptions.delegate = .CoreML
-        case "gpu":
+        case "coreml", "gpu":
             options.baseOptions.delegate = .GPU
         default:
             options.baseOptions.delegate = .CPU
