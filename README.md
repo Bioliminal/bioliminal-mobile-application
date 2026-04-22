@@ -8,7 +8,7 @@
 
 Bioliminal merges advanced computer vision with real-time biometric sensing to bridge the gap between screening and correction:
 - **High-Fidelity Capture:** Captures 33 BlazePose landmarks at 30+ FPS for precise kinetic analysis.
-- **Server-Side Reasoning:** Biomechanical modeling, joint moments, and muscle force analysis performed via WHAM + OpenCap Monocular.
+- **Server-Side Reasoning:** Real-time `bicep_curl` rule engine (`bicep.yaml`) on BlazePose landmarks + sEMG fusion. Post-showcase candidates for full-body biomechanical pipeline (joint moments, muscle force) under evaluation; see `bioliminal-ops/decisions/2026-04-22-showcase-scope.md` and the model-commercial-viability matrix.
 - **10-Channel sEMG Hub:** Real-time muscle activation tracking via BLE (ESP32-S3).
 - **Biofeedback Loop (Premium):** Real-time physical corrective cues (vibrotactile/TSA) based on clinical coordination ratios (e.g., Gastrocnemius:Soleus).
 
