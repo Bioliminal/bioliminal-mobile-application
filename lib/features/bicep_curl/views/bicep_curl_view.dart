@@ -268,13 +268,11 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     if (controller == null) {
       return const SizedBox.shrink();
     }
-    final desc = ref.watch(cameraDescriptionProvider);
-    final isFront = desc?.lensDirection == CameraLensDirection.front;
     return Stack(
       fit: StackFit.expand,
       children: [
         _CoverCameraPreview(controller: controller),
-        SkeletonOverlay(isFrontCamera: isFront),
+        const SkeletonOverlay(),
       ],
     );
   }
@@ -489,24 +487,11 @@ class _CoverCameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     var scale = size.aspectRatio * controller.value.aspectRatio;
     if (scale < 1) scale = 1 / scale;
-    final isFront =
-        controller.description.lensDirection == CameraLensDirection.front;
-    // Mirror the front camera preview so it behaves like a selfie view —
-    // moving right on-screen matches moving right in real life. Aligns
-    // with SkeletonOverlay's unconditional front-camera flip.
-    final preview = ClipRect(
+    return ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
-    if (isFront) {
-      return Transform(
-        alignment: Alignment.center,
-        transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
-        child: preview,
-      );
-    }
-    return preview;
   }
 }
