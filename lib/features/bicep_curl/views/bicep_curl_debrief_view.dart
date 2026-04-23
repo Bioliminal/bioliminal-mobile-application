@@ -119,12 +119,12 @@ class _DebriefBody extends StatelessWidget {
                 const SizedBox(height: 44),
                 _InstrumentSection(
                   index: '02',
-                  title: 'Muscle activity.',
-                  signal: 'HEATMAP · FORM',
+                  title: 'Compensation patterns.',
+                  signal: 'POSE · PER REP',
                   body:
-                      'Measured bicep envelope, sample-by-sample. Below it, '
-                      'per-rep shoulder rise and forward lean — one bar per '
-                      'rep, colored by how far past threshold it drifted.',
+                      'Per-rep shoulder rise and forward lean. Bars colored '
+                      'by how far past threshold the deviation went; red '
+                      'markers flag reps where a cue fired.',
                   child: BicepCurlFormSection(log: log),
                 ),
                 const SizedBox(height: 44),
