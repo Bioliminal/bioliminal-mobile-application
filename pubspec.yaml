@@ -29,6 +29,7 @@ dependencies:
   flutter_tts: ^4.2.0
   fl_chart: ^0.69.0
   wakelock_plus: ^1.2.0
+  video_player: ^2.9.0
 
 dev_dependencies:
   flutter_test:

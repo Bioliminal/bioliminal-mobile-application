@@ -528,7 +528,7 @@ class _HeroContent extends StatelessWidget {
               ),
           SizedBox(height: _isNarrow(context) ? 56 : 96),
           // CTAs
-          const Wrap(
+          Wrap(
             spacing: 16,
             runSpacing: 16,
             children: [
@@ -536,8 +536,9 @@ class _HeroContent extends StatelessWidget {
                 label: 'WATCH THE LIVE DEMO',
                 hint: '04.20.26',
                 filled: true,
+                onTap: () => context.go('/demo'),
               ),
-              _InstrumentButton(
+              const _InstrumentButton(
                 label: 'TECHNICAL BRIEF',
                 hint: 'PDF',
                 filled: false,
@@ -589,10 +590,12 @@ class _InstrumentButton extends StatefulWidget {
     required this.label,
     required this.hint,
     required this.filled,
+    this.onTap,
   });
   final String label;
   final String hint;
   final bool filled;
+  final VoidCallback? onTap;
 
   @override
   State<_InstrumentButton> createState() => _InstrumentButtonState();
@@ -617,7 +620,9 @@ class _InstrumentButtonState extends State<_InstrumentButton> {
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hover = true),
       onExit: (_) => setState(() => _hover = false),
-      child: AnimatedContainer(
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
         decoration: BoxDecoration(
@@ -649,6 +654,7 @@ class _InstrumentButtonState extends State<_InstrumentButton> {
             ),
           ],
         ),
+      ),
       ),
     );
   }
