@@ -381,27 +381,74 @@
   }
 
   /* =========================================================================
-     Slide 05 — Image placeholder (drop-in image to be added)
+     Slide 05 — Two-stage reveal: logo → arrow + arnold/aaron composite
      ========================================================================= */
   .s-image .image-stage {
     flex: 1;
-    display: flex; justify-content: center; align-items: center;
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    align-items: center;
+    justify-items: center;
     margin: 24px 0;
-    border: 1px dashed #243049;
-    border-radius: 12px;
-    color: #475569;
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 13px; letter-spacing: 2px;
+    gap: 24px;
   }
-  .s-image .image-stage::before {
-    content: "// IMAGE TBD";
+  .s-image .img-slot {
+    width: 100%; height: 100%;
+    display: flex; align-items: center;
   }
-  .s-image .image-stage img {
-    max-width: 100%; max-height: 100%;
+  .s-image .logo-slot {
+    justify-content: flex-end;
+    padding-right: 4%;
+    transform: translateX(-6%);
+    transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .s-image .logo-slot img {
+    max-width: 88%;
+    max-height: 56%;
     object-fit: contain;
     display: block;
   }
-  .s-image .image-stage:has(img)::before { content: none; }
+  .s-image .img-arrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 72px;
+    color: var(--text);
+    opacity: 0;
+    transform: translateX(-16px);
+    transition: opacity 500ms ease 120ms, transform 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
+  }
+  .s-image .face-slot {
+    justify-content: flex-start;
+    opacity: 0;
+    transform: translateX(24px);
+    transition: opacity 600ms ease 200ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
+  }
+  .s-image .face-wrap {
+    position: relative;
+    display: inline-block;
+    max-height: 72%;
+  }
+  .s-image .face-wrap .arnold {
+    display: block;
+    max-width: 100%;
+    max-height: 72vh;
+    height: auto;
+    object-fit: contain;
+  }
+  .s-image .face-wrap .aaron {
+    position: absolute;
+    /* Aaron face overlay on Arnold — tune these once we eyeball it */
+    top: 2%;
+    left: 37%;
+    width: 26%;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: normal;
+  }
+  .s-image .image-stage[data-stage="1"] .img-arrow,
+  .s-image .image-stage[data-stage="1"] .face-slot {
+    opacity: 1;
+    transform: translateX(0);
+  }
 
   /* =========================================================================
      Slide 08 — QR code (scan to view deck)
@@ -589,7 +636,7 @@
 
       <!-- 01 TITLE -->
       <section class="slide s-title active" data-slide="1">
-        <img src="../Branding/slide1.png" alt="bioliminal"/>
+        <img src="slide1.png" alt="bioliminal"/>
       </section>
 
       <!-- 02 THE LOOP — 4-UP -->
@@ -825,8 +872,17 @@
           <span class="brand">bioliminal</span>
           <span class="mono">// IMAGE</span>
         </div>
-        <div class="image-stage">
-          <!-- TODO: drop image src here -->
+        <div class="image-stage" data-stage="0">
+          <div class="img-slot logo-slot">
+            <img src="Logo.png" alt="bioliminal"/>
+          </div>
+          <div class="img-arrow" aria-hidden="true">→</div>
+          <div class="img-slot face-slot">
+            <div class="face-wrap">
+              <img class="arnold" src="arnold.webp" alt="Arnold"/>
+              <img class="aaron" src="aaron.png" alt="Aaron face"/>
+            </div>
+          </div>
         </div>
         <div class="slide-footer">
           <span>// 05</span>
@@ -953,6 +1009,16 @@
   }
   const dots = dotsEl.querySelectorAll('.dot');
 
+  const imageStage = document.querySelector('.s-image .image-stage');
+  function resetImageStage() { if (imageStage) imageStage.dataset.stage = '0'; }
+  function advanceForward() {
+    if (slides[current].classList.contains('s-image') && imageStage && imageStage.dataset.stage === '0') {
+      imageStage.dataset.stage = '1';
+      return;
+    }
+    go(current + 1);
+  }
+
   function go(i) {
     if (i < 0 || i >= total) return;
     slides[current].classList.remove('active');
@@ -963,6 +1029,8 @@
     counter.textContent = `${current + 1} / ${total}`;
     history.replaceState(null, '', `#${current + 1}`);
 
+    if (!slides[current].classList.contains('s-image')) resetImageStage();
+
     if (slides[current].classList.contains('s-video')) {
       slide4Video.currentTime = 0;
       slide4Video.play().catch(() => {});
@@ -972,9 +1040,9 @@
   }
 
   document.getElementById('prevBtn').addEventListener('click', (e) => { e.stopPropagation(); go(current - 1); });
-  document.getElementById('nextBtn').addEventListener('click', (e) => { e.stopPropagation(); go(current + 1); });
+  document.getElementById('nextBtn').addEventListener('click', (e) => { e.stopPropagation(); advanceForward(); });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); go(current + 1); }
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); advanceForward(); }
     else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
     else if (e.key === 'Home') go(0);
     else if (e.key === 'End') go(total - 1);
@@ -988,7 +1056,7 @@
   deck.addEventListener('click', (e) => {
     if (e.target.closest('.chrome')) return;
     if (e.target.closest('.s-video')) return; // let video controls work
-    go(current + 1);
+    advanceForward();
   });
   const hashMatch = /^#(\d+)$/.exec(location.hash);
   if (hashMatch) {
