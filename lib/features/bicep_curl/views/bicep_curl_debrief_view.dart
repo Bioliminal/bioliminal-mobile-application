@@ -120,12 +120,12 @@ class _DebriefBody extends StatelessWidget {
                 _InstrumentSection(
                   index: '02',
                   title: 'Muscle activity.',
-                  signal: 'HEATMAP',
+                  signal: 'HEATMAP · FORM',
                   body:
-                      'Measured bicep envelope, sample-by-sample. Inferred '
-                      'synergists step at rep boundaries — that is the truth '
-                      'of what pose can tell us.',
-                  child: BicepCurlHeatmapSection(log: log),
+                      'Measured bicep envelope, sample-by-sample. Below it, '
+                      'per-rep shoulder rise and forward lean — one bar per '
+                      'rep, colored by how far past threshold it drifted.',
+                  child: BicepCurlFormSection(log: log),
                 ),
                 const SizedBox(height: 44),
                 _InstrumentSection(
