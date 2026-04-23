@@ -444,6 +444,21 @@
     object-fit: contain;
     mix-blend-mode: normal;
   }
+  .s-image .face-wrap .gains {
+    position: absolute;
+    left: 50%;
+    top: 76%;
+    transform: translateX(-50%);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(32px, 5.2vh, 64px);
+    color: var(--signal);
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.65);
+    pointer-events: none;
+    white-space: nowrap;
+  }
   .s-image .image-stage[data-stage="1"] .img-arrow,
   .s-image .image-stage[data-stage="1"] .face-slot {
     opacity: 1;
@@ -881,6 +896,7 @@
             <div class="face-wrap">
               <img class="arnold" src="arnold.webp" alt="Arnold"/>
               <img class="aaron" src="aaron.png" alt="Aaron face"/>
+              <span class="gains">gains</span>
             </div>
           </div>
         </div>
