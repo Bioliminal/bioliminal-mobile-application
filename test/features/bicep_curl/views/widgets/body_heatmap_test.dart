@@ -8,14 +8,14 @@ import 'package:bioliminal/features/bicep_curl/models/session_log.dart';
 import 'package:bioliminal/features/bicep_curl/views/widgets/body_heatmap.dart';
 
 /// Guards the pure activation math inside the body-heatmap widget —
-/// the mapping that powers the MEASURED + INFERRED panels. The
-/// rendering itself (a CustomPainter) is validated on-device; here
-/// we lock in the logic that's most likely to regress silently:
+/// the mapping that powers the MEASURED + INFERRED panels. Rendering
+/// itself (a CustomPainter) is validated on-device; here we lock in:
 /// - rep window decoding from an absolute sample index
 /// - per-sample lookup vs half-sine fallback for legacy reps
-/// - bicep visibility floor (0.4)
-/// - pose-drift → [0,1] normalization for synergists
-/// - trap = 0.85 × shoulder (handshake's synergist coupling)
+/// - bicep stays dark when EMG was never present (no visibility floor)
+/// - signed pose-delta → [0,1] normalization tied to profile thresholds
+///   (negative slump / back-lean clamps to zero, not flipped positive)
+/// - trap = 0.85 × shoulder (synergist coupling)
 void main() {
   group('MuscleActivations.fromLog', () {
     test('empty log returns zero activations', () {
@@ -35,8 +35,7 @@ void main() {
       final rep = _rep(peakEnv: 100, envelopeSamples: _ramp(50, peak: 100));
       final log = _makeLog([rep]);
 
-      // Sample 25 is the peak of the ramp (100), so normalized bicep
-      // should saturate to its upper branch: bicep = 1.0 * 0.6 + 0.4 = 1.0
+      // Sample 25 is the peak of the ramp (100); bicep saturates at 1.0.
       final atPeak = MuscleActivations.fromLog(
         log: log,
         absoluteSample: 25,
@@ -44,13 +43,14 @@ void main() {
       );
       expect(atPeak.bicep, closeTo(1.0, 1e-9));
 
-      // Sample 0 is bottom of the ramp (0), bicep falls to the 0.4 floor.
+      // Sample 0 is bottom of the ramp (0). No visibility floor anymore —
+      // quiet EMG reads as a dark bicep, not a fake 40 % glow.
       final atBottom = MuscleActivations.fromLog(
         log: log,
         absoluteSample: 0,
         maxSampleValue: 100,
       );
-      expect(atBottom.bicep, closeTo(0.4, 1e-9));
+      expect(atBottom.bicep, 0);
     });
 
     test('falls back to half-sine for legacy reps with no envelopeSamples',
@@ -66,33 +66,36 @@ void main() {
       );
       expect(mid.bicep, closeTo(1.0, 1e-3));
 
-      // Edges of the half-sine are near zero → bicep at the 0.4 floor.
+      // Edges of the half-sine are near zero → bicep dark (no floor).
       final edge = MuscleActivations.fromLog(
         log: log,
         absoluteSample: 0,
         maxSampleValue: 100,
       );
-      expect(edge.bicep, closeTo(0.4, 1e-9));
+      expect(edge.bicep, 0);
     });
 
-    test('bicep visibility floor is 0.4 even when maxSampleValue is 0',
-        () {
-      final rep = _rep(peakEnv: 100, envelopeSamples: _flat(50, 0));
+    test('bicep stays dark when session produced no EMG signal', () {
+      // CV-only session: rep boundaries fired but armband was off, so
+      // envelopeSamples are all zeros and session-wide max is 0. The
+      // panel must not fake engagement with a floor glow.
+      final rep = _rep(peakEnv: 0, envelopeSamples: _flat(50, 0));
       final log = _makeLog([rep]);
       final a = MuscleActivations.fromLog(
         log: log,
         absoluteSample: 10,
-        maxSampleValue: 0, // degenerate guard
+        maxSampleValue: 0,
       );
-      expect(a.bicep, 0.4);
+      expect(a.bicep, 0);
     });
 
-    test('inferred shoulder scales pose drift into [0,1] with 15° saturation',
-        () {
+    test('inferred shoulder scales drift against profile threshold', () {
+      // Intermediate profile: shoulderDriftDeg threshold = 14°. Saturation
+      // hits at 1.5 × threshold = 21°. A mid-range 10.5° reads as 0.5.
       final rep = _rep(
         peakEnv: 0,
         poseDelta: const PoseDelta(
-          shoulderDriftDeg: 7.5,
+          shoulderDriftDeg: 10.5,
           torsoPitchDeltaDeg: 0,
         ),
       );
@@ -102,18 +105,17 @@ void main() {
         absoluteSample: 0,
         maxSampleValue: 100,
       );
-      // 7.5° / 15° = 0.5
       expect(a.shoulder, closeTo(0.5, 1e-9));
-      // Trap tracks shoulder at 0.85 (synergist coupling per handshake).
       expect(a.trap, closeTo(0.5 * 0.85, 1e-9));
     });
 
-    test('inferred erector saturates at 20° of torso pitch', () {
+    test('inferred erector saturates past 1.5x torso-pitch threshold', () {
+      // Intermediate profile: torsoPitchDeltaDeg threshold = 20°.
+      // Saturation at 30°. 40° is well past and clamps to 1.0.
       final rep = _rep(
         peakEnv: 0,
         poseDelta: const PoseDelta(
           shoulderDriftDeg: 0,
-          // Past saturation point — clamp to 1.0.
           torsoPitchDeltaDeg: 40,
         ),
       );
@@ -124,6 +126,43 @@ void main() {
         maxSampleValue: 100,
       );
       expect(a.erector, 1.0);
+    });
+
+    test('negative shoulder drift (slump) does not glow', () {
+      // Signed peak: user's shoulder went DOWN relative to resting ref.
+      // That's posture, not compensation — must clamp to zero, not flip.
+      final rep = _rep(
+        peakEnv: 0,
+        poseDelta: const PoseDelta(
+          shoulderDriftDeg: -12,
+          torsoPitchDeltaDeg: 0,
+        ),
+      );
+      final log = _makeLog([rep]);
+      final a = MuscleActivations.fromLog(
+        log: log,
+        absoluteSample: 0,
+        maxSampleValue: 100,
+      );
+      expect(a.shoulder, 0);
+      expect(a.trap, 0);
+    });
+
+    test('negative torso pitch (back-lean) does not glow', () {
+      final rep = _rep(
+        peakEnv: 0,
+        poseDelta: const PoseDelta(
+          shoulderDriftDeg: 0,
+          torsoPitchDeltaDeg: -18,
+        ),
+      );
+      final log = _makeLog([rep]);
+      final a = MuscleActivations.fromLog(
+        log: log,
+        absoluteSample: 0,
+        maxSampleValue: 100,
+      );
+      expect(a.erector, 0);
     });
 
     test('null poseDelta (calibration rep) zeroes synergists', () {
@@ -150,8 +189,9 @@ void main() {
       final rep2 = _rep(
         peakEnv: 50,
         poseDelta: const PoseDelta(
-          // Distinguishable drift so we know which rep we landed in.
-          shoulderDriftDeg: 15,
+          // 21° = 1.5 × intermediate threshold (14°) → saturated, makes
+          // the rep-boundary transition obvious.
+          shoulderDriftDeg: 21,
           torsoPitchDeltaDeg: 0,
         ),
       );
@@ -171,14 +211,14 @@ void main() {
         absoluteSample: 50,
         maxSampleValue: 100,
       );
-      expect(startOfRep2.shoulder, 1.0); // 15° / 15° = 1.0
+      expect(startOfRep2.shoulder, 1.0);
     });
 
     test('absoluteSample past the end clamps to the last rep', () {
       final rep = _rep(
         peakEnv: 50,
         poseDelta: const PoseDelta(
-          shoulderDriftDeg: 15,
+          shoulderDriftDeg: 21, // saturated per intermediate profile
           torsoPitchDeltaDeg: 0,
         ),
       );
@@ -188,7 +228,6 @@ void main() {
         absoluteSample: 500,
         maxSampleValue: 100,
       );
-      // Still in rep 0's data — shoulder should be saturated at 1.0.
       expect(a.shoulder, 1.0);
     });
   });

@@ -33,10 +33,13 @@ class MuscleActivations {
   /// Decodes an absolute sample index (0..log.reps.length*samplesPerRep-1)
   /// into an activation snapshot. Measured bicep reads envelope samples
   /// directly (or synthesizes a half-sine for legacy reps without
-  /// per-sample data); inferred channels step at rep boundaries off
-  /// per-rep pose drift. Bicep has a 0.4 visibility floor so the measured
-  /// panel never fully darkens mid-rep. Trap rides at 0.85× shoulder
-  /// because trap engagement is a synergist of shoulder drift.
+  /// per-sample data). Inferred channels step at rep boundaries off the
+  /// per-rep signed peak pose delta; slumping / leaning-back (negative
+  /// signed deltas) are not compensation, so they clamp to zero intensity
+  /// rather than flipping sign. Inferred saturation is tied to the
+  /// profile's compensation thresholds: at threshold the glow is ~67 %,
+  /// at 1.5× threshold it saturates. Trap rides at 0.85× shoulder because
+  /// trap engagement is a synergist of shoulder drift.
   static MuscleActivations fromLog({
     required SessionLog log,
     required int absoluteSample,
@@ -57,20 +60,25 @@ class MuscleActivations {
             withinRep: within,
             samplesPerRep: samplesPerRep,
           );
+    // No visibility floor. If EMG never arrived the panel stays dark —
+    // a quiet bicep beats a lying one.
     final bicepNorm = maxSampleValue > 0
         ? (rawBicep / maxSampleValue).clamp(0.0, 1.0)
         : 0.0;
 
+    final thresholds = log.profile.compensation;
     final delta = rep.poseDelta;
     final shoulder = delta == null
         ? 0.0
-        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
+        : (delta.shoulderDriftDeg / (thresholds.shoulderDriftDeg * 1.5))
+            .clamp(0.0, 1.0);
     final erector = delta == null
         ? 0.0
-        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
+        : (delta.torsoPitchDeltaDeg / (thresholds.torsoPitchDeltaDeg * 1.5))
+            .clamp(0.0, 1.0);
 
     return MuscleActivations(
-      bicep: math.max(bicepNorm * 0.6 + 0.4, 0.4),
+      bicep: bicepNorm,
       shoulder: shoulder,
       trap: shoulder * 0.85,
       erector: erector,
@@ -208,6 +216,7 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
       samplesPerRep: _samplesPerRep,
     );
     final (rep: currentRep, within: _) = _decode(_absoluteSample);
+    final hasEmgSignal = _maxSampleValue > 0;
 
     return Column(
       children: [
@@ -217,7 +226,9 @@ class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
               child: _PanelLabeled(
                 index: '01',
                 title: 'MEASURED',
-                subtitle: 'REAL EMG · BICEPS BRACHII',
+                subtitle: hasEmgSignal
+                    ? 'REAL EMG · BICEPS BRACHII'
+                    : 'NO EMG · CV-ONLY SESSION',
                 child: BodyHeatmapPanel(
                   activations: activations,
                   mode: HeatmapMode.measured,
