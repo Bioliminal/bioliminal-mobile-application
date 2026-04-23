@@ -31,12 +31,18 @@ class CueProfile {
   final String label;
 
   /// v0 defaults from `haptic-cueing-handshake.md` §"The algorithm".
+  ///
+  /// Compensation thresholds were raised (7°/10° → 14°/20°) when the
+  /// detector moved from mean-across-rep to signed PEAK deltas: the old
+  /// values were tuned against a wash-out average, so applying them to a
+  /// peak would fire ~2× as often. TODO: retune empirically once a pass
+  /// of bench sessions lands against the new algorithm.
   factory CueProfile.intermediate() => const CueProfile(
         label: 'intermediate',
         thresholds: FatigueThresholds(fade: 0.15, urgent: 0.25, stop: 0.50),
         compensation: CompensationThresholds(
-          shoulderDriftDeg: 7.0,
-          torsoPitchDeltaDeg: 10.0,
+          shoulderDriftDeg: 14.0,
+          torsoPitchDeltaDeg: 20.0,
         ),
         cooldownReps: 2,
         calibrationReps: 5,
@@ -54,8 +60,8 @@ class CueProfile {
         label: 'beginner',
         thresholds: FatigueThresholds(fade: 0.20, urgent: 0.30, stop: 0.55),
         compensation: CompensationThresholds(
-          shoulderDriftDeg: 9.0,
-          torsoPitchDeltaDeg: 12.0,
+          shoulderDriftDeg: 18.0,
+          torsoPitchDeltaDeg: 24.0,
         ),
         cooldownReps: 4,
         calibrationReps: 8,
@@ -73,8 +79,8 @@ class CueProfile {
         label: 'advanced',
         thresholds: FatigueThresholds(fade: 0.10, urgent: 0.20, stop: 0.45),
         compensation: CompensationThresholds(
-          shoulderDriftDeg: 5.0,
-          torsoPitchDeltaDeg: 8.0,
+          shoulderDriftDeg: 10.0,
+          torsoPitchDeltaDeg: 16.0,
         ),
         cooldownReps: 1,
         calibrationReps: 3,

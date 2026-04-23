@@ -24,7 +24,7 @@ void main() {
       final frame = _armAtAngle(170.0 + angleJitter);
       final tUs = i * 33333;
       final smoothed = smoother.smooth(frame, tUs: tUs);
-      detector.addPoseFrame(tUs, smoothed, ArmSide.right);
+      detector.addPoseFrame(tUs, smoothed);
     }
     await Future<void>.delayed(Duration.zero);
     expect(boundaries, isEmpty);
@@ -40,18 +40,29 @@ void main() {
 
     final rnd = math.Random(99);
     int t = 0;
+    // 100 ms/frame cadence keeps the full 27-frame rep cycle (~2.7 s) above
+    // the 1.0 s minRepDurationUs gate. Jitter semantics are independent of
+    // cadence.
     void feed(double angle) {
       final jittered = angle + (rnd.nextDouble() - 0.5) * 4.0;
       final smoothed = smoother.smooth(_armAtAngle(jittered), tUs: t);
-      detector.addPoseFrame(t, smoothed, ArmSide.right);
-      t += 33333;
+      detector.addPoseFrame(t, smoothed);
+      t += 100000;
     }
     for (var rep = 0; rep < 3; rep++) {
-      for (var i = 0; i < 5; i++) feed(170);
-      for (var i = 0; i < 11; i++) feed(170 - i * 11.0);
-      for (var i = 0; i < 11; i++) feed(60 + i * 11.0);
+      for (var i = 0; i < 5; i++) {
+        feed(170);
+      }
+      for (var i = 0; i < 11; i++) {
+        feed(170 - i * 11.0);
+      }
+      for (var i = 0; i < 11; i++) {
+        feed(60 + i * 11.0);
+      }
     }
-    for (var i = 0; i < 5; i++) feed(170);
+    for (var i = 0; i < 5; i++) {
+      feed(170);
+    }
     await Future<void>.delayed(Duration.zero);
     expect(boundaries.length, 3);
     await sub.cancel();
@@ -89,7 +100,7 @@ void main() {
       smoother.smooth(
         List<PoseLandmark>.filled(
           33,
-          PoseLandmark(x: 0.9, y: 0.9, z: 0.9, visibility: 1, presence: 1),
+          const PoseLandmark(x: 0.9, y: 0.9, z: 0.9, visibility: 1, presence: 1),
         ),
         tUs: i * 33333,
       );
@@ -98,7 +109,7 @@ void main() {
     final fresh = smoother.smooth(
       List<PoseLandmark>.filled(
         33,
-        PoseLandmark(x: 0.1, y: 0.1, z: 0.1, visibility: 1, presence: 1),
+        const PoseLandmark(x: 0.1, y: 0.1, z: 0.1, visibility: 1, presence: 1),
       ),
       tUs: 0,
     );
@@ -106,17 +117,33 @@ void main() {
   });
 }
 
+/// Right arm at `angleDeg`; left arm parked at 170° so the dual-arm
+/// detector's left policy stays in armed (left landmarks at (0,0,0) would
+/// otherwise degenerate `elbowAngleDeg` to 0°).
 List<PoseLandmark> _armAtAngle(double angleDeg) {
-  final theta = (180 - angleDeg) * math.pi / 180.0;
   final landmarks = List.filled(33, const PoseLandmark(x: 0, y: 0, z: 0, visibility: 1, presence: 1));
-  landmarks[kRightShoulder] = const PoseLandmark(x: 0, y: 0, z: 0, visibility: 1, presence: 1);
-  landmarks[kRightElbow] = const PoseLandmark(x: 1, y: 0, z: 0, visibility: 1, presence: 1);
-  landmarks[kRightWrist] = PoseLandmark(
-    x: 1.0 + math.cos(theta),
+  _placeArm(landmarks, side: ArmSide.right, angleDeg: angleDeg, baseX: 1.0);
+  _placeArm(landmarks, side: ArmSide.left, angleDeg: 170.0, baseX: -1.0);
+  return landmarks;
+}
+
+void _placeArm(
+  List<PoseLandmark> landmarks, {
+  required ArmSide side,
+  required double angleDeg,
+  required double baseX,
+}) {
+  final theta = (180 - angleDeg) * math.pi / 180.0;
+  final sIdx = side == ArmSide.left ? kLeftShoulder : kRightShoulder;
+  final eIdx = side == ArmSide.left ? kLeftElbow : kRightElbow;
+  final wIdx = side == ArmSide.left ? kLeftWrist : kRightWrist;
+  landmarks[sIdx] = PoseLandmark(x: baseX - 1.0, y: 0, z: 0, visibility: 1, presence: 1);
+  landmarks[eIdx] = PoseLandmark(x: baseX, y: 0, z: 0, visibility: 1, presence: 1);
+  landmarks[wIdx] = PoseLandmark(
+    x: baseX + math.cos(theta),
     y: math.sin(theta),
     z: 0,
     visibility: 1,
     presence: 1,
   );
-  return landmarks;
 }

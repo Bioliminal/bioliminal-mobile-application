@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 import 'dart:math' as math;
 
 import 'package:camera/camera.dart';
@@ -233,9 +232,6 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
     });
 
     final cameraState = ref.watch(appCameraControllerProvider).value;
-    final isFrontCamera =
-        ref.watch(cameraDescriptionProvider)?.lensDirection ==
-        CameraLensDirection.front;
 
     if (_errorMessage != null) {
       return _CalibrationError(message: _errorMessage!);
@@ -257,8 +253,8 @@ class _CalibrationViewState extends ConsumerState<CalibrationView> {
             const Positioned.fill(
               child: ColoredBox(color: Colors.black),
             ),
-          Positioned.fill(
-            child: SkeletonOverlay(isFrontCamera: isFrontCamera),
+          const Positioned.fill(
+            child: SkeletonOverlay(),
           ),
           Positioned.fill(
             child: SafeArea(
@@ -520,21 +516,11 @@ class _CameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     var scale = size.aspectRatio * controller.value.aspectRatio;
     if (scale < 1) scale = 1 / scale;
-    final isFront =
-        controller.description.lensDirection == CameraLensDirection.front;
-    final preview = ClipRect(
+    return ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
-    if (isFront && Platform.isIOS) {
-      return Transform(
-        alignment: Alignment.center,
-        transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
-        child: preview,
-      );
-    }
-    return preview;
   }
 }

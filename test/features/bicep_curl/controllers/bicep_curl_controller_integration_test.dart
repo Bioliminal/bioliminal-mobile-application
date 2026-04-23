@@ -12,6 +12,7 @@ import 'package:bioliminal/domain/models.dart';
 import 'package:bioliminal/features/bicep_curl/controllers/bicep_curl_controller.dart';
 import 'package:bioliminal/features/bicep_curl/models/compensation_reference.dart';
 import 'package:bioliminal/features/bicep_curl/services/pose_math.dart';
+import 'package:bioliminal/features/bicep_curl/services/rep_decision_policy.dart';
 
 /// Integration test for [BicepCurlController]. Overrides the BLE and
 /// pose providers with controllable fakes, then drives the controller
@@ -211,6 +212,16 @@ class _ControllerHarness {
         hardwareControllerProvider.overrideWith(_FakeHardwareController.new),
         currentLandmarksProvider.overrideWith(
           (ref) => ref.watch(_testLandmarksProvider),
+        ),
+        // Pose frames arrive within microseconds of each other in this
+        // harness — relax the duration and stalled gates so synthetic reps
+        // don't trip them. ROM + jitter floor stay at production values.
+        repDecisionPolicyFactoryProvider.overrideWithValue(
+          () => ExtremaAmplitudeGatePolicy(
+            angleFn: elbowAngleDeg,
+            minRepDurationUs: 0,
+            maxRepDurationUs: 1 << 60,
+          ),
         ),
       ],
     );

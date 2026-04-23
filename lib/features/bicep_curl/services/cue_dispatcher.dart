@@ -85,7 +85,16 @@ String? _verbalPhrase(CueContent content) {
     case CueContent.fatigueStop:
       return null; // Visual-only; verbal would feel patronizing.
     case CueContent.compensationDetected:
+      // Deprecated — kept here for the exhaustive switch. Live dispatch
+      // uses shoulderHike / torsoSwing; this branch only runs if a
+      // persisted old session gets replayed into the dispatcher.
       return 'Watch your form';
+    case CueContent.shoulderHike:
+      return 'Shoulders up — keep them relaxed';
+    case CueContent.torsoSwing:
+      return 'Body swinging — keep your torso still';
+    case CueContent.repTooFast:
+      return 'Slow down';
     case CueContent.stabilizerWarning:
       return null; // v1+
   }

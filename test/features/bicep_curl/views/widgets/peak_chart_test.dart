@@ -72,9 +72,16 @@ void main() {
       expect(peakChartCueColor(CueContent.fatigueStop), Colors.redAccent);
     });
 
-    test('compensation and stabilizer colors are non-fatigue hues', () {
-      expect(peakChartCueColor(CueContent.compensationDetected),
+    test('form and stabilizer colors are non-fatigue hues', () {
+      // Live form cues split into two distinct purples.
+      expect(peakChartCueColor(CueContent.shoulderHike),
           Colors.purpleAccent);
+      expect(peakChartCueColor(CueContent.torsoSwing),
+          Colors.deepPurpleAccent);
+      // Deprecated combined cue renders grey so it reads as historical
+      // when legacy session logs are replayed in the debrief.
+      expect(peakChartCueColor(CueContent.compensationDetected),
+          Colors.grey);
       expect(peakChartCueColor(CueContent.stabilizerWarning),
           Colors.orangeAccent);
     });

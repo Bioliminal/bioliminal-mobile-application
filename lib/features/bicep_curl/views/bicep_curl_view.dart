@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -102,6 +101,12 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
       const Duration(milliseconds: 100),
       (_) => _maybeAdvanceFraming(),
     );
+
+    // CV is the base capability — start the session as soon as the camera
+    // is streaming, without waiting for a listener to observe the state
+    // transition. Garment is supplemental; its connection listener remains
+    // for the case where hardware connects mid-session.
+    _maybeStartSession();
   }
 
   /// Tries to advance Setup → Calibrating once the curling arm landmarks
@@ -243,6 +248,24 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
             ),
           ),
 
+          // Too-fast banner — fires for CueContent.repTooFast only.
+          // Complementary to the flash indicator + cue timeline entry.
+          Positioned.fill(
+            child: RepTooFastBanner(
+              bus: ref.read(bicepCurlControllerProvider.notifier).visualBus,
+            ),
+          ),
+
+          // Form banner — fires for CueContent.shoulderHike and
+          // CueContent.torsoSwing. Stacked alongside the too-fast banner so
+          // both can animate in a session without competing for the same
+          // state; each filters the shared visualBus by content type.
+          Positioned.fill(
+            child: FormBanner(
+              bus: ref.read(bicepCurlControllerProvider.notifier).visualBus,
+            ),
+          ),
+
           SafeArea(
             child: Column(
               children: [
@@ -263,13 +286,11 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
     if (controller == null) {
       return const SizedBox.shrink();
     }
-    final desc = ref.watch(cameraDescriptionProvider);
-    final isFront = desc?.lensDirection == CameraLensDirection.front;
     return Stack(
       fit: StackFit.expand,
       children: [
         _CoverCameraPreview(controller: controller),
-        SkeletonOverlay(isFrontCamera: isFront),
+        const SkeletonOverlay(),
       ],
     );
   }
@@ -484,24 +505,11 @@ class _CoverCameraPreview extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     var scale = size.aspectRatio * controller.value.aspectRatio;
     if (scale < 1) scale = 1 / scale;
-    final isFront =
-        controller.description.lensDirection == CameraLensDirection.front;
-    // Android camerax mirrors front-preview by default; iOS AVFoundation
-    // does not. Force-mirror on iOS so the selfie-style view is consistent
-    // across platforms and aligns with SkeletonOverlay's front-camera flip.
-    final preview = ClipRect(
+    return ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
-    if (isFront && Platform.isIOS) {
-      return Transform(
-        alignment: Alignment.center,
-        transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
-        child: preview,
-      );
-    }
-    return preview;
   }
 }

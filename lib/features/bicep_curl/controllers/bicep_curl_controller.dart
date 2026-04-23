@@ -14,7 +14,6 @@ import '../models/compensation_reference.dart';
 import '../models/cue_decision.dart';
 import '../models/cue_event.dart';
 import '../models/cue_profile.dart';
-import '../models/pose_delta.dart';
 import '../models/rep_record.dart';
 import '../models/session_log.dart';
 import '../services/compensation_detector.dart';
@@ -139,8 +138,6 @@ class RepCountReconciliation {
 ///                                  ↘─ Complete (idle timeout)
 /// ```
 class BicepCurlController extends Notifier<BicepCurlState> {
-  static const Duration _autoEndIdle = Duration(seconds: 10);
-
   /// Bus for transient cue-fire events the live view subscribes to (badge
   /// flashes, fatigue-bar pulses). Always reflects the most recent event;
   /// view filters by recency when rendering.
@@ -191,6 +188,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // pose frame buffer so the current rep doesn't leak frames from the prior
   // one.
   StreamSubscription<int>? _repStartSub;
+  // Reps dropped by a gate (short-ROM, momentum, stalled). Log-only today;
+  // downstream briefs route these to form cues + server diagnostics.
+  StreamSubscription<RepSuppressedEvent>? _repSuppressedSub;
   // NOTE: firmware rep_count is consumed directly inside [_onSample] (from
   // the FF02 packet header), not via HardwareController.repCountStream.
   // The dedicated stream is redundant — SampleBatch.repCount is the same
@@ -202,8 +202,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   static const int _envelopeBufferRetentionUs = 10 * 1000 * 1000;
 
   // Pose frames captured during the current rep window — used to build the
-  // compensation reference (during calibration reps 1–3) and per-rep
-  // PoseDelta (during Active).
+  // compensation reference (stable-resting-frame filter applied inside
+  // CompensationDetector.buildReference across pooled calibration reps 1–3)
+  // and per-rep signed peak deltas during Active.
   final List<List<PoseLandmark>> _currentRepFrames = <List<PoseLandmark>>[];
   final List<List<PoseLandmark>> _calibrationFramesForRef =
       <List<PoseLandmark>>[];
@@ -213,7 +214,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   CueProfile _profile = CueProfile.intermediate();
   DateTime? _sessionStartedAt;
   bool _bleDroppedDuringSet = false;
-  Timer? _idleTimer;
 
   // Wall-clock ↔ BLE-firmware-time alignment. Captured on first SampleBatch
   // so envelope sample timestamps live in the same epoch as pose frames.
@@ -267,7 +267,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _sessionStartedAt = DateTime.now();
     _bleDroppedDuringSet = hardwareState != HardwareConnectionState.connected;
     _envelope = EnvelopeDerivator();
-    _repDetector = RepDetector();
+    final policyFactory = ref.read(repDecisionPolicyFactoryProvider);
+    _repDetector = RepDetector(policyFactory: policyFactory);
     _envelopeBuffer.clear();
     _currentRepFrames.clear();
     _calibrationFramesForRef.clear();
@@ -294,6 +295,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
     _hardwareCueSub = hardware.cueEventStream.listen((_) => _onHardwareCue());
     _repStartSub = _repDetector!.onRepStart.listen(_onRepStart);
+    _repSuppressedSub = _repDetector!.suppressed.listen(_onRepSuppressed);
 
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
@@ -416,7 +418,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     final s = state;
     if (s is! BicepCurlCalibrating && s is! BicepCurlActive) return;
     final tUs = DateTime.now().microsecondsSinceEpoch;
-    _repDetector?.addPoseFrame(tUs, landmarks, _side);
+    _repDetector?.addPoseFrame(tUs, landmarks);
     _currentRepFrames.add(landmarks);
   }
 
@@ -434,6 +436,26 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _currentRepFrames.clear();
   }
 
+  void _onRepSuppressed(RepSuppressedEvent e) {
+    developer.log(
+      'rep suppressed reason=${e.reason.name} '
+      'amplitude=${e.amplitudeDeg.toStringAsFixed(1)}° '
+      'duration=${(e.durationUs / 1000).round()}ms',
+      name: 'RepDetector',
+    );
+    if (e.reason == RepInvalidReason.tooFast) {
+      final repNum = switch (state) {
+        BicepCurlActive(:final reps) => reps.length + 1,
+        BicepCurlCalibrating(:final repsCompleted) => repsCompleted + 1,
+        _ => 0,
+      };
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.repTooFast, repNum: repNum),
+      );
+    }
+    _currentRepFrames.clear();
+  }
+
   void _onRepBoundary(RepBoundary b) {
     final summary = _summarizeWindow(b.tStartUs, b.tEndUs);
     final s = state;
@@ -447,7 +469,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _cvRepCount += 1;
     _updateReconciliation();
     _currentRepFrames.clear();
-    _resetIdleTimer();
   }
 
   void _handleCalibrationRep(
@@ -501,11 +522,28 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   ) {
     final repNum = s.reps.length + 1;
 
-    final delta = _currentRepFrames.isEmpty
+    // Walk the rep's pose frames once to compute signed peak deltas
+    // (shoulder rise, forward lean) against the stable-resting-frame
+    // reference. Averaging across the rep — the old behavior — washed out
+    // the concentric peak where compensation actually occurs.
+    final perRep = _currentRepFrames.isEmpty
         ? null
-        : _meanDelta(_currentRepFrames, s.ref);
-    final compensating =
-        delta?.exceedsThresholds(_profile.compensation) ?? false;
+        : CompensationDetector.computePerRepDeltas(
+            _currentRepFrames,
+            b.side,
+            s.ref,
+          );
+    final peakPoseDelta = perRep?.asPeakPoseDelta();
+    // Signed-peak thresholds: fire only when a signal went POSITIVE past
+    // its profile threshold (shoulder hiked up / leaned forward). Both
+    // cues can fire independently on the same rep — compensation isn't
+    // one thing, it's two different failure modes the user can make
+    // simultaneously.
+    final shoulderHike = perRep != null &&
+        perRep.peakShoulderRiseDeg > _profile.compensation.shoulderDriftDeg;
+    final torsoSwing = perRep != null &&
+        perRep.peakForwardLeanDeg > _profile.compensation.torsoPitchDeltaDeg;
+    final compensating = shoulderHike || torsoSwing;
 
     final record = RepRecord(
       repNum: repNum,
@@ -513,14 +551,17 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       tPeakUs: b.tPeakUs,
       tEndUs: b.tEndUs,
       peakEnv: peakEnv,
-      poseDelta: delta,
+      poseDelta: peakPoseDelta,
       envelopeSamples: envelopeSamples,
     );
     final reps = [...s.reps, record];
     final peaks = [for (final r in reps) r.peakEnv];
 
     final emgOnline = !_bleDroppedDuringSet;
-    final decision = emgOnline
+    // Fatigue cues from the EMG envelope (only when BLE is live). The
+    // algorithm returns null while compensation is active on this rep so
+    // the form cues below aren't crowded out.
+    final fatigueDecision = emgOnline
         ? FatigueAlgorithm.evaluate(
             peaks: peaks,
             currentRepNum: repNum,
@@ -528,25 +569,36 @@ class BicepCurlController extends Notifier<BicepCurlState> {
             profile: _profile,
             compensationActive: compensating,
           )
-        : (compensating
-              ? CueDecision(
-                  content: CueContent.compensationDetected,
-                  repNum: repNum,
-                )
-              : null);
+        : null;
 
     final dropFraction = _latestDropFraction(peaks);
 
-    if (decision != null) {
-      _dispatcher?.dispatch(decision);
-      // Only fatigue cues bump cooldown; compensation events fire
-      // independently of the cooldown clock. fatigueStop is included so
-      // the stop event is logged exactly once per threshold crossing.
-      if (decision.content == CueContent.fatigueFade ||
-          decision.content == CueContent.fatigueUrgent ||
-          decision.content == CueContent.fatigueStop) {
+    if (fatigueDecision != null) {
+      _dispatcher?.dispatch(fatigueDecision);
+      // Only fatigue cues bump cooldown; form cues fire independently of
+      // the cooldown clock. fatigueStop is included so the stop event is
+      // logged exactly once per threshold crossing.
+      if (fatigueDecision.content == CueContent.fatigueFade ||
+          fatigueDecision.content == CueContent.fatigueUrgent ||
+          fatigueDecision.content == CueContent.fatigueStop) {
         _lastCueRep = repNum;
       }
+    }
+
+    // Form cues dispatched independently from the pose path. Both can
+    // fire on the same rep — the user may hike their shoulder AND lean
+    // forward simultaneously. No cooldown; the detector already only
+    // evaluates the rep's signed peak, not the whole window, so repeated
+    // firings across reps are intentional.
+    if (shoulderHike) {
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.shoulderHike, repNum: repNum),
+      );
+    }
+    if (torsoSwing) {
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.torsoSwing, repNum: repNum),
+      );
     }
 
     state = s.copyWith(
@@ -557,12 +609,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       currentCompensating: compensating,
       emgOnline: emgOnline,
     );
-
-    // Auto-end on fatigueStop — past useful intervention window per
-    // haptic-cueing-handshake.md §"The algorithm (data-backed v1)".
-    if (decision?.content == CueContent.fatigueStop) {
-      unawaited(endSession());
-    }
   }
 
   // ---------- helpers ----------
@@ -593,23 +639,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     return (peak: peak, samples: samples);
   }
 
-  PoseDelta _meanDelta(
-    List<List<PoseLandmark>> frames,
-    CompensationReference ref,
-  ) {
-    var sumShoulder = 0.0;
-    var sumPitch = 0.0;
-    for (final frame in frames) {
-      final d = CompensationDetector.computeDelta(frame, ref);
-      sumShoulder += d.shoulderDriftDeg;
-      sumPitch += d.torsoPitchDeltaDeg;
-    }
-    return PoseDelta(
-      shoulderDriftDeg: sumShoulder / frames.length,
-      torsoPitchDeltaDeg: sumPitch / frames.length,
-    );
-  }
-
   double _latestDropFraction(List<double> peaks) {
     if (peaks.length < 2) return 0.0;
     final windowStart = peaks.length - _profile.baselineWindow < 0
@@ -621,16 +650,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     }
     if (baseline <= 0) return 0.0;
     return (1.0 - peaks.last / baseline).clamp(0.0, 1.0);
-  }
-
-  /// Auto-end the set when no rep has been detected for [_autoEndIdle].
-  /// Only runs during Active — calibration is allowed to take its time
-  /// (first rep often arrives 20-30 s after Setup completes).
-  void _resetIdleTimer() {
-    _idleTimer?.cancel();
-    if (state is BicepCurlActive) {
-      _idleTimer = Timer(_autoEndIdle, () => unawaited(endSession()));
-    }
   }
 
   SessionLog _buildLog() {
@@ -654,8 +673,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   Future<void> _teardown({bool keepVisualBus = false}) async {
-    _idleTimer?.cancel();
-    _idleTimer = null;
     // Use cached _smoother — ref.read is forbidden in onDispose callbacks.
     _smoother?.reset();
     await _sampleSub?.cancel();
@@ -666,6 +683,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _hardwareCueSub = null;
     await _repStartSub?.cancel();
     _repStartSub = null;
+    await _repSuppressedSub?.cancel();
+    _repSuppressedSub = null;
     // Landmark + connection subs live on ref (wired in build) and tear down
     // with the Notifier. Not closed per-session.
     await _repDetector?.dispose();

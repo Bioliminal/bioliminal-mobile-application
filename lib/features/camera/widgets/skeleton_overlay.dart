@@ -30,10 +30,8 @@ const List<(int, int)> blazePoseConnections = [
 // Coordinate transform
 // ---------------------------------------------------------------------------
 
-Offset transformLandmark(PoseLandmark lm, Size canvasSize, bool mirror) {
-  final x = mirror ? (1.0 - lm.x) * canvasSize.width : lm.x * canvasSize.width;
-  final y = lm.y * canvasSize.height;
-  return Offset(x, y);
+Offset transformLandmark(PoseLandmark lm, Size canvasSize) {
+  return Offset(lm.x * canvasSize.width, lm.y * canvasSize.height);
 }
 
 // ---------------------------------------------------------------------------
@@ -44,13 +42,11 @@ class SkeletonPainter extends CustomPainter {
   const SkeletonPainter({
     required this.landmarks,
     required this.previewSize,
-    this.isFrontCamera = false,
     this.isPremium = false,
   });
 
   final List<PoseLandmark> landmarks;
   final Size previewSize;
-  final bool isFrontCamera;
   final bool isPremium;
 
   static const double _landmarkRadius = 6.0;
@@ -69,8 +65,8 @@ class SkeletonPainter extends CustomPainter {
 
       final startLm = landmarks[connection.$1];
       final endLm = landmarks[connection.$2];
-      final startPt = transformLandmark(startLm, size, isFrontCamera);
-      final endPt = transformLandmark(endLm, size, isFrontCamera);
+      final startPt = transformLandmark(startLm, size);
+      final endPt = transformLandmark(endLm, size);
 
       final minVisibility = startLm.visibility < endLm.visibility
           ? startLm.visibility
@@ -87,7 +83,7 @@ class SkeletonPainter extends CustomPainter {
     }
 
     for (final lm in landmarks) {
-      final pt = transformLandmark(lm, size, isFrontCamera);
+      final pt = transformLandmark(lm, size);
       final color = BioliminalTheme.confidenceColor(lm.visibility);
 
       final fill = Paint()
@@ -110,9 +106,7 @@ class SkeletonPainter extends CustomPainter {
 // ---------------------------------------------------------------------------
 
 class SkeletonOverlay extends ConsumerWidget {
-  const SkeletonOverlay({super.key, this.isFrontCamera = false});
-
-  final bool isFrontCamera;
+  const SkeletonOverlay({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -129,7 +123,6 @@ class SkeletonOverlay extends ConsumerWidget {
           painter: SkeletonPainter(
             landmarks: landmarks,
             previewSize: size,
-            isFrontCamera: isFrontCamera,
             isPremium: isPremium,
           ),
         );
