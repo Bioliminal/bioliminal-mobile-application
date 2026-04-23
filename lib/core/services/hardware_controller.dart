@@ -8,22 +8,32 @@ import 'sample_batch.dart';
 
 enum HardwareConnectionState { disconnected, scanning, connecting, connected }
 
-/// BLE bridge to the ESP32 firmware (sketch `bicep_autonomous`, hardware-led
-/// mode).
+/// BLE bridge to the ESP32 firmware (sketch `bicep_autonomous` or, with
+/// the ratified 2026-04-21 amendment, `bicep_hybrid`).
 ///
-/// Subscribes to FF02 NOTIFY for the 310-byte raw EMG stream. In this branch
-/// the app is near read-only on FF04 — the only writes it makes are
-/// `SET_SESSION_STATE(Calibrating)` on session start and
-/// `SET_SESSION_STATE(Idle)` on end. The firmware owns rep counting, fatigue
-/// detection, and cue firing inside the session; the app consumes
-/// `repCount` and `cueEvent` fields from every packet.
+/// Subscribes to FF02 NOTIFY for the 310-byte raw EMG stream. Per the
+/// pose-authoritative amendment
+/// (`bioliminal-ops/decisions/2026-04-21-pose-authoritative-rep-counting.md`),
+/// phone now writes rep boundaries back to firmware over FF04 so firmware
+/// can reconcile its local envelope-peak count with the authoritative
+/// pose-derived count. Three FF04 writes survive:
+///
+/// - `SET_SESSION_STATE(Calibrating)` on session start
+/// - `SET_SESSION_STATE(Idle)` on session end
+/// - `OP_REP_CONFIRMED(rep_num, t_ms)` on every pose-confirmed rep
+///
+/// Firmware still owns fatigue detection + haptic cue firing inside the
+/// session; the app consumes `repCount` (now phone-authoritative, written
+/// back verbatim by firmware) and `cueEvent` (enum — fatigue fade /
+/// urgent / stop / calibration_done) fields from every packet.
 ///
 /// Protocol contract:
 /// - Service: `FF01`
 /// - Notify char: `FF02` (310 B @ 40 Hz, raw + rect + env @ 2 kHz, plus
 ///   rep_count + cue_event in the 10-byte header)
-/// - Write char:  `FF04` (opcode 0x12 SET_SESSION_STATE only; other opcodes
-///   are ignored by the autonomous firmware and stubbed to no-op here)
+/// - Write char:  `FF04`
+///   - 0x12 SET_SESSION_STATE   [state u8]
+///   - 0x13 OP_REP_CONFIRMED    [rep_num u8][t_ms u24 LE]
 class HardwareController extends Notifier<HardwareConnectionState> {
   StreamSubscription<List<ScanResult>>? _scanSubscription;
   StreamSubscription<List<int>>? _notifySubscription;
@@ -242,6 +252,26 @@ class HardwareController extends Notifier<HardwareConnectionState> {
   Future<void> setSessionState(int sessionState) {
     _lastSessionState = sessionState;
     return sendCommand([0x12, sessionState]);
+  }
+
+  /// Inform firmware that the phone has pose-confirmed rep number [repNum]
+  /// at wall-clock time [tMs]. Fires on every boundary emitted by the
+  /// pose `RepDetector`; firmware overwrites its local count and logs
+  /// `[rep-disagree]` when local and phone counts diverge by more than 1.
+  ///
+  /// `t_ms` is encoded as u24 LE (wraps every ~4.6 hours, which is well
+  /// beyond any single session). Opcode and payload shape match the
+  /// 2026-04-21 amendment and are documented in the firmware's FF04
+  /// opcode table — see `bicep_hybrid.ino` and `bicep_realtime.ino`.
+  Future<void> sendRepConfirmed(int repNum, int tMs) async {
+    final t24 = tMs & 0xFFFFFF;
+    await sendCommand([
+      0x13,
+      repNum & 0xFF,
+      t24 & 0xFF,
+      (t24 >> 8) & 0xFF,
+      (t24 >> 16) & 0xFF,
+    ]);
   }
 }
 

@@ -34,8 +34,26 @@ enum _RepPhase { armed, concentric, eccentric }
 /// Hysteresis on the threshold edges prevents micro-jitter from
 /// double-counting reps. Numbers are tuned for a typical bicep curl;
 /// extreme tempo or partial-range reps may need calibration.
+///
+/// **Visibility gate:** frames where any of shoulder/elbow/wrist
+/// landmark visibility is below `minVisibility` are dropped before
+/// angle computation. Keeps MediaPipe jitter under occlusion from
+/// producing spurious rep boundaries.
+///
+/// **Idle reset:** if no valid frame has advanced the state machine in
+/// `maxIdleUs`, the detector resets to armed. Prevents a stuck mid-rep
+/// state when tracking is lost entirely.
+///
+/// ROM + duration gates from the mobile brief §1 are deferred to a
+/// follow-up PR that refactors the controller's clock injection so
+/// integration tests can exercise the gates without real-time waits.
 class RepDetector {
-  RepDetector({this.armedThresholdDeg = 150.0, this.minDropToStartDeg = 10.0});
+  RepDetector({
+    this.armedThresholdDeg = 150.0,
+    this.minDropToStartDeg = 10.0,
+    this.minVisibility = 0.5,
+    this.maxIdleUs = 10000000, // 10 s
+  });
 
   /// Angle considered "fully extended" — armed for next rep.
   final double armedThresholdDeg;
@@ -44,6 +62,14 @@ class RepDetector {
   /// (avoids false starts on small jitter).
   final double minDropToStartDeg;
 
+  /// Minimum landmark visibility to accept a pose frame. Below this,
+  /// the frame is dropped. MediaPipe docs put usable tracking at ≥ 0.5.
+  final double minVisibility;
+
+  /// If no valid frame advances the state in this long, reset to armed.
+  /// Handles sustained tracking loss mid-rep.
+  final int maxIdleUs;
+
   final _controller = StreamController<RepBoundary>.broadcast();
   Stream<RepBoundary> get boundaries => _controller.stream;
 
@@ -51,11 +77,26 @@ class RepDetector {
   int _repNum = 0;
   int _tStartUs = 0;
   int _tPeakUs = 0;
+  int _tLastProgressUs = 0;
   double _minAngle = 180.0;
 
   /// Feed one pose frame. Time monotonic in microseconds.
   void addPoseFrame(int tUs, List<PoseLandmark> landmarks, ArmSide side) {
+    // Visibility gate: drop frames where any elbow-triad landmark is
+    // low-visibility rather than deriving a bad angle. State machine
+    // freezes until visibility recovers.
+    final shoulderIdx = side == ArmSide.left ? kLeftShoulder : kRightShoulder;
+    final elbowIdx = side == ArmSide.left ? kLeftElbow : kRightElbow;
+    final wristIdx = side == ArmSide.left ? kLeftWrist : kRightWrist;
+    if (landmarks[shoulderIdx].visibility < minVisibility ||
+        landmarks[elbowIdx].visibility < minVisibility ||
+        landmarks[wristIdx].visibility < minVisibility) {
+      _maybeResetOnIdle(tUs);
+      return;
+    }
+
     final angle = elbowAngleDeg(landmarks, side);
+    _tLastProgressUs = tUs;
 
     switch (_phase) {
       case _RepPhase.armed:
@@ -95,6 +136,16 @@ class RepDetector {
           _tPeakUs = tUs;
         }
         break;
+    }
+  }
+
+  /// Reset from a non-armed phase when progress has stalled (visibility
+  /// loss). Prevents a stuck state machine during sustained tracking loss.
+  void _maybeResetOnIdle(int tUs) {
+    if (_phase == _RepPhase.armed) return;
+    if (_tLastProgressUs > 0 && tUs - _tLastProgressUs > maxIdleUs) {
+      _phase = _RepPhase.armed;
+      _minAngle = 180.0;
     }
   }
 

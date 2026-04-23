@@ -348,6 +348,17 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   void _onRepBoundary(RepBoundary b) {
+    // Phone-authoritative rep count: inform firmware immediately so it can
+    // reconcile (overwrite local count, log [rep-disagree] on drift > 1).
+    // Per bioliminal-ops/decisions/2026-04-21-pose-authoritative-rep-counting.md.
+    // Write-without-response — fire-and-forget, latency sits inside the
+    // cue budget.
+    final hardware = ref.read(hardwareControllerProvider.notifier);
+    unawaited(hardware.sendRepConfirmed(
+      b.repNum,
+      DateTime.now().millisecondsSinceEpoch,
+    ));
+
     final summary = _summarizeWindow(b.tStartUs, b.tEndUs);
     final s = state;
     if (s is BicepCurlCalibrating) {
