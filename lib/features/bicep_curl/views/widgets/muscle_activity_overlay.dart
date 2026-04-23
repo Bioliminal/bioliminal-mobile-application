@@ -16,12 +16,15 @@ import '../../../../core/theme.dart';
 /// of recent values in a paint cache. One `CustomPaint` per frame —
 /// cheap enough to leave always-on during the set.
 ///
-/// **Scale discipline:** the plot is fixed-floor-at-0 with a
-/// session-ratcheting ceiling. Early-session or quiet-muscle frames sit
-/// near the bottom of the widget; real contraction peaks push the
-/// ceiling up. This avoids the "synthetic waves" artifact a windowed
-/// min/max scale produces, where electrode noise fills the full vertical
-/// space even when the muscle is idle.
+/// **Scale discipline:** fixed floor at 0, ceiling = `max(initialCeiling,
+/// max-in-visible-window * 1.2)`. Quiet muscle plots near the bottom
+/// (noise doesn't fill vertical space). After a hard initial flex the
+/// ceiling relaxes back down as the peak ages out of the window, so
+/// subsequent real reps aren't stuck plotting tiny against a one-time
+/// early spike. Per Rajat's live-test finding 2026-04-23: "after the
+/// first 5 reps the EMG is not reading" — the session-ratcheting version
+/// locked in the calibration flex and never decayed, compressing all
+/// subsequent envelopes visually.
 class MuscleActivityOverlay extends ConsumerStatefulWidget {
   const MuscleActivityOverlay({
     super.key,
@@ -31,15 +34,17 @@ class MuscleActivityOverlay extends ConsumerStatefulWidget {
   });
 
   /// Rolling window length in wall seconds. At 40 Hz packet rate this is
-  /// [windowSeconds] * 40 samples kept in the ring.
+  /// [windowSeconds] * 40 samples kept in the ring. Also defines the
+  /// decay window for the ceiling — peaks older than this age out.
   final double windowSeconds;
   final double height;
 
-  /// Starting ceiling for the plot's upper bound (in ADC units). Real
-  /// contraction peaks ratchet this upward over the session. 500 ADC
-  /// (~12% of 4095) is well above MyoWare noise floor on a clean
-  /// electrode setup and below typical curl peak envelopes, so a quiet
-  /// muscle at session start plots as a flat line near the bottom.
+  /// Floor-level ceiling (in ADC units) when no recent activity is
+  /// present. Real contraction peaks push the ceiling above this via
+  /// the window-max computation. 500 ADC (~12% of 4095) is above the
+  /// MyoWare noise floor on a clean electrode setup, so quiet muscle
+  /// plots as a small flat band near the bottom rather than filling the
+  /// widget with amplified noise.
   final double initialCeiling;
 
   @override
@@ -51,10 +56,15 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
   late final int _cap = (widget.windowSeconds * 40).round();
   late final Queue<double> _ring = Queue<double>();
 
-  /// Session-running max envelope, used as the sparkline's upper bound.
-  /// Only ever ratchets upward during a session so later quiet periods
-  /// still compare against real peaks seen earlier in the set.
-  late double _sessionMax = widget.initialCeiling;
+  /// Ceiling = `max(initialCeiling, max(_ring) * 1.2)`. Recomputes on
+  /// every packet. Decays as old peaks slide out of the window.
+  double get _ceiling {
+    var maxInWindow = widget.initialCeiling;
+    for (final v in _ring) {
+      if (v > maxInWindow) maxInWindow = v;
+    }
+    return maxInWindow * 1.2;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +82,6 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
           while (_ring.length > _cap) {
             _ring.removeFirst();
           }
-          if (mean > _sessionMax) _sessionMax = mean;
         });
       });
     });
@@ -101,7 +110,7 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
               painter: _SparklinePainter(
                 values: List<double>.from(_ring),
                 color: BioliminalTheme.accent,
-                maxValue: _sessionMax,
+                maxValue: _ceiling,
               ),
               size: Size.infinite,
             ),
