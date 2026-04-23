@@ -6,25 +6,29 @@ import '../../../domain/models.dart';
 import '../../../core/providers.dart';
 
 // ---------------------------------------------------------------------------
-// BlazePose topology — 33-landmark connections
+// BlazePose topology — upper-body subset
+//
+// Bicep curl is an arm exercise, so the overlay draws only shoulders, arms,
+// hands, and the torso trapezoid to hips. Face (0-10) and legs (25-32) are
+// still computed by BlazePose but intentionally not rendered — they add
+// visual noise and aren't used in rep counting.
 // ---------------------------------------------------------------------------
 
 const List<(int, int)> blazePoseConnections = [
-  // Face
-  (0, 1), (1, 2), (2, 3), (3, 7),
-  (0, 4), (4, 5), (5, 6), (6, 8),
-  (9, 10),
-  // Torso
+  // Torso trapezoid — shoulders to hips, anchors the figure
   (11, 12), (11, 23), (12, 24), (23, 24),
   // Left arm
   (11, 13), (13, 15), (15, 17), (15, 19), (15, 21),
   // Right arm
   (12, 14), (14, 16), (16, 18), (16, 20), (16, 22),
-  // Left leg
-  (23, 25), (25, 27), (27, 29), (27, 31), (29, 31),
-  // Right leg
-  (24, 26), (26, 28), (28, 30), (28, 32), (30, 32),
 ];
+
+/// Landmark indices rendered as dots. Matches the topology above.
+const Set<int> renderedLandmarks = {
+  11, 12, 13, 14, 15, 16,           // shoulders, elbows, wrists
+  17, 18, 19, 20, 21, 22,           // hand sub-landmarks
+  23, 24,                           // hips (torso anchor)
+};
 
 // ---------------------------------------------------------------------------
 // Coordinate transform
@@ -86,7 +90,9 @@ class SkeletonPainter extends CustomPainter {
       canvas.drawLine(startPt, endPt, paint);
     }
 
-    for (final lm in landmarks) {
+    for (var i = 0; i < landmarks.length; i++) {
+      if (!renderedLandmarks.contains(i)) continue;
+      final lm = landmarks[i];
       final pt = transformLandmark(lm, size, isFrontCamera);
       final color = BioliminalTheme.confidenceColor(lm.visibility);
 
