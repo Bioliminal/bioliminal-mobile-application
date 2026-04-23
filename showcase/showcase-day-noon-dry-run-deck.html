@@ -368,18 +368,6 @@
   /* =========================================================================
      Slide 04 — Video
      ========================================================================= */
-  .s-video {
-    padding: 0;
-    justify-content: center; align-items: center;
-    background: #000;
-  }
-  .s-video video {
-    width: 100%; height: 100%;
-    object-fit: contain;
-    display: block;
-    background: #000;
-  }
-
   /* =========================================================================
      Slide 05 — Two-stage reveal: logo → arrow + arnold/aaron composite
      ========================================================================= */
@@ -968,13 +956,8 @@
         </div>
       </section>
 
-      <!-- 07 VIDEO -->
-      <section class="slide s-video" data-slide="7">
-        <video id="slide4-video" src="PXL_20260420_145134008.TS.mp4" preload="metadata" playsinline controls></video>
-      </section>
-
-      <!-- 08 QR CODE -->
-      <section class="slide s-qr" data-slide="8">
+      <!-- 07 QR CODE -->
+      <section class="slide s-qr" data-slide="7">
         <div class="slide-header">
           <span class="brand">bioliminal</span>
           <span class="mono">// SCAN</span>
@@ -1015,7 +998,6 @@
   const counter = document.getElementById('counter');
   const chrome = document.getElementById('chrome');
   const dotsEl = document.getElementById('dots');
-  const slide4Video = document.getElementById('slide4-video');
 
   for (let i = 0; i < total; i++) {
     const d = document.createElement('div');
@@ -1046,13 +1028,6 @@
     history.replaceState(null, '', `#${current + 1}`);
 
     if (!slides[current].classList.contains('s-image')) resetImageStage();
-
-    if (slides[current].classList.contains('s-video')) {
-      slide4Video.currentTime = 0;
-      slide4Video.play().catch(() => {});
-    } else {
-      slide4Video.pause();
-    }
   }
 
   document.getElementById('prevBtn').addEventListener('click', (e) => { e.stopPropagation(); go(current - 1); });
@@ -1071,7 +1046,6 @@
   });
   deck.addEventListener('click', (e) => {
     if (e.target.closest('.chrome')) return;
-    if (e.target.closest('.s-video')) return; // let video controls work
     advanceForward();
   });
   const hashMatch = /^#(\d+)$/.exec(location.hash);
