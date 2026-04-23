@@ -40,18 +40,29 @@ void main() {
 
     final rnd = math.Random(99);
     int t = 0;
+    // 100 ms/frame cadence keeps the full 27-frame rep cycle (~2.7 s) above
+    // the 1.0 s minRepDurationUs gate. Jitter semantics are independent of
+    // cadence.
     void feed(double angle) {
       final jittered = angle + (rnd.nextDouble() - 0.5) * 4.0;
       final smoothed = smoother.smooth(_armAtAngle(jittered), tUs: t);
       detector.addPoseFrame(t, smoothed, ArmSide.right);
-      t += 33333;
+      t += 100000;
     }
     for (var rep = 0; rep < 3; rep++) {
-      for (var i = 0; i < 5; i++) feed(170);
-      for (var i = 0; i < 11; i++) feed(170 - i * 11.0);
-      for (var i = 0; i < 11; i++) feed(60 + i * 11.0);
+      for (var i = 0; i < 5; i++) {
+        feed(170);
+      }
+      for (var i = 0; i < 11; i++) {
+        feed(170 - i * 11.0);
+      }
+      for (var i = 0; i < 11; i++) {
+        feed(60 + i * 11.0);
+      }
     }
-    for (var i = 0; i < 5; i++) feed(170);
+    for (var i = 0; i < 5; i++) {
+      feed(170);
+    }
     await Future<void>.delayed(Duration.zero);
     expect(boundaries.length, 3);
     await sub.cancel();
@@ -89,7 +100,7 @@ void main() {
       smoother.smooth(
         List<PoseLandmark>.filled(
           33,
-          PoseLandmark(x: 0.9, y: 0.9, z: 0.9, visibility: 1, presence: 1),
+          const PoseLandmark(x: 0.9, y: 0.9, z: 0.9, visibility: 1, presence: 1),
         ),
         tUs: i * 33333,
       );
@@ -98,7 +109,7 @@ void main() {
     final fresh = smoother.smooth(
       List<PoseLandmark>.filled(
         33,
-        PoseLandmark(x: 0.1, y: 0.1, z: 0.1, visibility: 1, presence: 1),
+        const PoseLandmark(x: 0.1, y: 0.1, z: 0.1, visibility: 1, presence: 1),
       ),
       tUs: 0,
     );
