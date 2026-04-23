@@ -256,6 +256,16 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
             ),
           ),
 
+          // Form banner — fires for CueContent.shoulderHike and
+          // CueContent.torsoSwing. Stacked alongside the too-fast banner so
+          // both can animate in a session without competing for the same
+          // state; each filters the shared visualBus by content type.
+          Positioned.fill(
+            child: FormBanner(
+              bus: ref.read(bicepCurlControllerProvider.notifier).visualBus,
+            ),
+          ),
+
           SafeArea(
             child: Column(
               children: [

@@ -353,6 +353,171 @@ class _RepTooFastBannerState extends State<RepTooFastBanner>
 }
 
 // ---------------------------------------------------------------------------
+// Form banner — prominent top-of-frame cue for shoulderHike / torsoSwing.
+// Purple accent distinguishes it from the amber too-fast banner. Mirrors
+// the RepTooFastBanner slide+fade timing (2.2 s) and shows per-cue copy.
+// Complementary to the cue flash indicator and timeline entry — the
+// banner gives the user a readable in-session explanation of WHY the
+// form cue just fired.
+// ---------------------------------------------------------------------------
+
+class FormBanner extends StatefulWidget {
+  const FormBanner({super.key, required this.bus});
+
+  final ValueListenable<CueEvent?> bus;
+
+  @override
+  State<FormBanner> createState() => _FormBannerState();
+}
+
+class _FormBannerState extends State<FormBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  CueEvent? _lastShown;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    widget.bus.addListener(_onBus);
+  }
+
+  @override
+  void dispose() {
+    widget.bus.removeListener(_onBus);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onBus() {
+    final ev = widget.bus.value;
+    if (ev == null || ev == _lastShown) return;
+    if (ev.content != CueContent.shoulderHike &&
+        ev.content != CueContent.torsoSwing) {
+      return;
+    }
+    _lastShown = ev;
+    _controller.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (_, _) {
+          final t = _controller.value;
+          // Slide in + fade: 0-0.15 rise, 0.15-0.85 hold, 0.85-1.0 fade.
+          double opacity;
+          double offsetY;
+          if (t == 0) {
+            opacity = 0;
+            offsetY = -40;
+          } else if (t < 0.15) {
+            final u = t / 0.15;
+            opacity = u;
+            offsetY = -40 * (1 - u);
+          } else if (t < 0.85) {
+            opacity = 1;
+            offsetY = 0;
+          } else {
+            final u = (t - 0.85) / 0.15;
+            opacity = 1 - u;
+            offsetY = 0;
+          }
+          if (opacity == 0) return const SizedBox.shrink();
+          final ev = _lastShown;
+          if (ev == null) return const SizedBox.shrink();
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 56, left: 24, right: 24),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Transform.translate(
+                  offset: Offset(0, offsetY),
+                  child: Opacity(
+                    opacity: opacity,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: _bannerColor(ev.content),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black45,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(_bannerIcon(ev.content),
+                              color: Colors.white, size: 22),
+                          const SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              _bannerText(ev.content),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+Color _bannerColor(CueContent c) {
+  switch (c) {
+    case CueContent.shoulderHike:
+      return const Color(0xFF7A3FB8); // purple
+    case CueContent.torsoSwing:
+      return const Color(0xFF5B2A8E); // deeper purple
+    default:
+      return const Color(0xFF7A3FB8);
+  }
+}
+
+IconData _bannerIcon(CueContent c) {
+  switch (c) {
+    case CueContent.shoulderHike:
+      return Icons.arrow_upward;
+    case CueContent.torsoSwing:
+      return Icons.swap_horiz;
+    default:
+      return Icons.warning_amber_rounded;
+  }
+}
+
+String _bannerText(CueContent c) {
+  switch (c) {
+    case CueContent.shoulderHike:
+      return 'Shoulders up — keep them relaxed';
+    case CueContent.torsoSwing:
+      return 'Body swinging — keep your torso still';
+    default:
+      return 'Watch your form';
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Framing-check overlay — shown during BicepCurlSetup state
 // ---------------------------------------------------------------------------
 
