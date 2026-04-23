@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
@@ -297,8 +298,32 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _repStartSub = _repDetector!.onRepStart.listen(_onRepStart);
     _repSuppressedSub = _repDetector!.suppressed.listen(_onRepSuppressed);
 
+    // Keep the screen awake for the duration of the session.  Camera
+    // preview alone doesn't inhibit iOS's idle timer; without this the
+    // phone sleeps mid-set.  Released in [_teardown].  Wrapped so unit
+    // tests (no platform plugin) don't blow up.
+    unawaited(_enableWakelock());
+
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
+  }
+
+  Future<void> _enableWakelock() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (e) {
+      developer.log('wakelock enable failed',
+          error: e, name: 'BicepCurlController');
+    }
+  }
+
+  Future<void> _disableWakelock() async {
+    try {
+      await WakelockPlus.disable();
+    } catch (e) {
+      developer.log('wakelock disable failed',
+          error: e, name: 'BicepCurlController');
+    }
   }
 
   /// Fires when the autonomous firmware sets bit0 of the packet's cue_event
@@ -457,6 +482,17 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   void _onRepBoundary(RepBoundary b) {
+    // Pose-authoritative rep count: write OP_REP_CONFIRMED to FF04 so
+    // firmware can overwrite its local envelope-peak count.  Fire-and-
+    // forget via unawaited; firmware's haptic loop doesn't wait on this.
+    // Paired with `bicep_hybrid.ino`'s OP_REP_CONFIRMED(0x13) handler.
+    // See bioliminal-ops/decisions/2026-04-21-pose-authoritative-rep-counting.md.
+    final hardware = ref.read(hardwareControllerProvider.notifier);
+    unawaited(hardware.sendRepConfirmed(
+      b.repNum,
+      DateTime.now().millisecondsSinceEpoch,
+    ));
+
     final summary = _summarizeWindow(b.tStartUs, b.tEndUs);
     final s = state;
     if (s is BicepCurlCalibrating) {
@@ -673,6 +709,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   Future<void> _teardown({bool keepVisualBus = false}) async {
+    // Release the screen-awake lock first so the phone can sleep again
+    // even if some other part of teardown fails.
+    unawaited(_disableWakelock());
     // Use cached _smoother — ref.read is forbidden in onDispose callbacks.
     _smoother?.reset();
     await _sampleSub?.cancel();

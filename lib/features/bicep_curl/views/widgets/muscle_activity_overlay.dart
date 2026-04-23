@@ -15,17 +15,32 @@ import '../../../../core/theme.dart';
 /// one value per packet (50 samples → mean), and keeps a rolling window
 /// of recent values in a paint cache. One `CustomPaint` per frame —
 /// cheap enough to leave always-on during the set.
+///
+/// **Scale discipline:** the plot is fixed-floor-at-0 with a
+/// session-ratcheting ceiling. Early-session or quiet-muscle frames sit
+/// near the bottom of the widget; real contraction peaks push the
+/// ceiling up. This avoids the "synthetic waves" artifact a windowed
+/// min/max scale produces, where electrode noise fills the full vertical
+/// space even when the muscle is idle.
 class MuscleActivityOverlay extends ConsumerStatefulWidget {
   const MuscleActivityOverlay({
     super.key,
     this.windowSeconds = 3.0,
     this.height = 64.0,
+    this.initialCeiling = 500.0,
   });
 
   /// Rolling window length in wall seconds. At 40 Hz packet rate this is
   /// [windowSeconds] * 40 samples kept in the ring.
   final double windowSeconds;
   final double height;
+
+  /// Starting ceiling for the plot's upper bound (in ADC units). Real
+  /// contraction peaks ratchet this upward over the session. 500 ADC
+  /// (~12% of 4095) is well above MyoWare noise floor on a clean
+  /// electrode setup and below typical curl peak envelopes, so a quiet
+  /// muscle at session start plots as a flat line near the bottom.
+  final double initialCeiling;
 
   @override
   ConsumerState<MuscleActivityOverlay> createState() =>
@@ -35,6 +50,11 @@ class MuscleActivityOverlay extends ConsumerStatefulWidget {
 class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
   late final int _cap = (widget.windowSeconds * 40).round();
   late final Queue<double> _ring = Queue<double>();
+
+  /// Session-running max envelope, used as the sparkline's upper bound.
+  /// Only ever ratchets upward during a session so later quiet periods
+  /// still compare against real peaks seen earlier in the set.
+  late double _sessionMax = widget.initialCeiling;
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +72,7 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
           while (_ring.length > _cap) {
             _ring.removeFirst();
           }
+          if (mean > _sessionMax) _sessionMax = mean;
         });
       });
     });
@@ -80,6 +101,7 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
               painter: _SparklinePainter(
                 values: List<double>.from(_ring),
                 color: BioliminalTheme.accent,
+                maxValue: _sessionMax,
               ),
               size: Size.infinite,
             ),
@@ -91,26 +113,26 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
 }
 
 class _SparklinePainter extends CustomPainter {
-  _SparklinePainter({required this.values, required this.color});
+  _SparklinePainter({
+    required this.values,
+    required this.color,
+    required this.maxValue,
+  });
 
   final List<double> values;
   final Color color;
+  final double maxValue;
 
   @override
   void paint(Canvas canvas, Size size) {
     if (values.isEmpty) return;
 
-    // Auto-scale the window so signal fills vertical space regardless of
-    // MyoWare gain-pot setting. We use observed min/max instead of the
-    // 12-bit ADC ceiling — the envelope on real curls rarely spans more
-    // than 10-20% of the 0-4095 range, which made the static-scale version
-    // look like a flat line.
-    var lo = values.first;
-    var hi = values.first;
-    for (final v in values) {
-      if (v < lo) lo = v;
-      if (v > hi) hi = v;
-    }
+    // Fixed floor at 0 + session-running max ceiling. Quiet muscle plots
+    // at the bottom; real activation peaks fill toward the top. Ceiling
+    // only ratchets upward over the session so future quiet periods stay
+    // honestly small relative to the contractions the user actually did.
+    const lo = 0.0;
+    final hi = maxValue;
     final range = (hi - lo).clamp(1.0, double.infinity);
 
     final line = Paint()
@@ -150,6 +172,7 @@ class _SparklinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparklinePainter old) =>
+      old.maxValue != maxValue ||
       old.values.length != values.length ||
       (values.isNotEmpty &&
           old.values.isNotEmpty &&
