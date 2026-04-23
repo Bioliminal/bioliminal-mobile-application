@@ -7,6 +7,7 @@ import 'package:bioliminal/core/services/local_storage_service.dart'
     as local_impl;
 import 'package:bioliminal/core/services/bioliminal_client.dart';
 import 'package:bioliminal/domain/models.dart';
+import 'package:bioliminal/features/bicep_curl/services/rep_decision_policy.dart';
 import 'package:bioliminal/features/camera/services/landmark_smoother.dart';
 import 'package:bioliminal/features/camera/services/pose_detector.dart';
 
@@ -102,6 +103,15 @@ final landmarkSmootherProvider = Provider<LandmarkSmoother>((ref) {
   final smoother = OneEuroLandmarkSmoother();
   ref.onDispose(smoother.reset);
   return smoother;
+});
+
+/// Per-session rep decision policy factory. Default yields the bicep-curl
+/// `ExtremaAmplitudeGatePolicy` with production gate thresholds. Overridden
+/// in tests that need relaxed timing (synthetic frames arrive within
+/// microseconds and would otherwise trip the 1.0 s duration gate).
+final repDecisionPolicyFactoryProvider =
+    Provider<RepDecisionPolicy Function()>((ref) {
+  return () => ExtremaAmplitudeGatePolicy.bicepCurl();
 });
 
 final localStorageServiceProvider = Provider<local_impl.LocalStorageService>(

@@ -191,6 +191,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   // pose frame buffer so the current rep doesn't leak frames from the prior
   // one.
   StreamSubscription<int>? _repStartSub;
+  // Reps dropped by a gate (short-ROM, momentum, stalled). Log-only today;
+  // downstream briefs route these to form cues + server diagnostics.
+  StreamSubscription<RepSuppressedEvent>? _repSuppressedSub;
   // NOTE: firmware rep_count is consumed directly inside [_onSample] (from
   // the FF02 packet header), not via HardwareController.repCountStream.
   // The dedicated stream is redundant — SampleBatch.repCount is the same
@@ -267,7 +270,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _sessionStartedAt = DateTime.now();
     _bleDroppedDuringSet = hardwareState != HardwareConnectionState.connected;
     _envelope = EnvelopeDerivator();
-    _repDetector = RepDetector();
+    final policyFactory = ref.read(repDecisionPolicyFactoryProvider);
+    _repDetector = RepDetector(policy: policyFactory());
     _envelopeBuffer.clear();
     _currentRepFrames.clear();
     _calibrationFramesForRef.clear();
@@ -294,6 +298,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
     _hardwareCueSub = hardware.cueEventStream.listen((_) => _onHardwareCue());
     _repStartSub = _repDetector!.onRepStart.listen(_onRepStart);
+    _repSuppressedSub = _repDetector!.suppressed.listen(_onRepSuppressed);
 
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
@@ -431,6 +436,16 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   void _onRepStart(int tStartUs) {
+    _currentRepFrames.clear();
+  }
+
+  void _onRepSuppressed(RepSuppressedEvent e) {
+    developer.log(
+      'rep suppressed reason=${e.reason.name} '
+      'amplitude=${e.amplitudeDeg.toStringAsFixed(1)}° '
+      'duration=${(e.durationUs / 1000).round()}ms',
+      name: 'RepDetector',
+    );
     _currentRepFrames.clear();
   }
 
@@ -666,6 +681,8 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _hardwareCueSub = null;
     await _repStartSub?.cancel();
     _repStartSub = null;
+    await _repSuppressedSub?.cancel();
+    _repSuppressedSub = null;
     // Landmark + connection subs live on ref (wired in build) and tear down
     // with the Notifier. Not closed per-session.
     await _repDetector?.dispose();

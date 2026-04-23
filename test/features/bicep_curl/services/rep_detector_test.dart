@@ -48,14 +48,55 @@ void main() {
       t += 33333;
     }
     // Stationary pre-rep.
-    for (var i = 0; i < 5; i++) feed(170);
+    for (var i = 0; i < 5; i++) {
+      feed(170);
+    }
     // Begin curl — at some frame angle drops below 130, should fire rep-start.
-    for (var i = 0; i < 8; i++) feed(170 - i * 11.0);
+    for (var i = 0; i < 8; i++) {
+      feed(170 - i * 11.0);
+    }
     await Future<void>.delayed(Duration.zero);
 
     expect(starts, isNotEmpty);
     expect(starts.length, 1); // exactly one rep-start per descent
     await sub.cancel();
+    await detector.dispose();
+  });
+
+  test('RepDetector surfaces suppressed events on the suppressed stream', () async {
+    final detector = RepDetector();
+    final suppressed = <RepSuppressedEvent>[];
+    final boundaries = <RepBoundary>[];
+    final subS = detector.suppressed.listen(suppressed.add);
+    final subB = detector.boundaries.listen(boundaries.add);
+
+    int t = 0;
+    // 200 ms/frame so the rep's total duration clears the 1.0 s
+    // min-duration gate — we want the ROM gate (not the duration gate)
+    // to be the one that suppresses this rep.
+    void feed(double angle) {
+      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      t += 200000;
+    }
+    // Short-ROM rep: 170° → 120° → 170° (50° amplitude — clears jitter floor,
+    // fails ROM gate).
+    for (var i = 0; i < 3; i++) {
+      feed(170);
+    }
+    for (var i = 0; i < 11; i++) {
+      feed(170 - i * 5.0);
+    }
+    for (var i = 0; i < 11; i++) {
+      feed(120 + i * 5.0);
+    }
+    await Future<void>.delayed(Duration.zero);
+
+    expect(boundaries, isEmpty);
+    expect(suppressed.length, 1);
+    expect(suppressed[0].reason, RepInvalidReason.shortRom);
+
+    await subS.cancel();
+    await subB.cancel();
     await detector.dispose();
   });
 

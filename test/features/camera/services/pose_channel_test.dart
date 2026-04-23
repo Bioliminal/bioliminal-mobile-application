@@ -30,7 +30,7 @@ void main() {
   group('initialize', () {
     test('initialize sends {assetPath, delegate} to native', () async {
       final captured = <dynamic>[];
-      final mock = MethodChannel('bioliminal.app/pose');
+      const mock = MethodChannel('bioliminal.app/pose');
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(mock, (call) async {
         captured.add(call.arguments);
