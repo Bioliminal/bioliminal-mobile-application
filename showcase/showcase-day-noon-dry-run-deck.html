@@ -1,0 +1,2071 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Bioliminal — Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300..900;1,300..900&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0F172A;
+    --surface: #1E293B;
+    --surface-alt: #0C1425;
+    --hairline: #17233F;
+    --text: #F8FAFC;
+    --muted: #94A3B8;
+    --subtle: #475569;
+    --signal: #38BDF8;
+    --warn: #F59E0B;
+    --error: #F87171;
+    --emerald: #34D399;
+    --indigo: #818CF8;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100%; height: 100%;
+    overflow: hidden;
+    background: #000;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .display {
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.03em;
+    line-height: 0.95;
+  }
+  .stage {
+    position: fixed; inset: 0;
+    display: grid; place-items: center;
+    background: #000;
+  }
+  .deck {
+    width: 1600px; height: 900px;
+    background: var(--bg);
+    position: relative;
+    overflow: hidden;
+    transform-origin: center center;
+  }
+  .deck::after {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 3px 3px;
+    mix-blend-mode: overlay;
+    opacity: 0.5; z-index: 50;
+  }
+  .slide {
+    position: absolute; inset: 0;
+    padding: 64px 72px;
+    display: flex; flex-direction: column;
+    opacity: 0; pointer-events: none;
+    transition: opacity 420ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .slide.active { opacity: 1; pointer-events: auto; }
+  .slide-header {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: var(--subtle); letter-spacing: 0.26em;
+  }
+  .slide-header .brand {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: 16px; letter-spacing: -0.01em;
+    color: var(--muted); text-transform: none;
+  }
+  .slide-footer {
+    position: absolute; bottom: 40px; left: 72px; right: 72px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: var(--subtle); letter-spacing: 0.24em;
+  }
+
+  /* =========================================================================
+     Slide 01 — Title (bioliminal branding image, full-bleed)
+     ========================================================================= */
+  .s-title {
+    padding: 0;
+    justify-content: center; align-items: center;
+    background: #03050c;
+  }
+  .s-title img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* =========================================================================
+     Slide 02 — The Loop (4-up: Sense · Cue · Reason · Verify)
+     ========================================================================= */
+  .s-loop .head-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin: 20px 0 32px;
+  }
+  .s-loop h2 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 96px; line-height: 0.95; letter-spacing: -0.04em; margin: 0;
+  }
+  .s-loop h2 em { font-style: italic; color: var(--signal); font-weight: 400; }
+  .s-loop .subhead {
+    font-size: 16px; color: var(--muted); max-width: 400px;
+    line-height: 1.5; text-align: right;
+  }
+  .loop-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 28px; flex: 1;
+  }
+  .phase {
+    background: var(--surface-alt);
+    border: 1px solid var(--hairline);
+    padding: 24px;
+    display: flex; flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .phase .phase-top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .phase .idx {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 28px; font-weight: 300; letter-spacing: -0.04em;
+    color: var(--signal); line-height: 1;
+  }
+  .phase .tag {
+    font-size: 10px; color: var(--muted); letter-spacing: 0.22em;
+  }
+  .phase .viz-wrap {
+    width: 100%; aspect-ratio: 1 / 1;
+    background: #0A1220;
+    border: 1px solid var(--hairline);
+    position: relative;
+    margin-bottom: 18px;
+  }
+  .phase .viz-wrap canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+  }
+  .phase h3 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 48px; line-height: 1; letter-spacing: -0.04em;
+    margin: 0 0 16px;
+  }
+  .phase ul {
+    margin: 0; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .phase li {
+    display: flex; gap: 12px; align-items: flex-start;
+    font-size: 14px; color: var(--muted); line-height: 1.4;
+  }
+  .phase li::before {
+    content: '';
+    flex-shrink: 0;
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--signal);
+    margin-top: 7px;
+    box-shadow: 0 0 6px rgba(56,189,248,0.5);
+  }
+  .phase li b {
+    color: var(--text); font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; letter-spacing: 0.04em;
+  }
+  .phase::after {
+    content: '→';
+    position: absolute;
+    right: -22px; top: 50%;
+    transform: translateY(-50%);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    color: var(--hairline);
+    z-index: 2;
+    font-weight: 300;
+  }
+  .phase:last-child::after { display: none; }
+
+  /* =========================================================================
+     Slide 03 — In-app phone
+     ========================================================================= */
+  .s-app .slide-body {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 500px 1fr;
+    gap: 96px;
+    align-items: center;
+    margin-top: 40px;
+  }
+  .s-app h2 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 96px; line-height: 1; letter-spacing: -0.04em; margin: 0 0 32px;
+  }
+  .s-app h2 em { font-style: italic; color: var(--signal); font-weight: 400; }
+  .s-app .cols {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px 48px;
+    max-width: 620px;
+  }
+  .s-app .col .k {
+    font-size: 11px; color: var(--subtle); letter-spacing: 0.22em;
+  }
+  .s-app .col .v {
+    margin-top: 8px;
+    font-size: 15px; color: var(--muted); line-height: 1.5;
+  }
+
+  .phone {
+    width: 420px; height: 840px;
+    background: #000;
+    border-radius: 52px;
+    padding: 14px;
+    box-shadow: 0 50px 120px rgba(0,0,0,0.7), inset 0 0 0 2px #1f2937;
+    position: relative; margin: 0 auto;
+  }
+  .phone::before {
+    content: ''; position: absolute;
+    top: 22px; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 32px; border-radius: 18px;
+    background: #000; z-index: 2;
+  }
+  .screen {
+    width: 100%; height: 100%;
+    background: var(--bg); border-radius: 38px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .statusbar {
+    height: 52px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    padding: 0 30px 6px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; color: var(--text); letter-spacing: 0.04em;
+  }
+  .appbar {
+    padding: 14px 24px 6px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .appbar .title {
+    font-family: 'Fraunces', serif; font-size: 24px; font-weight: 600;
+  }
+  .appbar .state {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.24em; color: var(--emerald);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .appbar .state::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--emerald);
+    box-shadow: 0 0 8px var(--emerald);
+    animation: breath 1.2s ease-in-out infinite;
+  }
+  @keyframes breath {
+    0%, 100% { opacity: 0.4; } 50% { opacity: 1; }
+  }
+  .hero-row {
+    padding: 14px 24px 0; display: flex; align-items: baseline; gap: 14px;
+  }
+  .hero-row .rep-big {
+    font-family: 'Fraunces', serif; font-size: 88px; font-weight: 800;
+    line-height: 1; letter-spacing: -0.04em;
+  }
+  .hero-row .rep-of {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px; color: var(--subtle); letter-spacing: 0.22em;
+  }
+  .metric-row {
+    padding: 18px 24px 0;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;
+  }
+  .metric {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .metric .k {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--subtle); letter-spacing: 0.22em;
+  }
+  .metric .v {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 18px; color: var(--text); margin-top: 6px; font-weight: 500;
+  }
+  .metric .v.sig { color: var(--signal); }
+  .metric .v.warn { color: var(--warn); }
+
+  .chart-card {
+    margin: 18px 24px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 16px;
+    flex: 1;
+    display: flex; flex-direction: column;
+  }
+  .chart-card .head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .chart-card .head .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.22em;
+  }
+  .chart-card .head .fat {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; color: var(--signal); letter-spacing: 0.2em; font-weight: 600;
+  }
+  .chart-card canvas { width: 100%; flex: 1; display: block; }
+
+  .cue-row {
+    margin: 0 24px 16px;
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cue-row .lbl {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.22em;
+  }
+  .cue-row .bars { display: flex; gap: 4px; flex: 1; }
+  .cue-row .bar {
+    flex: 1; height: 26px; border-radius: 4px;
+    background: var(--hairline);
+    transition: background 120ms ease;
+  }
+  .cue-row .bar.on {
+    background: var(--signal);
+    box-shadow: 0 0 10px rgba(56,189,248,0.6);
+  }
+  .cue-row .band-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: 0.2em; color: var(--text);
+    min-width: 52px; text-align: right;
+  }
+  .tab-bar {
+    height: 64px;
+    border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; justify-content: space-around;
+    padding: 0 18px 16px;
+  }
+  .tab-bar .tab {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em;
+    color: var(--subtle);
+  }
+  .tab-bar .tab.active { color: var(--signal); }
+  .tab-bar .tab .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor; opacity: 0.7;
+  }
+  .tab-bar .tab.active .dot { box-shadow: 0 0 8px currentColor; }
+
+  /* =========================================================================
+     Slide 04 — Video
+     ========================================================================= */
+  /* =========================================================================
+     Slide 05 — Two-stage reveal: logo → arrow + arnold/aaron composite
+     ========================================================================= */
+  .s-image .image-stage {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 120px 1fr;
+    align-items: center;
+    justify-items: center;
+    margin: 24px 0;
+    gap: 24px;
+  }
+  .s-image .img-slot {
+    width: 100%; height: 100%;
+    display: flex; align-items: center;
+  }
+  .s-image .logo-slot {
+    justify-content: flex-end;
+    padding-right: 4%;
+    transform: translateX(-6%);
+    transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .s-image .logo-slot img {
+    max-width: 88%;
+    max-height: 56%;
+    object-fit: contain;
+    display: block;
+  }
+  .s-image .img-arrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 72px;
+    color: var(--text);
+    opacity: 0;
+    transform: translateX(-16px);
+    transition: opacity 500ms ease 120ms, transform 500ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
+  }
+  .s-image .face-slot {
+    justify-content: flex-start;
+    opacity: 0;
+    transform: translateX(24px);
+    transition: opacity 600ms ease 200ms, transform 600ms cubic-bezier(0.22, 1, 0.36, 1) 200ms;
+  }
+  .s-image .face-wrap {
+    position: relative;
+    display: inline-block;
+    max-height: 72%;
+  }
+  .s-image .face-wrap .arnold {
+    display: block;
+    max-width: 100%;
+    max-height: 72vh;
+    height: auto;
+    object-fit: contain;
+  }
+  .s-image .face-wrap .aaron {
+    position: absolute;
+    /* Aaron face overlay on Arnold — tune these once we eyeball it */
+    top: 2%;
+    left: 37%;
+    width: 26%;
+    height: auto;
+    object-fit: contain;
+    mix-blend-mode: normal;
+  }
+  .s-image .face-wrap .gains {
+    position: absolute;
+    left: 50%;
+    top: 76%;
+    transform: translateX(-50%);
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: clamp(32px, 5.2vh, 64px);
+    color: var(--signal);
+    letter-spacing: 0.02em;
+    text-shadow: 0 2px 14px rgba(0,0,0,0.65);
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .s-image .image-stage[data-stage="1"] .img-arrow,
+  .s-image .image-stage[data-stage="1"] .face-slot {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* =========================================================================
+     Slide 08 — QR code (scan to view deck)
+     ========================================================================= */
+  .s-qr .qr-stage {
+    flex: 1;
+    display: flex; justify-content: center; align-items: center;
+    margin: 24px 0;
+  }
+  .s-qr .qr-stage img {
+    max-width: min(72vh, 640px);
+    max-height: 72vh;
+    width: auto; height: auto;
+    object-fit: contain;
+    display: block;
+  }
+
+  /* =========================================================================
+     Slide 05 — Past BlazePose (two research directions)
+     ========================================================================= */
+  .s-models h2 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 96px; line-height: 0.95; letter-spacing: -0.04em;
+    margin: 20px 0 48px;
+  }
+  .s-models h2 em { font-style: italic; color: var(--signal); font-weight: 400; }
+  .s-models .models-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    flex: 1;
+    margin-bottom: 64px;
+  }
+  .s-models .mcard {
+    background: var(--surface-alt);
+    border: 1px solid var(--hairline);
+    padding: 28px;
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .s-models .mcard-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 18px;
+  }
+  .s-models .mcard .model-name {
+    font-family: 'Fraunces', serif; font-size: 36px; font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.03em; color: var(--signal); line-height: 1;
+  }
+  .s-models .mcard .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: var(--muted); letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .s-models .viz-wrap {
+    position: relative;
+    width: 100%; flex: 1;
+    background: #0A1220;
+    border: 1px solid var(--hairline);
+    overflow: hidden;
+    display: block;
+  }
+  .s-models .viz-wrap canvas {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+  }
+  .s-models .attr {
+    position: absolute; bottom: 10px; right: 16px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 8px; color: var(--subtle); letter-spacing: 0.18em;
+    text-transform: uppercase;
+    z-index: 2;
+  }
+
+  /* =========================================================================
+     Chrome
+     ========================================================================= */
+  .chrome {
+    position: fixed; z-index: 100;
+    bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 20px;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--hairline);
+    border-radius: 100px;
+    padding: 12px 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; letter-spacing: 0.22em;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 240ms ease;
+  }
+  .stage:hover .chrome, .chrome:hover, .chrome.show { opacity: 1; }
+  .chrome button {
+    background: none;
+    border: 1px solid var(--hairline);
+    color: var(--text);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    font-size: 16px; cursor: pointer;
+    display: grid; place-items: center;
+    transition: border-color 160ms ease, color 160ms ease;
+  }
+  .chrome button:hover { border-color: var(--signal); color: var(--signal); }
+  .chrome .counter { min-width: 68px; text-align: center; }
+  .chrome .dots { display: flex; gap: 8px; }
+  .chrome .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--hairline); cursor: pointer;
+    transition: background 160ms ease;
+  }
+  .chrome .dot.active { background: var(--signal); box-shadow: 0 0 8px var(--signal); }
+  .chrome .dot:hover { background: var(--muted); }
+  .chrome .hint {
+    color: var(--subtle); font-size: 10px; letter-spacing: 0.24em;
+    border-left: 1px solid var(--hairline); padding-left: 16px;
+  }
+
+  /* =========================================================================
+     Slide 06 — Adaptive (garment · phone · cloud, animated MODEL pill)
+     ========================================================================= */
+  .s-adaptive h2 {
+    font-family: 'Fraunces', serif; font-weight: 800;
+    font-size: 88px; line-height: 0.95; letter-spacing: -0.04em;
+    margin: 16px 0 0;
+  }
+  .s-adaptive h2 em { font-style: italic; color: var(--signal); font-weight: 400; }
+  .s-adaptive .adaptive-stage {
+    flex: 1; position: relative; margin-top: 24px;
+  }
+  .s-adaptive .topology {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .s-adaptive .topology svg.full { width: 100%; height: 100%; }
+
+  .s-adaptive svg .tier-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 44px; letter-spacing: 0.32em;
+    fill: var(--text); font-weight: 500; text-transform: uppercase;
+    transition: opacity 400ms ease, fill 400ms ease;
+  }
+  .s-adaptive svg .tier-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px; letter-spacing: 0.24em;
+    fill: var(--subtle); text-transform: uppercase;
+    transition: opacity 400ms ease;
+  }
+  .s-adaptive svg .device-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px; letter-spacing: 0.24em;
+    fill: var(--muted); text-transform: uppercase;
+  }
+  .s-adaptive svg .flow-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px; letter-spacing: 0.22em;
+    fill: var(--subtle); text-transform: uppercase;
+  }
+  .s-adaptive svg .model-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 26px; letter-spacing: 0.18em;
+    fill: var(--text); text-transform: uppercase; font-weight: 500;
+  }
+  .s-adaptive svg .model-size {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 22px; letter-spacing: 0.16em;
+    fill: var(--bg); font-weight: 600;
+  }
+
+  @keyframes s6BlePulse {
+    0%, 100% { stroke-opacity: 0.5; }
+    50%      { stroke-opacity: 1; }
+  }
+  .s-adaptive .ble-pulse { animation: s6BlePulse 1.4s ease-in-out infinite; }
+
+  @keyframes s6BleFlow {
+    0%   { transform: translateX(0); opacity: 0; }
+    15%  { opacity: 1; }
+    85%  { opacity: 1; }
+    100% { transform: translateX(200px); opacity: 0; }
+  }
+  .s-adaptive .ble-packet { animation: s6BleFlow 1.8s linear infinite; }
+</style>
+</head>
+<body>
+  <div class="stage" id="stage">
+    <div class="deck" id="deck">
+
+      <!-- 01 TITLE -->
+      <section class="slide s-title active" data-slide="1">
+        <img src="slide1.png" alt="bioliminal"/>
+      </section>
+
+      <!-- 02 THE LOOP — 4-UP -->
+      <section class="slide s-loop" data-slide="2">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// THE LOOP</span>
+        </div>
+        <div class="head-row">
+          <h2 class="display">The <em>loop.</em></h2>
+          <div class="subhead">Four phases. One rep. Every sample audited against the sensor.</div>
+        </div>
+        <div class="loop-grid">
+
+          <div class="phase">
+            <div class="phase-top">
+              <div class="idx">01</div>
+              <div class="tag mono">SEMG + POSE</div>
+            </div>
+            <div class="viz-wrap"><canvas id="senseCanvas"></canvas></div>
+            <h3 class="display">Sense.</h3>
+            <ul>
+              <li><b>500 Hz</b> sEMG envelope</li>
+              <li><b>33 LM</b> pose · 30 FPS</li>
+              <li><b>On-device</b> · no video uploaded</li>
+            </ul>
+          </div>
+
+          <div class="phase">
+            <div class="phase-top">
+              <div class="idx">02</div>
+              <div class="tag mono">PATHWAY</div>
+            </div>
+            <div class="viz-wrap"><canvas id="reasonCanvas"></canvas></div>
+            <h3 class="display">Reason.</h3>
+            <ul>
+              <li><b>Evidence-weighted</b> pathways</li>
+              <li><b>Confidence</b> per rep</li>
+              <li><b>Anatomy-gated</b> only</li>
+            </ul>
+          </div>
+
+          <div class="phase">
+            <div class="phase-top">
+              <div class="idx">03</div>
+              <div class="tag mono">HAPTIC</div>
+            </div>
+            <div class="viz-wrap"><canvas id="cueCanvas"></canvas></div>
+            <h3 class="display">Cue.</h3>
+            <ul>
+              <li><b>5-band</b> PWM motor</li>
+              <li><b>20% → 80%</b> fatigue ramp</li>
+              <li><b>5 s</b> peak calibration</li>
+            </ul>
+          </div>
+
+          <div class="phase">
+            <div class="phase-top">
+              <div class="idx">04</div>
+              <div class="tag mono">SENSOR-TRUTH</div>
+            </div>
+            <div class="viz-wrap"><canvas id="verifyCanvas"></canvas></div>
+            <h3 class="display">Verify.</h3>
+            <ul>
+              <li><b>Envelope vs peak</b>, live</li>
+              <li><b>Sensor</b> is ground truth</li>
+              <li><b>CSV</b> · 115200 baud</li>
+            </ul>
+          </div>
+
+        </div>
+        <div class="slide-footer">
+          <span>// 02</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+
+      <!-- 03 ADAPTIVE — Moves where it fits -->
+      <section class="slide s-adaptive" data-slide="3">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// ADAPTIVE</span>
+        </div>
+
+        <h2 class="display">Moves where it <em>fits.</em></h2>
+
+        <div class="adaptive-stage">
+          <div class="topology">
+            <svg class="full" viewBox="0 0 1600 800" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="s6glowCyan" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="6" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+                <filter id="s6glowIndigo" x="-50%" y="-50%" width="200%" height="200%">
+                  <feGaussianBlur stdDeviation="8" result="blur"/>
+                  <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+                </filter>
+
+                <symbol id="s6cloud" viewBox="0 0 280 180">
+                  <path d="M 40 155
+                           C 10 155 6 115 38 103
+                           C 28 70 75 55 98 80
+                           C 100 32 172 25 188 80
+                           C 218 52 255 68 248 103
+                           C 278 108 278 152 248 155
+                           L 40 155 Z"
+                        fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linejoin="round"/>
+                </symbol>
+
+                <symbol id="s6sleeve" viewBox="0 0 120 230">
+                  <path d="M 35 30 Q 45 25 60 25 Q 75 25 85 30 L 90 70 Q 92 100 90 140 Q 88 180 85 210 Q 75 218 60 218 Q 45 218 35 210 Q 32 180 30 140 Q 28 100 30 70 Z"
+                        fill="none" stroke="#94A3B8" stroke-width="2.5" stroke-linejoin="round"/>
+                  <rect x="34" y="46" width="52" height="32" rx="5" ry="5"
+                        fill="#0C1425" stroke="#94A3B8" stroke-width="1.5"/>
+                  <text x="60" y="66" text-anchor="middle"
+                        font-family="IBM Plex Mono, monospace" font-size="9" fill="#CBD5E1"
+                        letter-spacing="0.6" font-weight="600">MCU</text>
+                  <circle cx="44" cy="73" r="2" fill="#38BDF8"/>
+                  <circle cx="76" cy="73" r="1.8" fill="#34D399" opacity="0.85"/>
+                  <circle cx="60" cy="110" r="6" fill="#34D399" opacity="0.85"/>
+                  <circle cx="60" cy="110" r="11" fill="none" stroke="#34D399" stroke-width="1" opacity="0.5"/>
+                  <circle cx="60" cy="155" r="6" fill="#34D399" opacity="0.85"/>
+                  <circle cx="60" cy="155" r="11" fill="none" stroke="#34D399" stroke-width="1" opacity="0.5"/>
+                  <path d="M 33 95 Q 60 92 87 95" fill="none" stroke="#475569" stroke-width="0.8" opacity="0.6"/>
+                  <path d="M 32 130 Q 60 127 88 130" fill="none" stroke="#475569" stroke-width="0.8" opacity="0.6"/>
+                  <path d="M 31 175 Q 60 172 89 175" fill="none" stroke="#475569" stroke-width="0.8" opacity="0.6"/>
+                  <path d="M 31 200 Q 60 197 89 200" fill="none" stroke="#475569" stroke-width="0.8" opacity="0.6"/>
+                </symbol>
+              </defs>
+
+              <g transform="translate(135, 140)">
+                <use href="#s6sleeve" width="180" height="340"/>
+                <text x="90" y="380" text-anchor="middle" class="device-label">SENSORS</text>
+              </g>
+
+              <g>
+                <line x1="280" y1="340" x2="500" y2="340"
+                      stroke="#34D399" stroke-width="2.5" stroke-dasharray="0" class="ble-pulse"/>
+                <circle cx="290" cy="340" r="5" fill="#34D399" class="ble-packet"/>
+                <text x="390" y="318" text-anchor="middle" class="flow-label">BLE · sEMG</text>
+                <text x="390" y="372" text-anchor="middle" class="flow-label" fill="#475569">HAPTIC ←</text>
+              </g>
+
+              <g transform="translate(500, 60)">
+                <rect x="0" y="0" width="340" height="620" rx="46" ry="46"
+                      fill="#000000" stroke="#1E293B" stroke-width="3"/>
+                <rect x="135" y="20" width="70" height="16" rx="8" ry="8" fill="#1E293B"/>
+                <rect x="16" y="56" width="308" height="540" rx="32" ry="32"
+                      fill="#0F172A" stroke="#17233F" stroke-width="1"/>
+
+                <g id="s6modelPill" transform="translate(170, 330)">
+                  <rect id="s6pillRect" x="-130" y="-50" width="260" height="100" rx="50" ry="50"
+                        fill="#38BDF8" filter="url(#s6glowCyan)"/>
+                  <text id="s6pillLabel" x="0" y="-6" text-anchor="middle" class="model-label">MODEL</text>
+                  <text id="s6pillSize" x="0" y="26" text-anchor="middle" class="model-size">9 MB</text>
+                </g>
+              </g>
+
+              <g id="s6httpsLink">
+                <line id="s6httpsLine" x1="850" y1="440" x2="1070" y2="440"
+                      stroke="#818CF8" stroke-width="2.5" stroke-dasharray="5,10" opacity="0.5"/>
+                <text x="960" y="418" text-anchor="middle" class="flow-label">HTTPS</text>
+                <text id="s6httpsDetail" x="960" y="472" text-anchor="middle" class="flow-label" fill="#475569">REPORT</text>
+              </g>
+
+              <g id="s6serverGroup" transform="translate(1061, 200)">
+                <use id="s6cloudShape" href="#s6cloud" width="400" height="260"/>
+                <g id="s6cloudPill" transform="translate(205, 130)" style="display:none">
+                  <rect x="-115" y="-42" width="230" height="84" rx="42" ry="42"
+                        fill="#818CF8" filter="url(#s6glowIndigo)"/>
+                  <text x="0" y="-6" text-anchor="middle" class="model-label">MODEL</text>
+                  <text x="0" y="24" text-anchor="middle" class="model-size">9 MB</text>
+                </g>
+                <text x="200" y="295" text-anchor="middle" class="device-label">SERVER</text>
+              </g>
+
+              <g>
+                <text id="s6tierName" x="670" y="735" text-anchor="middle" class="tier-name">FLAGSHIP</text>
+                <text id="s6tierTag"  x="670" y="775" text-anchor="middle" class="tier-tag">MODEL ON PHONE</text>
+              </g>
+            </svg>
+          </div>
+        </div>
+
+        <div class="slide-footer">
+          <span>// 03</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+
+      <!-- 04 WHAT'S NEXT -->
+      <section class="slide s-models" data-slide="4">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// WHAT'S NEXT</span>
+        </div>
+        <h2 class="display">What's <em>next.</em></h2>
+        <div class="models-grid">
+
+          <div class="mcard">
+            <div class="mcard-top">
+              <div class="model-name">SKEL</div>
+              <div class="tag">Overhead press · Scapular rhythm</div>
+            </div>
+            <div class="viz-wrap">
+              <canvas id="modelACanvas"></canvas>
+              <div class="attr">MPI · Keller et al · 2023</div>
+            </div>
+          </div>
+
+          <div class="mcard">
+            <div class="mcard-top">
+              <div class="model-name">Sapiens</div>
+              <div class="tag">Deadlift · Spinal rounding</div>
+            </div>
+            <div class="viz-wrap">
+              <canvas id="modelBCanvas"></canvas>
+              <div class="attr">Meta · Khirodkar et al · 2024</div>
+            </div>
+          </div>
+
+        </div>
+        <div class="slide-footer">
+          <span>// 04</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+
+      <!-- 05 IMAGE PLACEHOLDER -->
+      <section class="slide s-image" data-slide="5">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// IMAGE</span>
+        </div>
+        <div class="image-stage" data-stage="0">
+          <div class="img-slot logo-slot">
+            <img src="Logo.png" alt="bioliminal"/>
+          </div>
+          <div class="img-arrow" aria-hidden="true">→</div>
+          <div class="img-slot face-slot">
+            <div class="face-wrap">
+              <img class="arnold" src="arnold.webp" alt="Arnold"/>
+              <img class="aaron" src="aaron.png" alt="Aaron face"/>
+              <span class="gains">gains</span>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>// 05</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+
+      <!-- 06 IN-APP — Rep count is downstream -->
+      <section class="slide s-app" data-slide="6">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// IN-APP — LIVE SESSION</span>
+        </div>
+        <div class="slide-body">
+          <div class="phone">
+            <div class="screen">
+              <div class="statusbar"><span>9:41</span><span>● ● ●</span></div>
+              <div class="appbar">
+                <div class="title">Bicep Curl</div>
+                <div class="state mono">LIVE</div>
+              </div>
+              <div class="hero-row">
+                <div class="rep-big" id="repBig">08</div>
+                <div class="rep-of mono">/ 12 REPS</div>
+              </div>
+              <div class="metric-row">
+                <div class="metric"><div class="k">ENV</div><div class="v sig" id="mEnv">0.54</div></div>
+                <div class="metric"><div class="k">PEAK</div><div class="v" id="mPeak">0.87</div></div>
+                <div class="metric"><div class="k">FATIGUE</div><div class="v warn" id="mFat">38%</div></div>
+              </div>
+              <div class="chart-card">
+                <div class="head">
+                  <span class="lbl">sEMG · 500 Hz</span>
+                  <span class="fat" id="cueLabel">CUE · ARMED</span>
+                </div>
+                <canvas id="emgCanvas"></canvas>
+              </div>
+              <div class="cue-row">
+                <span class="lbl">HAPTIC</span>
+                <div class="bars" id="cueBars">
+                  <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                  <div class="bar"></div><div class="bar"></div>
+                </div>
+                <span class="band-label mono" id="bandLabel">0 / 5</span>
+              </div>
+              <div class="tab-bar">
+                <div class="tab active"><div class="dot"></div>LIVE</div>
+                <div class="tab"><div class="dot"></div>SETS</div>
+                <div class="tab"><div class="dot"></div>TRENDS</div>
+                <div class="tab"><div class="dot"></div>DEV</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2 class="display">Rep count is<br/><em>downstream.</em></h2>
+            <div class="cols">
+              <div class="col"><div class="k mono">INPUT</div><div class="v">sEMG + pose, merged on-device.</div></div>
+              <div class="col"><div class="k mono">OUTPUT</div><div class="v">Haptic cue + CSV row per sample.</div></div>
+              <div class="col"><div class="k mono">THRESHOLDS</div><div class="v">5 PWM bands · 20% → 80%.</div></div>
+              <div class="col"><div class="k mono">NOT</div><div class="v">A diagnostic. Wellness only.</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="slide-footer">
+          <span>// 06</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+
+      <!-- 07 QR CODE -->
+      <section class="slide s-qr" data-slide="7">
+        <div class="slide-header">
+          <span class="brand">bioliminal</span>
+          <span class="mono">// SCAN</span>
+        </div>
+        <div class="qr-stage">
+          <img src="QR_code_Showcase_Day-Deck.png" alt="Showcase Day deck QR code"/>
+        </div>
+        <div class="slide-footer">
+          <span>// 08</span>
+          <span>BIOLIMINAL</span>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="chrome show" id="chrome">
+    <button id="prevBtn" aria-label="Previous">‹</button>
+    <div class="counter"><span id="counter">1 / 4</span></div>
+    <button id="nextBtn" aria-label="Next">›</button>
+    <div class="dots" id="dots"></div>
+    <div class="hint">← → · SPACE · F · ESC</div>
+  </div>
+
+<script>
+(() => {
+  const deck = document.getElementById('deck');
+  const DECK_W = 1600, DECK_H = 900;
+  function fitDeck() {
+    const scale = Math.min(window.innerWidth / DECK_W, window.innerHeight / DECK_H);
+    deck.style.transform = `scale(${scale})`;
+  }
+  window.addEventListener('resize', fitDeck);
+  fitDeck();
+
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  const counter = document.getElementById('counter');
+  const chrome = document.getElementById('chrome');
+  const dotsEl = document.getElementById('dots');
+
+  for (let i = 0; i < total; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', (e) => { e.stopPropagation(); go(i); });
+    dotsEl.appendChild(d);
+  }
+  const dots = dotsEl.querySelectorAll('.dot');
+
+  const imageStage = document.querySelector('.s-image .image-stage');
+  function resetImageStage() { if (imageStage) imageStage.dataset.stage = '0'; }
+  function advanceForward() {
+    if (slides[current].classList.contains('s-image') && imageStage && imageStage.dataset.stage === '0') {
+      imageStage.dataset.stage = '1';
+      return;
+    }
+    go(current + 1);
+  }
+
+  function go(i) {
+    if (i < 0 || i >= total) return;
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    counter.textContent = `${current + 1} / ${total}`;
+    history.replaceState(null, '', `#${current + 1}`);
+
+    if (!slides[current].classList.contains('s-image')) resetImageStage();
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', (e) => { e.stopPropagation(); go(current - 1); });
+  document.getElementById('nextBtn').addEventListener('click', (e) => { e.stopPropagation(); advanceForward(); });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); advanceForward(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(current - 1); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(total - 1);
+    else if (e.key === 'Escape') chrome.classList.toggle('show');
+    else if (e.key.toLowerCase() === 'f') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (/^[1-9]$/.test(e.key)) go(parseInt(e.key, 10) - 1);
+  });
+  deck.addEventListener('click', (e) => {
+    if (e.target.closest('.chrome')) return;
+    advanceForward();
+  });
+  const hashMatch = /^#(\d+)$/.exec(location.hash);
+  if (hashMatch) {
+    const n = parseInt(hashMatch[1], 10) - 1;
+    if (n >= 0 && n < total) go(n);
+  }
+  let chromeTimer;
+  function nudgeChrome() {
+    chrome.classList.add('show');
+    clearTimeout(chromeTimer);
+    chromeTimer = setTimeout(() => chrome.classList.remove('show'), 2400);
+  }
+  document.addEventListener('mousemove', nudgeChrome);
+  nudgeChrome();
+
+  // =========================================================================
+  // Canvas helpers
+  // =========================================================================
+  function fit(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0) return null;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return { ctx, w: rect.width, h: rect.height };
+  }
+  const C = {
+    bg: '#0A1220', surface: '#1E293B', hairline: '#17233F',
+    text: '#F8FAFC', muted: '#94A3B8', subtle: '#475569',
+    signal: '#38BDF8', warn: '#F59E0B', emerald: '#34D399', indigo: '#818CF8',
+  };
+  const easeInOutCubic = (t) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+  // =========================================================================
+  // 01 SENSE — pose skeleton
+  // =========================================================================
+  const senseCanvas = document.getElementById('senseCanvas');
+  function drawSense(ts) {
+    const f = fit(senseCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const t = (ts % 2800) / 2800;
+    const curlRaw = Math.max(0, Math.min(1, Math.sin(t * Math.PI)));
+    const curl = easeInOutCubic(curlRaw);
+    const p = (nx, ny) => [w * nx, h * ny];
+    const head = p(0.5, 0.14);
+    const lSh = p(0.38, 0.30), rSh = p(0.62, 0.30);
+    const lEl = p(0.33, 0.50), rEl = p(0.67, 0.50);
+    const lWr = p(0.30, 0.68);
+    const lHip = p(0.44, 0.58), rHip = p(0.56, 0.58);
+    const lKn = p(0.43, 0.78), rKn = p(0.57, 0.78);
+    const lAn = p(0.43, 0.94), rAn = p(0.57, 0.94);
+    const rs = p(0.74, 0.70), re = p(0.58, 0.34);
+    const rWr = [rs[0] + (re[0] - rs[0]) * curl, rs[1] + (re[1] - rs[1]) * curl];
+    function line(a, b, color, width) {
+      ctx.strokeStyle = color; ctx.lineWidth = width;
+      ctx.lineCap = 'round'; ctx.beginPath();
+      ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+    }
+    const bone = 'rgba(148,163,184,0.55)';
+    const active = 'rgba(56,189,248,0.95)';
+    const neck = [(lSh[0] + rSh[0]) / 2, (lSh[1] + rSh[1]) / 2];
+    line(head, neck, bone, 1.6); line(lSh, rSh, bone, 1.6);
+    line(lSh, lHip, bone, 1.6); line(rSh, rHip, bone, 1.6); line(lHip, rHip, bone, 1.6);
+    line(lHip, lKn, bone, 1.6); line(lKn, lAn, bone, 1.6);
+    line(rHip, rKn, bone, 1.6); line(rKn, rAn, bone, 1.6);
+    line(lSh, lEl, bone, 1.6); line(lEl, lWr, bone, 1.6);
+    line(rSh, rEl, active, 2.4); line(rEl, rWr, active, 2.4);
+    const dots = [head, lSh, lEl, lWr, lHip, rHip, lKn, rKn, lAn, rAn];
+    ctx.fillStyle = 'rgba(148,163,184,0.7)';
+    dots.forEach(pt => { ctx.beginPath(); ctx.arc(pt[0], pt[1], 3, 0, Math.PI * 2); ctx.fill(); });
+    [rSh, rEl, rWr].forEach(pt => {
+      ctx.fillStyle = 'rgba(56,189,248,0.3)';
+      ctx.beginPath(); ctx.arc(pt[0], pt[1], 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(pt[0], pt[1], 3.6, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left';
+    ctx.fillText('33/33 LM', 10, 18);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = C.text;
+    ctx.fillText('FLEX ' + Math.round(curlRaw * 100) + '%', w - 10, h - 10);
+  }
+
+  // =========================================================================
+  // 02 CUE — traveling pulse
+  // =========================================================================
+  const cueCanvas = document.getElementById('cueCanvas');
+  function drawCue(ts) {
+    const f = fit(cueCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const t = (ts % 2600) / 2600;
+    const startY = h * 0.5;
+    const x0 = 32, x1 = w - 32;
+    ctx.strokeStyle = 'rgba(23,35,63,0.95)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(x0, startY); ctx.lineTo(x1, startY); ctx.stroke();
+    ctx.fillStyle = C.muted;
+    ctx.beginPath(); ctx.arc(x0, startY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x1, startY, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '9px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.textAlign = 'left';
+    ctx.fillText('PHONE', x0 - 10, startY + 22);
+    ctx.fillText('MOTOR', x1 - 20, startY + 22);
+    if (t > 0.15 && t < 0.60) {
+      const prog = Math.max(0, Math.min(1, (t - 0.15) / 0.45));
+      const eased = easeInOutCubic(prog);
+      const px = x0 + (x1 - x0) * eased;
+      const grad = ctx.createLinearGradient(px - 80, 0, px, 0);
+      grad.addColorStop(0, 'rgba(56,189,248,0)');
+      grad.addColorStop(1, 'rgba(56,189,248,0.85)');
+      ctx.strokeStyle = grad; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(px - 80, startY); ctx.lineTo(px, startY); ctx.stroke();
+      ctx.fillStyle = 'rgba(56,189,248,0.3)';
+      ctx.beginPath(); ctx.arc(px, startY, 14, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(px, startY, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    if (t > 0.55 && t < 0.85) {
+      const prog = Math.max(0, Math.min(1, (t - 0.55) / 0.30));
+      const radius = 14 + prog * 56;
+      const alpha = (1 - prog) * 0.6;
+      ctx.strokeStyle = `rgba(56,189,248,${alpha})`; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.arc(x1, startY, radius, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left';
+    ctx.fillText('HAPTIC', 10, 18);
+    ctx.textAlign = 'right';
+    const band = Math.min(5, Math.floor(t * 5));
+    ctx.fillStyle = C.text;
+    ctx.fillText('BAND ' + band + '/5', w - 10, h - 10);
+  }
+
+  // =========================================================================
+  // 03 REASON — pathway inference
+  // =========================================================================
+  const reasonCanvas = document.getElementById('reasonCanvas');
+  function drawReason(ts) {
+    const f = fit(reasonCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const t = (ts % 3600) / 3600;
+
+    const nodes = [
+      { name: 'BIC', cx: 0.22, cy: 0.28, baseConf: 0.82 },
+      { name: 'BRA', cx: 0.22, cy: 0.52, baseConf: 0.64 },
+      { name: 'BRR', cx: 0.22, cy: 0.76, baseConf: 0.41 },
+    ];
+    const decision = { cx: 0.78, cy: 0.52 };
+    const confWave = Math.sin(t * Math.PI * 2);
+    nodes[0].conf = Math.max(0.1, nodes[0].baseConf + confWave * 0.08);
+    nodes[1].conf = Math.max(0.1, nodes[1].baseConf + Math.sin(t * Math.PI * 2 + 2.1) * 0.1);
+    nodes[2].conf = Math.max(0.1, nodes[2].baseConf + Math.sin(t * Math.PI * 2 + 4.2) * 0.08);
+    const winner = nodes.reduce((a, b) => a.conf > b.conf ? a : b);
+
+    nodes.forEach((n) => {
+      const isWinner = n === winner;
+      const ax = n.cx * w, ay = n.cy * h;
+      const bx = decision.cx * w, by = decision.cy * h;
+      ctx.strokeStyle = isWinner
+        ? `rgba(56,189,248,${0.5 + 0.4 * Math.abs(Math.sin(t * Math.PI * 4))})`
+        : 'rgba(71,85,105,0.35)';
+      ctx.lineWidth = isWinner ? 2.4 : 1;
+      ctx.setLineDash(isWinner ? [] : [4, 4]);
+      ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    const ax = winner.cx * w, ay = winner.cy * h;
+    const bx = decision.cx * w, by = decision.cy * h;
+    const pkt = (t * 2) % 1;
+    const px = ax + (bx - ax) * pkt;
+    const py = ay + (by - ay) * pkt;
+    ctx.fillStyle = 'rgba(56,189,248,0.3)';
+    ctx.beginPath(); ctx.arc(px, py, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = C.signal;
+    ctx.beginPath(); ctx.arc(px, py, 3.2, 0, Math.PI * 2); ctx.fill();
+
+    nodes.forEach((n) => {
+      const isWinner = n === winner;
+      const x = n.cx * w, y = n.cy * h;
+      const r = 14 + n.conf * 10;
+      ctx.strokeStyle = isWinner ? C.signal : 'rgba(148,163,184,0.45)';
+      ctx.lineWidth = isWinner ? 2 : 1.2;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = isWinner ? C.signal : C.muted;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(x, y, r - 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * n.conf);
+      ctx.stroke();
+      ctx.font = '9px "IBM Plex Mono", monospace';
+      ctx.fillStyle = isWinner ? C.signal : C.muted;
+      ctx.textAlign = 'center';
+      ctx.fillText(n.name, x, y + 3);
+      ctx.font = '8px "IBM Plex Mono", monospace';
+      ctx.fillStyle = C.subtle;
+      ctx.fillText(Math.round(n.conf * 100) + '%', x, y + r + 12);
+    });
+
+    const dx = decision.cx * w, dy = decision.cy * h;
+    ctx.fillStyle = 'rgba(56,189,248,0.15)';
+    ctx.beginPath(); ctx.arc(dx, dy, 30, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = C.signal; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(dx, dy, 24, 0, Math.PI * 2); ctx.stroke();
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.signal; ctx.textAlign = 'center';
+    ctx.fillText(winner.name, dx, dy - 2);
+    ctx.font = '8px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.text;
+    ctx.fillText(Math.round(winner.conf * 100) + '%', dx, dy + 10);
+
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left';
+    ctx.fillText('PATHWAY', 10, 18);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = C.signal;
+    ctx.fillText('INFER', w - 10, 18);
+    ctx.textAlign = 'left';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('CANDIDATES', 10, h - 10);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = C.text;
+    ctx.fillText('SELECTED', w - 10, h - 10);
+  }
+
+  // =========================================================================
+  // 04 VERIFY — envelope vs peak
+  // =========================================================================
+  const verifyCanvas = document.getElementById('verifyCanvas');
+  function drawVerify(ts) {
+    const f = fit(verifyCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const cycle = (ts % 4200) / 4200;
+    let shift;
+    if (cycle < 0.30) shift = 0;
+    else if (cycle > 0.55) shift = 1;
+    else shift = easeInOutCubic((cycle - 0.30) / 0.25);
+    const pad = 20, top = 60, barH = 32, labelGap = 28;
+    const trackW = w - pad * 2;
+    const y1 = top;
+    const y2 = top + barH + labelGap + 14;
+    ctx.fillStyle = 'rgba(23,35,63,0.7)';
+    ctx.fillRect(pad, y1, trackW, barH);
+    ctx.fillRect(pad, y2, trackW, barH);
+    const envPct = 0.62 - 0.22 * shift;
+    const fatiguePct = 0.38 + 0.22 * shift;
+    ctx.fillStyle = 'rgba(148,163,184,0.85)';
+    ctx.fillRect(pad, y1, trackW * envPct, barH);
+    ctx.fillStyle = C.signal;
+    ctx.fillRect(pad, y2, trackW * fatiguePct, barH);
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.text;
+    ctx.textAlign = 'left';
+    ctx.fillText('ENV ' + Math.round(envPct * 100) + '%', pad, y1 - 8);
+    ctx.fillStyle = C.signal;
+    ctx.fillText('FAT ' + Math.round(fatiguePct * 100) + '%', pad, y2 - 8);
+    const tx = pad + trackW * 0.5;
+    const crossed = fatiguePct >= 0.5;
+    ctx.strokeStyle = crossed ? 'rgba(56,189,248,0.9)' : 'rgba(71,85,105,0.6)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(tx, y1 - 6); ctx.lineTo(tx, y2 + barH + 6); ctx.stroke();
+    ctx.font = '9px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left';
+    ctx.fillText('ENV vs PEAK', 10, 18);
+    const fatPct = Math.round(38 + shift * 22);
+    const cueing = fatPct >= 50;
+    ctx.textAlign = 'right';
+    ctx.fillStyle = cueing ? C.signal : C.muted;
+    ctx.fillText(cueing ? fatPct + '% · CUE' : fatPct + '%', w - 10, 18);
+  }
+
+  // =========================================================================
+  // 05 In-app phone EMG chart
+  // =========================================================================
+  const emgCanvas = document.getElementById('emgCanvas');
+  const cueBars = document.getElementById('cueBars').querySelectorAll('.bar');
+  const bandLabel = document.getElementById('bandLabel');
+  const cueLabel = document.getElementById('cueLabel');
+  const mEnv = document.getElementById('mEnv');
+  const mPeak = document.getElementById('mPeak');
+  const mFat = document.getElementById('mFat');
+  const repBig = document.getElementById('repBig');
+  const buffer = []; const BUF_LEN = 180;
+  let lastRep = 0, repCount = 8, aboveThresh = false;
+
+  function drawEmg(ts) {
+    const f = fit(emgCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const repPeriod = 1400;
+    const repPhase = (ts % repPeriod) / repPeriod;
+    const repShape = Math.max(0, Math.sin(repPhase * Math.PI));
+    const fatigue = 0.38 + 0.22 * ((Math.sin(ts / 6000) + 1) / 2);
+    const peak = 0.87 - fatigue * 0.15;
+    const envelope = repShape * peak + (Math.random() - 0.5) * 0.04;
+    buffer.push({ env: envelope, peak });
+    if (buffer.length > BUF_LEN) buffer.shift();
+    if (envelope > 0.5 && !aboveThresh) {
+      aboveThresh = true;
+      if (ts - lastRep > 600) {
+        repCount = Math.min(12, repCount + 1);
+        if (repCount >= 12) setTimeout(() => { repCount = 1; }, 1200);
+        lastRep = ts;
+      }
+    }
+    if (envelope < 0.3) aboveThresh = false;
+    ctx.strokeStyle = 'rgba(148,163,184,0.35)';
+    ctx.setLineDash([4, 4]);
+    const py = h - (peak * 0.85 * h);
+    ctx.beginPath(); ctx.moveTo(0, py); ctx.lineTo(w, py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(56,189,248,0.25)';
+    const cy = h - (0.5 * 0.85 * h);
+    ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+    ctx.strokeStyle = C.signal;
+    ctx.lineWidth = 2; ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < buffer.length; i++) {
+      const x = (i / BUF_LEN) * w;
+      const y = h - (buffer[i].env * 0.85 * h);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    if (buffer.length > 0) {
+      const last = buffer[buffer.length - 1];
+      const x = (buffer.length - 1) / BUF_LEN * w;
+      const y = h - (last.env * 0.85 * h);
+      ctx.fillStyle = 'rgba(56,189,248,0.35)';
+      ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(x, y, 3.4, 0, Math.PI * 2); ctx.fill();
+    }
+    const fatPct = Math.round(fatigue * 100);
+    const band = Math.max(0, Math.min(5, Math.floor(((fatPct - 30) / 10))));
+    cueBars.forEach((b, i) => b.classList.toggle('on', i < band));
+    bandLabel.textContent = band + ' / 5';
+    cueLabel.textContent = band > 0 ? `CUE · BAND ${band}` : 'CUE · ARMED';
+    cueLabel.style.color = band > 0 ? C.signal : C.muted;
+    mEnv.textContent = envelope.toFixed(2);
+    mPeak.textContent = peak.toFixed(2);
+    mFat.textContent = fatPct + '%';
+    mFat.style.color = fatPct >= 50 ? C.signal : C.warn;
+    repBig.textContent = String(repCount).padStart(2, '0');
+  }
+
+  // =========================================================================
+  // 05A — SKEL: overhead press, back view. Shoulder girdle articulated.
+  // The audience sees: BlazePose gives ONE shoulder landmark (a dot that
+  // barely moves). SKEL reveals the scapula rotating ~60° upward and the
+  // clavicle elevating — the motion that tells you about impingement
+  // and rotator cuff health. An overlay cannot see the scapula.
+  // =========================================================================
+  const modelACanvas = document.getElementById('modelACanvas');
+  function drawModelA(ts) {
+    const f = fit(modelACanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const t = (ts % 4800) / 4800;
+
+    // Elevation phase 0 → 1 → 0. 0 = arms at side, 1 = arms fully overhead.
+    const elevRaw = 0.5 * (1 - Math.cos(t * Math.PI * 2));
+    const elev = Math.min(0.88, elevRaw);               // cap to keep arms in frame
+    const eased = easeInOutCubic(elev);
+
+    // Figure (back view) — shifted down so fully-raised arms fit inside canvas
+    const cx = w * 0.38;
+    const headY = h * 0.26;
+    const shoulderY = h * 0.40;
+    const waistY = h * 0.64;
+    const hipY = h * 0.74;
+    const shoulderHalf = 44;
+    const waistHalf = 34;
+    const hipHalf = 38;
+
+    // Torso silhouette (subtle fill so the bones read against it)
+    ctx.fillStyle = 'rgba(30,41,59,0.55)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.85)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(cx - shoulderHalf, shoulderY);
+    ctx.quadraticCurveTo(cx - shoulderHalf - 4, (shoulderY + waistY) / 2, cx - waistHalf, waistY);
+    ctx.lineTo(cx - hipHalf, hipY);
+    ctx.lineTo(cx + hipHalf, hipY);
+    ctx.lineTo(cx + waistHalf, waistY);
+    ctx.quadraticCurveTo(cx + shoulderHalf + 4, (shoulderY + waistY) / 2, cx + shoulderHalf, shoulderY);
+    ctx.quadraticCurveTo(cx, shoulderY - 16, cx - shoulderHalf, shoulderY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Head (back of head)
+    ctx.fillStyle = 'rgba(30,41,59,0.70)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.85)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(cx, headY + 6, 22, 0, Math.PI * 2);
+    ctx.fill(); ctx.stroke();
+    // Neck
+    ctx.strokeStyle = 'rgba(71,85,105,0.70)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, headY + 26); ctx.lineTo(cx - 10, shoulderY - 2);
+    ctx.moveTo(cx + 10, headY + 26); ctx.lineTo(cx + 10, shoulderY - 2);
+    ctx.stroke();
+
+    // Legs (subtle, framing)
+    ctx.strokeStyle = 'rgba(71,85,105,0.55)';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(cx - 22, hipY); ctx.lineTo(cx - 22, h * 0.92);
+    ctx.moveTo(cx + 22, hipY); ctx.lineTo(cx + 22, h * 0.92);
+    ctx.stroke();
+
+    // ---------- SKEL bones (inside the silhouette) ----------
+
+    // Spine — vertebrae from C7 down to L5
+    const spineTop = shoulderY + 4;
+    const spineBot = hipY - 6;
+    for (let i = 0; i <= 14; i++) {
+      const u = i / 14;
+      const y = spineTop + (spineBot - spineTop) * u;
+      // Tiny natural S-curve offset (cervical+lumbar lordosis, thoracic kyphosis)
+      const wiggle = Math.sin(u * Math.PI * 2) * 1.5;
+      ctx.fillStyle = 'rgba(148,163,184,0.75)';
+      ctx.beginPath(); ctx.arc(cx + wiggle, y, 2.6, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Helper: rotate (p) around (origin) by angle (rad). y+ is down.
+    function rot(p, origin, ang) {
+      const dx = p[0] - origin[0];
+      const dy = p[1] - origin[1];
+      const c = Math.cos(ang), s = Math.sin(ang);
+      return [origin[0] + dx * c - dy * s, origin[1] + dx * s + dy * c];
+    }
+
+    // Draw one side (side=-1 left, side=+1 right)
+    function drawShoulderGirdle(side) {
+      const flash = (elev > 0.6) ? (0.7 + 0.3 * Math.sin(ts * 0.007)) : 1;
+
+      // Scapulothoracic center (pivot point on the ribcage) — inset from spine
+      const stCx = cx + side * 12;
+      const stCy = shoulderY + 18;
+      const stOrigin = [stCx, stCy];
+
+      // Scapula at rest (inferior angle hangs down from ST origin).
+      // Approximate triangle: superior-medial (near spine), superior-lateral
+      // (toward acromion), inferior angle (bottom tip).
+      // Reference coords for RIGHT side (will mirror by side sign for left).
+      const sm = [side *  8, -16];   // superior medial
+      const sl = [side * 38, -12];   // superior lateral / acromion base
+      const ia = [side * 16,  30];   // inferior angle (swings up/out with rotation)
+
+      // Upward rotation of the scapula ~60° at full elevation.
+      // For right side (side=+1): upward rotation is COUNTER-clockwise in math (negative in canvas)
+      // For left side  (side=-1): upward rotation is CLOCKWISE
+      const scapRotDeg = eased * 60;
+      const scapRotRad = -side * scapRotDeg * Math.PI / 180; // canvas y+ down
+
+      const smR = rot([stCx + sm[0], stCy + sm[1]], stOrigin, scapRotRad);
+      const slR = rot([stCx + sl[0], stCy + sl[1]], stOrigin, scapRotRad);
+      const iaR = rot([stCx + ia[0], stCy + ia[1]], stOrigin, scapRotRad);
+
+      // Scapula triangle — strong signal, high presence
+      ctx.fillStyle = `rgba(56,189,248,${0.18 + 0.12 * eased})`;
+      ctx.strokeStyle = C.signal;
+      ctx.lineWidth = 2.6;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      ctx.moveTo(smR[0], smR[1]);
+      ctx.lineTo(slR[0], slR[1]);
+      ctx.lineTo(iaR[0], iaR[1]);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Highlight inferior angle — the marker that visibly swings out during rotation
+      const pulseR = 5 + 3 * Math.sin(ts * 0.006);
+      ctx.fillStyle = `rgba(56,189,248,${0.20 * flash})`;
+      ctx.beginPath(); ctx.arc(iaR[0], iaR[1], pulseR, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(iaR[0], iaR[1], 3.4, 0, Math.PI * 2); ctx.fill();
+
+      // Glenohumeral joint (where humerus articulates with scapula) — near
+      // the superior lateral corner. Attach humerus here.
+      const gh = slR;
+
+      // Clavicle — from manubrium (top of sternum) to the glenohumeral region
+      const manubrium = [cx, shoulderY + 2];
+      ctx.strokeStyle = C.signal;
+      ctx.lineWidth = 3.4;
+      ctx.beginPath();
+      ctx.moveTo(manubrium[0], manubrium[1]);
+      ctx.lineTo(gh[0], gh[1]);
+      ctx.stroke();
+      // clavicle joint dots
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(manubrium[0], manubrium[1], 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(gh[0], gh[1], 4, 0, Math.PI * 2); ctx.fill();
+
+      // Humerus — from glenohumeral joint out at an angle that matches
+      // elevation. At elev=0 the arm hangs down (~small lateral offset);
+      // at elev=1 the arm is overhead.
+      const humerusLen = 80;
+      // armTheta: 0 = straight down, π = straight up. Side controls which side it goes out.
+      const armTheta = elev * Math.PI;
+      const elbowX = gh[0] + side * Math.sin(armTheta) * humerusLen;
+      const elbowY = gh[1] + Math.cos(armTheta) * humerusLen;
+
+      ctx.strokeStyle = C.signal;
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(gh[0], gh[1]);
+      ctx.lineTo(elbowX, elbowY);
+      ctx.stroke();
+
+      // Forearm (muted — not the focus of the capability claim)
+      const forearmLen = 58;
+      const faX = elbowX + side * Math.sin(armTheta) * forearmLen * 0.95;
+      const faY = elbowY + Math.cos(armTheta) * forearmLen * 0.95;
+      ctx.strokeStyle = 'rgba(56,189,248,0.7)';
+      ctx.lineWidth = 3.8;
+      ctx.beginPath();
+      ctx.moveTo(elbowX, elbowY);
+      ctx.lineTo(faX, faY);
+      ctx.stroke();
+      // elbow + hand dots
+      ctx.fillStyle = C.signal;
+      ctx.beginPath(); ctx.arc(elbowX, elbowY, 3.4, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(faX, faY, 3.4, 0, Math.PI * 2); ctx.fill();
+
+      return { acromion: gh, inferiorAngle: iaR, scapRotDeg };
+    }
+
+    const R = drawShoulderGirdle(+1);
+    const L = drawShoulderGirdle(-1);
+
+    // ---------- BlazePose contrast — a single shoulder dot per side ----------
+    // BlazePose's shoulder landmark is at the skin-surface acromion. In
+    // reality it barely moves during elevation (a few cm laterally/upward).
+    // Draw it as one orange dot with a crosshair, shifted only slightly.
+    [
+      [+1, R.acromion],
+      [-1, L.acromion],
+    ].forEach(([side]) => {
+      const blazeDrift = eased * 6;
+      const bx = cx + side * (shoulderHalf - 4) + side * blazeDrift * 0.4;
+      const by = shoulderY - 2 - blazeDrift * 0.3;
+      ctx.fillStyle = C.warn;
+      ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(245,158,11,0.8)';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(bx - 10, by); ctx.lineTo(bx + 10, by);
+      ctx.moveTo(bx, by - 10); ctx.lineTo(bx, by + 10);
+      ctx.stroke();
+    });
+
+    // ---------- Side panel — contrast callout + readouts ----------
+    const panelX = w * 0.62;
+    const panelY = 56;
+
+    // BlazePose row
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('BLAZEPOSE', panelX, panelY);
+    ctx.fillStyle = C.warn;
+    ctx.beginPath(); ctx.arc(panelX + 6, panelY + 22, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.fillText('1 shoulder dot', panelX + 20, panelY + 26);
+
+    // SKEL row
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('SKEL', panelX, panelY + 58);
+    // three mini-bones as signal dashes
+    ctx.strokeStyle = C.signal;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(panelX, panelY + 80); ctx.lineTo(panelX + 14, panelY + 80);
+    ctx.moveTo(panelX + 18, panelY + 80); ctx.lineTo(panelX + 32, panelY + 76);
+    ctx.moveTo(panelX + 36, panelY + 74); ctx.lineTo(panelX + 50, panelY + 84);
+    ctx.stroke();
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.signal;
+    ctx.fillText('clavicle + scapula', panelX, panelY + 100);
+    ctx.fillText('+ humerus', panelX, panelY + 116);
+
+    // Live scapular rotation readout
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('SCAPULAR ROT.', panelX, panelY + 152);
+    ctx.font = '800 28px "Fraunces", serif';
+    ctx.fillStyle = C.signal;
+    ctx.fillText(R.scapRotDeg.toFixed(0) + '°', panelX, panelY + 186);
+
+    // Top-left title
+    ctx.font = '14px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillText('SCAPULOHUMERAL RHYTHM', 16, 28);
+  }
+
+  // =========================================================================
+  // 05B — Sapiens: deadlift with dense spinal keypoints.
+  // The audience sees: BlazePose has ZERO landmarks between the shoulder and
+  // hip (a straight dashed line means no information about the back). Sapiens
+  // produces a dense keypoint line along the back surface — as the lifter
+  // fatigues under load, the lumbar line flattens then rounds outward.
+  // "Back rounding" during deadlift is the #1 gym injury mechanism and is
+  // structurally invisible to BlazePose.
+  // =========================================================================
+  const modelBCanvas = document.getElementById('modelBCanvas');
+  function drawModelB(ts) {
+    const f = fit(modelBCanvas); if (!f) return;
+    const { ctx, w, h } = f;
+    ctx.clearRect(0, 0, w, h);
+    const t = (ts % 5800) / 5800;
+
+    // Hinge phase — sin^2 peaks at the bottom of the rep.
+    const hingeRaw = Math.sin(t * Math.PI);
+    const hinge = easeInOutCubic(Math.max(0, Math.min(1, hingeRaw * 1.05)));
+    const hingeAngle = hinge * (72 * Math.PI / 180);
+
+    // Spinal rounding — builds during the concentric (standing-up) phase as
+    // fatigue sets in. Peaks around t=0.68, decays by t=0.95.
+    let roundingPhase = 0;
+    if (t > 0.50 && t < 0.92) {
+      const u = (t - 0.50) / 0.42;
+      roundingPhase = Math.sin(u * Math.PI);
+    }
+    const rounding = easeInOutCubic(Math.max(0, Math.min(1, roundingPhase))) * 36;
+    const roundingDeg = Math.round(rounding * 0.9);
+    const rounded = rounding > 14;
+    const severe  = rounding > 26;
+
+    // -------- Figure geometry (side view, facing right) --------
+    const groundY = h * 0.94;
+    const hipX = w * 0.24;
+    const hipY = h * 0.58;
+    const torsoLen = 130;
+
+    // Shoulder (cervical base) — swings forward and down with hinge
+    const shX = hipX + Math.sin(hingeAngle) * torsoLen;
+    const shY = hipY - Math.cos(hingeAngle) * torsoLen;
+
+    // Head position — 32px further along torso axis
+    const headDist = 34;
+    const headX = shX + Math.sin(hingeAngle) * headDist;
+    const headY = shY - Math.cos(hingeAngle) * headDist;
+
+    // Posterior unit vector (perpendicular to torso, pointing backward)
+    const postX = -Math.cos(hingeAngle);
+    const postY = -Math.sin(hingeAngle);
+
+    // -------- Legs (hip to knee to ankle) --------
+    const kneeBendX = 10 + hinge * 22;
+    const kneeX = hipX + kneeBendX * 0.6;
+    const kneeY = hipY + 70;
+    const ankleX = hipX + 6;
+    ctx.strokeStyle = 'rgba(110,130,156,0.80)';
+    ctx.lineWidth = 4;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(hipX, hipY);
+    ctx.lineTo(kneeX, kneeY);
+    ctx.lineTo(ankleX, groundY);
+    ctx.stroke();
+    // foot
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(ankleX - 10, groundY);
+    ctx.lineTo(ankleX + 22, groundY);
+    ctx.stroke();
+    // ground line
+    ctx.strokeStyle = 'rgba(23,35,63,0.95)';
+    ctx.lineWidth = 1.2;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(w * 0.04, groundY);
+    ctx.lineTo(w * 0.62, groundY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // -------- Torso silhouette (muted, so the spine reads on top of it) --------
+    const backPts = [];
+    const bellyPts = [];
+    const nSteps = 10;
+    for (let i = 0; i <= nSteps; i++) {
+      const u = i / nSteps;
+      const baseX = shX + (hipX - shX) * u;
+      const baseY = shY + (hipY - shY) * u;
+      const bulge = Math.sin(u * Math.PI) * rounding * 0.85;
+      const halfW = 20 * (1 - u * 0.20);
+      const bx = baseX + postX * (halfW + bulge);
+      const by = baseY + postY * (halfW + bulge);
+      backPts.push([bx, by]);
+      const fx = baseX - postX * (halfW + 3);
+      const fy = baseY - postY * (halfW + 3);
+      bellyPts.push([fx, fy]);
+    }
+    ctx.fillStyle = 'rgba(30,41,59,0.55)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.75)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(backPts[0][0], backPts[0][1]);
+    for (let i = 1; i < backPts.length; i++) ctx.lineTo(backPts[i][0], backPts[i][1]);
+    for (let i = bellyPts.length - 1; i >= 0; i--) ctx.lineTo(bellyPts[i][0], bellyPts[i][1]);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Head silhouette
+    ctx.fillStyle = 'rgba(30,41,59,0.7)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.80)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.arc(headX, headY, 16, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // -------- Arms (shoulder to bar) --------
+    const barY = Math.min(groundY - 38, shY + 120);
+    const barX = hipX + 28;
+    ctx.strokeStyle = 'rgba(110,130,156,0.75)';
+    ctx.lineWidth = 3.6;
+    ctx.beginPath();
+    ctx.moveTo(shX, shY);
+    ctx.lineTo(shX + 4, (shY + barY) / 2);
+    ctx.lineTo(barX, barY);
+    ctx.stroke();
+
+    // -------- Barbell (v3: viewed along the bar axis — plate faces camera) --------
+    // The lifter is drawn in profile; we view the bar end-on, so the near plate
+    // reads as a full circle with a small bar cross-section at its center.
+    const plateRadius = 20;
+    const rimRadius   = 17.5;   // inner ring suggesting cylinder thickness
+    const hubRadius   = 3.2;    // bar cross-section
+
+    // Outer plate disc.
+    ctx.fillStyle   = 'rgba(120,134,160,0.92)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.9)';
+    ctx.lineWidth   = 1.4;
+    ctx.beginPath();
+    ctx.arc(barX, barY, plateRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Inner rim — subtly darker concentric ring implies the cylinder's far edge.
+    ctx.strokeStyle = 'rgba(50,62,82,0.7)';
+    ctx.lineWidth   = 1.1;
+    ctx.beginPath();
+    ctx.arc(barX, barY, rimRadius, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Cyan accent fill (echoes original plate tint).
+    ctx.fillStyle = 'rgba(56,189,248,0.28)';
+    ctx.beginPath();
+    ctx.arc(barX, barY, rimRadius - 1.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bar cross-section hub at center.
+    ctx.fillStyle   = 'rgba(200,210,225,0.95)';
+    ctx.strokeStyle = 'rgba(71,85,105,0.9)';
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.arc(barX, barY, hubRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // -------- Sapiens dense spinal keypoints --------
+    const cervX = shX + Math.sin(hingeAngle) * 6;
+    const cervY = shY - Math.cos(hingeAngle) * 6;
+    const sacX = hipX;
+    const sacY = hipY;
+    const nKp = 22;
+    const spinePts = [];
+    for (let i = 0; i <= nKp; i++) {
+      const u = i / nKp;
+      const baseX = cervX + (sacX - cervX) * u;
+      const baseY = cervY + (sacY - cervY) * u;
+      const peakU = 0.55;
+      let bulgeProfile;
+      if (u < peakU) bulgeProfile = Math.sin((u / peakU) * Math.PI / 2);
+      else           bulgeProfile = Math.sin(((1 - u) / (1 - peakU)) * Math.PI / 2);
+      const natural = Math.sin(u * Math.PI * 1.2) * 2.4;
+      const offset = bulgeProfile * rounding + natural;
+      const x = baseX + postX * offset;
+      const y = baseY + postY * offset;
+      spinePts.push([x, y, u]);
+    }
+
+    const spineColor = severe ? C.signal
+                     : rounded ? 'rgba(56,189,248,0.95)'
+                               : 'rgba(56,189,248,0.80)';
+    ctx.strokeStyle = spineColor;
+    ctx.lineWidth = 2.8;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    spinePts.forEach((p, i) => {
+      if (i === 0) ctx.moveTo(p[0], p[1]);
+      else ctx.lineTo(p[0], p[1]);
+    });
+    ctx.stroke();
+
+    spinePts.forEach(p => {
+      ctx.fillStyle = C.signal;
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 2.6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+
+    if (rounded) {
+      const peakIdx = Math.round(nKp * 0.55);
+      const peak = spinePts[peakIdx];
+      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.01);
+      ctx.fillStyle = `rgba(56,189,248,${0.15 + pulse * 0.20})`;
+      ctx.beginPath();
+      ctx.arc(peak[0], peak[1], 14 + pulse * 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // -------- BlazePose contrast: 2 torso dots, straight dashed line --------
+    const bpShX = shX + postX * 22;
+    const bpShY = shY + postY * 22;
+    const bpHpX = hipX + postX * 18;
+    const bpHpY = hipY + postY * 18;
+    ctx.strokeStyle = 'rgba(245,158,11,0.55)';
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(bpShX, bpShY);
+    ctx.lineTo(bpHpX, bpHpY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    [[bpShX, bpShY], [bpHpX, bpHpY]].forEach(p => {
+      ctx.fillStyle = C.warn;
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(245,158,11,0.8)';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(p[0] - 10, p[1]); ctx.lineTo(p[0] + 10, p[1]);
+      ctx.moveTo(p[0], p[1] - 10); ctx.lineTo(p[0], p[1] + 10);
+      ctx.stroke();
+    });
+
+    // -------- Side panel: contrast callout + lumbar readout --------
+    const panelX = w * 0.68;
+    const panelY = 56;
+
+    // BlazePose row
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('BLAZEPOSE', panelX, panelY);
+    ctx.strokeStyle = 'rgba(245,158,11,0.55)';
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(panelX, panelY + 22);
+    ctx.lineTo(panelX + 44, panelY + 22);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = C.warn;
+    ctx.beginPath(); ctx.arc(panelX, panelY + 22, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(panelX + 44, panelY + 22, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.fillText('2 torso landmarks', panelX + 56, panelY + 26);
+    ctx.font = '10px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('no spine between them', panelX, panelY + 42);
+
+    // Sapiens row
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('SAPIENS', panelX, panelY + 72);
+    ctx.strokeStyle = C.signal;
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (let i = 0; i <= 11; i++) {
+      const px = panelX + i * 5;
+      const py = panelY + 94 + Math.sin(i * 0.4) * 3;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    for (let i = 0; i <= 11; i++) {
+      ctx.fillStyle = C.signal;
+      ctx.beginPath();
+      ctx.arc(panelX + i * 5, panelY + 94 + Math.sin(i * 0.4) * 3, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.font = '12px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.signal;
+    ctx.fillText('308 keypts  spinal line', panelX, panelY + 114);
+
+    // Live lumbar flexion readout
+    ctx.font = '11px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.subtle;
+    ctx.fillText('LUMBAR FLEXION', panelX, panelY + 154);
+    ctx.font = '800 28px "Fraunces", serif';
+    ctx.fillStyle = severe ? C.signal : (rounded ? C.warn : C.text);
+    ctx.fillText(roundingDeg + String.fromCharCode(176), panelX, panelY + 188);
+
+    // Top-left title
+    ctx.font = '14px "IBM Plex Mono", monospace';
+    ctx.fillStyle = C.muted;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText('SPINAL ROUNDING', 16, 28);
+
+    // Top-right status
+    ctx.textAlign = 'right';
+    if (severe) {
+      const pulse = 0.5 + 0.5 * Math.sin(ts * 0.012);
+      ctx.fillStyle = `rgba(56,189,248,${0.75 + pulse * 0.25})`;
+      ctx.font = '600 14px "IBM Plex Mono", monospace';
+      ctx.fillText('ROUNDING  DISC RISK', w - 16, 28);
+    } else if (rounded) {
+      ctx.fillStyle = C.warn;
+      ctx.font = '600 14px "IBM Plex Mono", monospace';
+      ctx.fillText('ROUNDING DETECTED', w - 16, 28);
+    } else {
+      ctx.fillStyle = C.subtle;
+      ctx.font = '14px "IBM Plex Mono", monospace';
+      ctx.fillText('NEUTRAL SPINE', w - 16, 28);
+    }
+  }
+
+  function frame(ts) {
+    drawSense(ts);
+    drawCue(ts);
+    drawReason(ts);
+    drawVerify(ts);
+    drawEmg(ts);
+    drawModelA(ts);
+    drawModelB(ts);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+
+<script>
+// Slide 06 — Adaptive state machine (garment · phone · cloud)
+(() => {
+  const states = [
+    { tier: 'FLAGSHIP',   tag: 'MODEL ON PHONE',        pillWidth: 260, pillHeight: 100, pillRx: 50, pillLabel: 'MODEL', pillSize: '9 MB', httpsOpacity: 0.45, httpsWidth: 2.5, httpsDash: '5,10', httpsDetail: 'REPORT',        showCloud: false },
+    { tier: 'MID-TIER',   tag: 'PHONE ↔ SERVER',        pillWidth: 230, pillHeight: 88,  pillRx: 44, pillLabel: 'MODEL', pillSize: '9 MB', httpsOpacity: 1,    httpsWidth: 4.5, httpsDash: '0',    httpsDetail: 'LANDMARKS',     showCloud: false },
+    { tier: 'BUDGET',     tag: 'MODEL ON SERVER',       pillWidth: 0,   pillHeight: 0,   pillRx: 0,  pillLabel: '',      pillSize: '',     httpsOpacity: 1,    httpsWidth: 6.5, httpsDash: '0',    httpsDetail: 'VIDEO FRAMES',  showCloud: true  },
+    { tier: 'LOW SIGNAL', tag: 'COMPRESSED, ON PHONE',  pillWidth: 180, pillHeight: 78,  pillRx: 39, pillLabel: 'MODEL', pillSize: '2 MB', httpsOpacity: 0.15, httpsWidth: 2,   httpsDash: '3,12', httpsDetail: 'OFFLINE',       showCloud: false },
+  ];
+
+  const pillRect    = document.getElementById('s6pillRect');
+  const pillLabel   = document.getElementById('s6pillLabel');
+  const pillSize    = document.getElementById('s6pillSize');
+  const httpsLine   = document.getElementById('s6httpsLine');
+  const httpsDetail = document.getElementById('s6httpsDetail');
+  const cloudPill   = document.getElementById('s6cloudPill');
+  const tierName    = document.getElementById('s6tierName');
+  const tierTag     = document.getElementById('s6tierTag');
+  if (!pillRect) return;
+
+  [pillRect, httpsLine, cloudPill].forEach(el => {
+    if (el) el.style.transition = 'all 900ms cubic-bezier(0.4, 0, 0.2, 1)';
+  });
+  pillLabel.style.transition = 'opacity 400ms ease';
+  pillSize.style.transition  = 'opacity 400ms ease';
+
+  function applyState(s) {
+    pillRect.setAttribute('x', -s.pillWidth / 2);
+    pillRect.setAttribute('y', -s.pillHeight / 2);
+    pillRect.setAttribute('width', s.pillWidth);
+    pillRect.setAttribute('height', s.pillHeight);
+    pillRect.setAttribute('rx', s.pillRx);
+    pillRect.setAttribute('ry', s.pillRx);
+    pillRect.setAttribute('opacity', s.showCloud ? '0.15' : '1');
+
+    pillLabel.textContent = s.pillLabel;
+    pillSize.textContent  = s.pillSize;
+    pillLabel.style.opacity = s.showCloud ? '0' : '1';
+    pillSize.style.opacity  = s.showCloud ? '0' : '1';
+
+    httpsLine.setAttribute('stroke-width', s.httpsWidth);
+    httpsLine.setAttribute('stroke-dasharray', s.httpsDash);
+    httpsLine.setAttribute('opacity', s.httpsOpacity);
+    httpsDetail.textContent = s.httpsDetail;
+
+    cloudPill.style.display = s.showCloud ? 'block' : 'none';
+    tierName.textContent    = s.tier;
+    tierTag.textContent     = s.tag;
+  }
+
+  let idx = 0;
+  applyState(states[0]);
+  setInterval(() => {
+    idx = (idx + 1) % states.length;
+    applyState(states[idx]);
+  }, 3200);
+})();
+</script>
+</body>
+</html>
