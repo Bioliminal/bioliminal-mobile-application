@@ -243,6 +243,29 @@ class HardwareController extends Notifier<HardwareConnectionState> {
     _lastSessionState = sessionState;
     return sendCommand([0x12, sessionState]);
   }
+
+  /// Inform firmware that the phone has pose-confirmed rep number [repNum]
+  /// at wall-clock time [tMs]. Paired with `bicep_hybrid.ino`'s
+  /// `OP_REP_CONFIRMED (0x13)` handler: firmware overwrites its local
+  /// envelope-peak count, logs `[rep-disagree]` when local and phone
+  /// counts differ by more than 1, and uses the phone-confirmed rep
+  /// boundary to gate its per-rep fatigue cue evaluation.
+  ///
+  /// `t_ms` is encoded as u24 LE (wraps every ~4.6 hours, well past any
+  /// session length). See
+  /// `bioliminal-ops/decisions/2026-04-21-pose-authoritative-rep-counting.md`.
+  /// Older firmware (`bicep_autonomous`, `bicep_realtime`) logs the
+  /// opcode as unknown and ignores it — the write is harmless either way.
+  Future<void> sendRepConfirmed(int repNum, int tMs) async {
+    final t24 = tMs & 0xFFFFFF;
+    await sendCommand([
+      0x13,
+      repNum & 0xFF,
+      t24 & 0xFF,
+      (t24 >> 8) & 0xFF,
+      (t24 >> 16) & 0xFF,
+    ]);
+  }
 }
 
 final hardwareControllerProvider =
