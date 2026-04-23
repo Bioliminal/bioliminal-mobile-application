@@ -14,7 +14,6 @@ import '../models/compensation_reference.dart';
 import '../models/cue_decision.dart';
 import '../models/cue_event.dart';
 import '../models/cue_profile.dart';
-import '../models/pose_delta.dart';
 import '../models/rep_record.dart';
 import '../models/session_log.dart';
 import '../services/compensation_detector.dart';
@@ -203,8 +202,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   static const int _envelopeBufferRetentionUs = 10 * 1000 * 1000;
 
   // Pose frames captured during the current rep window — used to build the
-  // compensation reference (during calibration reps 1–3) and per-rep
-  // PoseDelta (during Active).
+  // compensation reference (stable-resting-frame filter applied inside
+  // CompensationDetector.buildReference across pooled calibration reps 1–3)
+  // and per-rep signed peak deltas during Active.
   final List<List<PoseLandmark>> _currentRepFrames = <List<PoseLandmark>>[];
   final List<List<PoseLandmark>> _calibrationFramesForRef =
       <List<PoseLandmark>>[];
@@ -522,11 +522,20 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   ) {
     final repNum = s.reps.length + 1;
 
-    final delta = _currentRepFrames.isEmpty
+    // Walk the rep's pose frames once to compute signed peak deltas
+    // (shoulder rise, forward lean) against the stable-resting-frame
+    // reference. Averaging across the rep — the old behavior — washed out
+    // the concentric peak where compensation actually occurs.
+    final perRep = _currentRepFrames.isEmpty
         ? null
-        : _meanDelta(_currentRepFrames, s.ref);
+        : CompensationDetector.computePerRepDeltas(
+            _currentRepFrames,
+            b.side,
+            s.ref,
+          );
+    final peakPoseDelta = perRep?.asPeakPoseDelta();
     final compensating =
-        delta?.exceedsThresholds(_profile.compensation) ?? false;
+        peakPoseDelta?.exceedsThresholds(_profile.compensation) ?? false;
 
     final record = RepRecord(
       repNum: repNum,
@@ -534,7 +543,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       tPeakUs: b.tPeakUs,
       tEndUs: b.tEndUs,
       peakEnv: peakEnv,
-      poseDelta: delta,
+      poseDelta: peakPoseDelta,
       envelopeSamples: envelopeSamples,
     );
     final reps = [...s.reps, record];
@@ -606,23 +615,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       if (s.value > samples[bin]) samples[bin] = s.value;
     }
     return (peak: peak, samples: samples);
-  }
-
-  PoseDelta _meanDelta(
-    List<List<PoseLandmark>> frames,
-    CompensationReference ref,
-  ) {
-    var sumShoulder = 0.0;
-    var sumPitch = 0.0;
-    for (final frame in frames) {
-      final d = CompensationDetector.computeDelta(frame, ref);
-      sumShoulder += d.shoulderDriftDeg;
-      sumPitch += d.torsoPitchDeltaDeg;
-    }
-    return PoseDelta(
-      shoulderDriftDeg: sumShoulder / frames.length,
-      torsoPitchDeltaDeg: sumPitch / frames.length,
-    );
   }
 
   double _latestDropFraction(List<double> peaks) {

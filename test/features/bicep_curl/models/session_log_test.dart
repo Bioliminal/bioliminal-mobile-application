@@ -25,10 +25,12 @@ void main() {
     });
 
     test('formScore drops with compensation events past thresholds', () {
+      // intermediate thresholds after the signed-peak rewrite: 14° / 20°.
+      // Reps 2 and 3 push one signal past a positive threshold.
       final log = _logWithPeaks([100, 100, 100, 100], poseDeltas: [
         const PoseDelta(shoulderDriftDeg: 0, torsoPitchDeltaDeg: 0),
-        const PoseDelta(shoulderDriftDeg: 9, torsoPitchDeltaDeg: 5),  // compensating
-        const PoseDelta(shoulderDriftDeg: 0, torsoPitchDeltaDeg: 12), // compensating
+        const PoseDelta(shoulderDriftDeg: 16, torsoPitchDeltaDeg: 5),  // compensating
+        const PoseDelta(shoulderDriftDeg: 0, torsoPitchDeltaDeg: 22),  // compensating
         const PoseDelta(shoulderDriftDeg: 3, torsoPitchDeltaDeg: 4),
       ]);
       expect(log.formScore, 50.0);
