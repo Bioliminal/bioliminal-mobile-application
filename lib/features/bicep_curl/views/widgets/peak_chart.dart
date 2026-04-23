@@ -277,6 +277,8 @@ Color peakChartCueColor(CueContent content) {
       return Colors.redAccent;
     case CueContent.compensationDetected:
       return Colors.purpleAccent;
+    case CueContent.repTooFast:
+      return Colors.amberAccent;
     case CueContent.stabilizerWarning:
       return Colors.orangeAccent;
   }

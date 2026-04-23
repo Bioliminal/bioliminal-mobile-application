@@ -13,26 +13,46 @@ class RepBoundary {
     required this.tStartUs,
     required this.tPeakUs,
     required this.tEndUs,
+    required this.side,
   });
 
   final int repNum;
   final int tStartUs;
   final int tPeakUs;
   final int tEndUs;
+
+  /// Which arm fired this rep. Driven by whichever per-arm policy reached
+  /// a valid RepComplete first — independent of the user's picker choice.
+  final ArmSide side;
 }
 
-/// Thin stream driver around a [RepDecisionPolicy]. Holds the policy lifecycle
-/// and fans RepComplete events onto a broadcast stream. Decision logic lives
-/// in the policy — swap the policy to change behavior (per-exercise).
+/// Runs one [RepDecisionPolicy] per arm in parallel and fans their events
+/// onto broadcast streams. Detection is arm-agnostic: the user's picker
+/// choice is no longer a single point of failure on MediaPipe's left/right
+/// labeling. Bilateral (both-arm) curls are collapsed to one rep via a
+/// short cross-arm debounce — the second arm's RepComplete inside that
+/// window is dropped.
 class RepDetector {
-  RepDetector({RepDecisionPolicy? policy})
-      : _policy = policy ?? ExtremaAmplitudeGatePolicy.bicepCurl();
+  RepDetector({RepDecisionPolicy Function()? policyFactory})
+      : _leftPolicy = (policyFactory ?? ExtremaAmplitudeGatePolicy.bicepCurl)(),
+        _rightPolicy =
+            (policyFactory ?? ExtremaAmplitudeGatePolicy.bicepCurl)();
 
-  final RepDecisionPolicy _policy;
+  final RepDecisionPolicy _leftPolicy;
+  final RepDecisionPolicy _rightPolicy;
+
   final _controller = StreamController<RepBoundary>.broadcast();
   final _startController = StreamController<int>.broadcast();
   final _suppressedController =
       StreamController<RepSuppressedEvent>.broadcast();
+
+  /// Collapse bilateral reps into one. If the *other* arm fires a
+  /// RepComplete within this window of the first, the second is dropped.
+  /// Same-arm consecutive reps are never debounced — the per-arm policy
+  /// already enforces the minimum rep duration.
+  static const int _crossArmDebounceUs = 500000;
+  int _lastBoundaryUs = -1;
+  ArmSide? _lastBoundarySide;
 
   Stream<RepBoundary> get boundaries => _controller.stream;
   Stream<int> get onRepStart => _startController.stream;
@@ -42,16 +62,34 @@ class RepDetector {
   /// count is already protected from these by [boundaries] skipping them.
   Stream<RepSuppressedEvent> get suppressed => _suppressedController.stream;
 
-  void addPoseFrame(int tUs, List<PoseLandmark> landmarks, ArmSide side) {
-    final event = _policy.feedFrame(tUs: tUs, landmarks: landmarks, side: side);
+  void addPoseFrame(int tUs, List<PoseLandmark> landmarks) {
+    _feed(_leftPolicy, tUs, landmarks, ArmSide.left);
+    _feed(_rightPolicy, tUs, landmarks, ArmSide.right);
+  }
+
+  void _feed(
+    RepDecisionPolicy policy,
+    int tUs,
+    List<PoseLandmark> landmarks,
+    ArmSide side,
+  ) {
+    final event = policy.feedFrame(tUs: tUs, landmarks: landmarks, side: side);
     if (event is RepStartedEvent) {
       _startController.add(event.tStartUs);
     } else if (event is RepCompleteEvent) {
+      if (_lastBoundarySide != null &&
+          _lastBoundarySide != side &&
+          tUs - _lastBoundaryUs < _crossArmDebounceUs) {
+        return;
+      }
+      _lastBoundaryUs = tUs;
+      _lastBoundarySide = side;
       _controller.add(RepBoundary(
         repNum: event.repNum,
         tStartUs: event.tStartUs,
         tPeakUs: event.tBottomUs,
         tEndUs: event.tEndUs,
+        side: side,
       ));
     } else if (event is RepSuppressedEvent) {
       _suppressedController.add(event);
@@ -59,7 +97,8 @@ class RepDetector {
   }
 
   Future<void> dispose() async {
-    _policy.reset();
+    _leftPolicy.reset();
+    _rightPolicy.reset();
     await _startController.close();
     await _suppressedController.close();
     await _controller.close();

@@ -126,6 +126,8 @@ String _label(CueContent c) {
       return 'STOP';
     case CueContent.compensationDetected:
       return 'COMPENSATION';
+    case CueContent.repTooFast:
+      return 'TOO FAST';
     case CueContent.stabilizerWarning:
       return 'STABILIZER';
   }
@@ -141,6 +143,8 @@ Color _cueColor(CueContent content) {
       return Colors.redAccent;
     case CueContent.compensationDetected:
       return Colors.purpleAccent;
+    case CueContent.repTooFast:
+      return Colors.amberAccent;
     case CueContent.stabilizerWarning:
       return Colors.orangeAccent;
   }

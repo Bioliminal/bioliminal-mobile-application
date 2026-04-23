@@ -15,7 +15,7 @@ void main() {
 
     int t = 0;
     void feed(double angle) {
-      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      detector.addPoseFrame(t, _armAtAngle(angle));
       t += 100000;
     }
 
@@ -44,7 +44,7 @@ void main() {
 
     int t = 0;
     void feed(double angle) {
-      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      detector.addPoseFrame(t, _armAtAngle(angle));
       t += 33333;
     }
     // Stationary pre-rep.
@@ -75,7 +75,7 @@ void main() {
     // min-duration gate — we want the ROM gate (not the duration gate)
     // to be the one that suppresses this rep.
     void feed(double angle) {
-      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      detector.addPoseFrame(t, _armAtAngle(angle));
       t += 200000;
     }
     // Short-ROM rep: 170° → 120° → 170° (50° amplitude — clears jitter floor,
@@ -107,7 +107,7 @@ void main() {
 
     int t = 0;
     void feed(double angle) {
-      detector.addPoseFrame(t, _armAtAngle(angle), ArmSide.right);
+      detector.addPoseFrame(t, _armAtAngle(angle));
       t += 100000;
     }
 
@@ -132,25 +132,40 @@ void main() {
   });
 }
 
-/// Build a pose frame with the right shoulder/elbow/wrist arranged so the
-/// elbow's interior angle equals `angleDeg`. Shoulder fixed at (0,0),
-/// elbow at (1,0), wrist swings around the elbow.
+/// Build a pose frame with the right arm at `angleDeg` and the left arm
+/// parked at a resting 170°. Left is set explicitly because the dual-arm
+/// [RepDetector] runs a policy per side — leaving left at (0,0,0) would
+/// degenerate `elbowAngleDeg` to 0° and trip the left policy into
+/// descending on frame 0.
 List<PoseLandmark> _armAtAngle(double angleDeg) {
-  final theta = (180 - angleDeg) * math.pi / 180.0;
   final landmarks = List.filled(
     33,
     const PoseLandmark(x: 0, y: 0, z: 0, visibility: 1, presence: 1),
   );
-  landmarks[kRightShoulder] = const PoseLandmark(
-      x: 0, y: 0, z: 0, visibility: 1, presence: 1);
-  landmarks[kRightElbow] = const PoseLandmark(
-      x: 1, y: 0, z: 0, visibility: 1, presence: 1);
-  landmarks[kRightWrist] = PoseLandmark(
-    x: 1.0 + math.cos(theta),
+  _placeArm(landmarks, side: ArmSide.right, angleDeg: angleDeg, baseX: 1.0);
+  _placeArm(landmarks, side: ArmSide.left, angleDeg: 170.0, baseX: -1.0);
+  return landmarks;
+}
+
+void _placeArm(
+  List<PoseLandmark> landmarks, {
+  required ArmSide side,
+  required double angleDeg,
+  required double baseX,
+}) {
+  final theta = (180 - angleDeg) * math.pi / 180.0;
+  final sIdx = side == ArmSide.left ? kLeftShoulder : kRightShoulder;
+  final eIdx = side == ArmSide.left ? kLeftElbow : kRightElbow;
+  final wIdx = side == ArmSide.left ? kLeftWrist : kRightWrist;
+  landmarks[sIdx] = PoseLandmark(
+      x: baseX - 1.0, y: 0, z: 0, visibility: 1, presence: 1);
+  landmarks[eIdx] =
+      PoseLandmark(x: baseX, y: 0, z: 0, visibility: 1, presence: 1);
+  landmarks[wIdx] = PoseLandmark(
+    x: baseX + math.cos(theta),
     y: math.sin(theta),
     z: 0,
     visibility: 1,
     presence: 1,
   );
-  return landmarks;
 }

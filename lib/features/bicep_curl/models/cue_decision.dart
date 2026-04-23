@@ -32,6 +32,11 @@ enum CueContent {
   /// visual badge only. v1+ may fire a distinct FORM staccato burst.
   compensationDetected,
 
+  /// Rep completed faster than the momentum-gate floor (1.5 s per
+  /// Wilk/Davies tempo review — reps under that are ballistic and don't
+  /// count toward training volume). Visual + verbal only, no haptic.
+  repTooFast,
+
   /// Reserved for v1 — multi-channel synergist warnings (parked behind
   /// 2nd EMG channel landing per project-status §"Phase 3").
   stabilizerWarning,

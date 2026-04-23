@@ -86,6 +86,8 @@ String? _verbalPhrase(CueContent content) {
       return null; // Visual-only; verbal would feel patronizing.
     case CueContent.compensationDetected:
       return 'Watch your form';
+    case CueContent.repTooFast:
+      return 'Slow down';
     case CueContent.stabilizerWarning:
       return null; // v1+
   }

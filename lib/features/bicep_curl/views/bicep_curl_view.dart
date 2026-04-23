@@ -248,6 +248,14 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
             ),
           ),
 
+          // Too-fast banner — fires for CueContent.repTooFast only.
+          // Complementary to the flash indicator + cue timeline entry.
+          Positioned.fill(
+            child: RepTooFastBanner(
+              bus: ref.read(bicepCurlControllerProvider.notifier).visualBus,
+            ),
+          ),
+
           SafeArea(
             child: Column(
               children: [

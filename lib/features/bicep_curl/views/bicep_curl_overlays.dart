@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme.dart';
 import '../controllers/bicep_curl_controller.dart';
+import '../models/cue_decision.dart' show CueContent;
 import '../models/cue_event.dart';
 
 // ---------------------------------------------------------------------------
@@ -222,6 +223,128 @@ class _CueFlashIndicatorState extends State<CueFlashIndicator>
               : (1 - (t - 0.3) / 0.7) * 0.35;
           return Container(
             color: BioliminalTheme.accent.withValues(alpha: opacity),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Too-fast banner — prominent top-of-frame flag when a rep is dropped
+// below the momentum-gate floor (1.5 s per Wilk/Davies tempo review)
+// ---------------------------------------------------------------------------
+
+class RepTooFastBanner extends StatefulWidget {
+  const RepTooFastBanner({super.key, required this.bus});
+
+  final ValueListenable<CueEvent?> bus;
+
+  @override
+  State<RepTooFastBanner> createState() => _RepTooFastBannerState();
+}
+
+class _RepTooFastBannerState extends State<RepTooFastBanner>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  CueEvent? _lastShown;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2200),
+    );
+    widget.bus.addListener(_onBus);
+  }
+
+  @override
+  void dispose() {
+    widget.bus.removeListener(_onBus);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onBus() {
+    final ev = widget.bus.value;
+    if (ev == null || ev == _lastShown) return;
+    if (ev.content != CueContent.repTooFast) return;
+    _lastShown = ev;
+    _controller.forward(from: 0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (_, _) {
+          final t = _controller.value;
+          // Slide in + fade: 0-0.15 rise, 0.15-0.85 hold, 0.85-1.0 fade.
+          double opacity;
+          double offsetY;
+          if (t == 0) {
+            opacity = 0;
+            offsetY = -40;
+          } else if (t < 0.15) {
+            final u = t / 0.15;
+            opacity = u;
+            offsetY = -40 * (1 - u);
+          } else if (t < 0.85) {
+            opacity = 1;
+            offsetY = 0;
+          } else {
+            final u = (t - 0.85) / 0.15;
+            opacity = 1 - u;
+            offsetY = 0;
+          }
+          if (opacity == 0) return const SizedBox.shrink();
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 56, left: 24, right: 24),
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: Transform.translate(
+                  offset: Offset(0, offsetY),
+                  child: Opacity(
+                    opacity: opacity,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade700,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black45,
+                            blurRadius: 8,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.speed, color: Colors.black87, size: 22),
+                          SizedBox(width: 10),
+                          Flexible(
+                            child: Text(
+                              'Too fast — slow down to count',
+                              style: TextStyle(
+                                color: Colors.black87,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           );
         },
       ),

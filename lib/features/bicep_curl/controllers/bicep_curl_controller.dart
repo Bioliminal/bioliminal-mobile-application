@@ -139,8 +139,6 @@ class RepCountReconciliation {
 ///                                  ↘─ Complete (idle timeout)
 /// ```
 class BicepCurlController extends Notifier<BicepCurlState> {
-  static const Duration _autoEndIdle = Duration(seconds: 10);
-
   /// Bus for transient cue-fire events the live view subscribes to (badge
   /// flashes, fatigue-bar pulses). Always reflects the most recent event;
   /// view filters by recency when rendering.
@@ -216,7 +214,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   CueProfile _profile = CueProfile.intermediate();
   DateTime? _sessionStartedAt;
   bool _bleDroppedDuringSet = false;
-  Timer? _idleTimer;
 
   // Wall-clock ↔ BLE-firmware-time alignment. Captured on first SampleBatch
   // so envelope sample timestamps live in the same epoch as pose frames.
@@ -271,7 +268,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _bleDroppedDuringSet = hardwareState != HardwareConnectionState.connected;
     _envelope = EnvelopeDerivator();
     final policyFactory = ref.read(repDecisionPolicyFactoryProvider);
-    _repDetector = RepDetector(policy: policyFactory());
+    _repDetector = RepDetector(policyFactory: policyFactory);
     _envelopeBuffer.clear();
     _currentRepFrames.clear();
     _calibrationFramesForRef.clear();
@@ -421,7 +418,7 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     final s = state;
     if (s is! BicepCurlCalibrating && s is! BicepCurlActive) return;
     final tUs = DateTime.now().microsecondsSinceEpoch;
-    _repDetector?.addPoseFrame(tUs, landmarks, _side);
+    _repDetector?.addPoseFrame(tUs, landmarks);
     _currentRepFrames.add(landmarks);
   }
 
@@ -446,6 +443,16 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       'duration=${(e.durationUs / 1000).round()}ms',
       name: 'RepDetector',
     );
+    if (e.reason == RepInvalidReason.tooFast) {
+      final repNum = switch (state) {
+        BicepCurlActive(:final reps) => reps.length + 1,
+        BicepCurlCalibrating(:final repsCompleted) => repsCompleted + 1,
+        _ => 0,
+      };
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.repTooFast, repNum: repNum),
+      );
+    }
     _currentRepFrames.clear();
   }
 
@@ -462,7 +469,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _cvRepCount += 1;
     _updateReconciliation();
     _currentRepFrames.clear();
-    _resetIdleTimer();
   }
 
   void _handleCalibrationRep(
@@ -572,12 +578,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
       currentCompensating: compensating,
       emgOnline: emgOnline,
     );
-
-    // Auto-end on fatigueStop — past useful intervention window per
-    // haptic-cueing-handshake.md §"The algorithm (data-backed v1)".
-    if (decision?.content == CueContent.fatigueStop) {
-      unawaited(endSession());
-    }
   }
 
   // ---------- helpers ----------
@@ -638,16 +638,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     return (1.0 - peaks.last / baseline).clamp(0.0, 1.0);
   }
 
-  /// Auto-end the set when no rep has been detected for [_autoEndIdle].
-  /// Only runs during Active — calibration is allowed to take its time
-  /// (first rep often arrives 20-30 s after Setup completes).
-  void _resetIdleTimer() {
-    _idleTimer?.cancel();
-    if (state is BicepCurlActive) {
-      _idleTimer = Timer(_autoEndIdle, () => unawaited(endSession()));
-    }
-  }
-
   SessionLog _buildLog() {
     final s = state;
     final reps = s is BicepCurlActive
@@ -669,8 +659,6 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   Future<void> _teardown({bool keepVisualBus = false}) async {
-    _idleTimer?.cancel();
-    _idleTimer = null;
     // Use cached _smoother — ref.read is forbidden in onDispose callbacks.
     _smoother?.reset();
     await _sampleSub?.cancel();

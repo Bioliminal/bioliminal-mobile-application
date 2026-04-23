@@ -82,7 +82,7 @@ class ExtremaAmplitudeGatePolicy implements RepDecisionPolicy {
     this.armedAngleDeg = 150.0,
     this.minDropToStartDeg = 20.0,
     this.minValidRomDeg = 80.0,
-    this.minRepDurationUs = 1000000,
+    this.minRepDurationUs = 1500000,
     this.maxRepDurationUs = 10000000,
     this.minVisibility = 0.5,
   });
