@@ -354,19 +354,22 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
   }
 
   Widget _hudBottom(BicepCurlState s) {
-    // Hardware-led mode: the firmware owns rep counting and cue firing. The
-    // phone UI is intentionally minimal — muscle activity sparkline, an
-    // accent-coloured flash when the hardware fires a cue, and a
-    // compensation badge when form is wrong. Rep counter removed (the
-    // firmware's rep count isn't yet reliable enough to show to a user
-    // without doing more tuning, and the hardware loop doesn't need the
-    // phone to display it).
+    // Pose-authoritative rep counting per the 2026-04-21 amendment — the
+    // phone's RepDetector is trustworthy now (vs the prior firmware-owned
+    // count), so the big rep counter is back.  Firmware still owns the
+    // haptic + cue flash; the phone UI adds the numeric count, the muscle
+    // activity sparkline, and the compensation badge.
     if (s is BicepCurlActive || s is BicepCurlCalibrating) {
+      final repCount = s is BicepCurlActive
+          ? s.reps.length
+          : (s as BicepCurlCalibrating).repsCompleted;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            _RepCounter(count: repCount),
+            const SizedBox(height: 16),
             if (s is BicepCurlActive && s.currentCompensating) ...[
               const CompensationBadge(),
               const SizedBox(height: 12),
@@ -383,6 +386,39 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
 
   Future<void> _endSet() async {
     await ref.read(bicepCurlControllerProvider.notifier).endSession();
+  }
+}
+
+class _RepCounter extends StatelessWidget {
+  const _RepCounter({required this.count});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          count.toString(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 80,
+            fontWeight: FontWeight.w800,
+            height: 1.0,
+            fontFeatures: [FontFeature.tabularFigures()],
+          ),
+        ),
+        Text(
+          count == 1 ? 'REP' : 'REPS',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12,
+            letterSpacing: 3,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
   }
 }
 

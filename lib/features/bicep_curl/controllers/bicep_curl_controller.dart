@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../../core/providers.dart';
 import '../../../core/services/hardware_controller.dart';
@@ -240,8 +241,31 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     _repSub = _repDetector!.boundaries.listen(_onRepBoundary);
     _hardwareCueSub = hardware.cueEventStream.listen((_) => _onHardwareCue());
 
+    // Keep the screen awake for the entire session.  Camera preview alone
+    // doesn't inhibit iOS's idle timer; without this the phone sleeps
+    // mid-set.  Released in _teardown.  try/catch swallows the
+    // MissingPluginException that fires in unit tests (no platform
+    // implementation bound).
+    unawaited(_enableWakelock());
+
     await hardware.setSessionState(0); // 0 = Idle on firmware
     state = const BicepCurlSetup();
+  }
+
+  Future<void> _enableWakelock() async {
+    try {
+      await WakelockPlus.enable();
+    } catch (e) {
+      developer.log('wakelock enable failed', error: e, name: 'BicepCurlController');
+    }
+  }
+
+  Future<void> _disableWakelock() async {
+    try {
+      await WakelockPlus.disable();
+    } catch (e) {
+      developer.log('wakelock disable failed', error: e, name: 'BicepCurlController');
+    }
   }
 
   /// Fires when the autonomous firmware sets bit0 of the packet's cue_event
@@ -574,6 +598,9 @@ class BicepCurlController extends Notifier<BicepCurlState> {
   }
 
   Future<void> _teardown({bool keepVisualBus = false}) async {
+    // Release the wakelock first so the phone can sleep again even if
+    // the rest of teardown fails somewhere.
+    unawaited(_disableWakelock());
     _idleTimer?.cancel();
     _idleTimer = null;
     await _sampleSub?.cancel();
