@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../waitlist/services/waitlist_service.dart';
 import '../widgets/instrument_button.dart';
@@ -9,6 +10,8 @@ import '../widgets/scroll_reveal.dart';
 import '../widgets/site_footer.dart';
 import '../widgets/top_nav.dart';
 import '../widgets/walkthrough_dialog.dart';
+
+const _demoVideoUrl = '/demo-video.mp4';
 
 // Signature for this page: indigo glow + sky wash.
 const _tint = SectionTint.indigo;
@@ -183,14 +186,45 @@ class _HeroStacked extends StatelessWidget {
 }
 
 // Camera viewfinder — corner brackets, rule-of-thirds, REC indicator, slate
-// code. Since the live demo isn't built yet, a prominent UNDER CONSTRUCTION
-// pill sits centered inside the frame so users don't expect it to work.
-class _ViewfinderFrame extends StatelessWidget {
+// code, with the live demo video playing inside the frame (muted + looping).
+class _ViewfinderFrame extends StatefulWidget {
   const _ViewfinderFrame({required this.narrow});
   final bool narrow;
 
   @override
+  State<_ViewfinderFrame> createState() => _ViewfinderFrameState();
+}
+
+class _ViewfinderFrameState extends State<_ViewfinderFrame> {
+  late final VideoPlayerController _controller;
+  bool _ready = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(
+      Uri.base.resolve(_demoVideoUrl),
+    )
+      ..setLooping(true)
+      ..setVolume(0);
+    _controller.initialize().then((_) {
+      if (!mounted) return;
+      setState(() => _ready = true);
+      _controller.play();
+    }).catchError((Object e, StackTrace s) {
+      debugPrint('demo video init failed: $e');
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final narrow = widget.narrow;
     final innerPad = narrow ? 14.0 : 20.0;
     final bracketInset = narrow ? 8.0 : 12.0;
 
@@ -206,6 +240,18 @@ class _ViewfinderFrame extends StatelessWidget {
         ),
         child: Stack(
           children: [
+            Positioned.fill(
+              child: _ready
+                  ? FittedBox(
+                      fit: BoxFit.contain,
+                      child: SizedBox(
+                        width: _controller.value.size.width,
+                        height: _controller.value.size.height,
+                        child: VideoPlayer(_controller),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
             const Positioned.fill(
               child: IgnorePointer(child: _RuleOfThirds()),
             ),
@@ -268,49 +314,6 @@ class _ViewfinderFrame extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-            ),
-            // Centered under-construction pill.
-            Positioned.fill(
-              child: Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: narrow ? 14 : 18,
-                        vertical: narrow ? 8 : 10,
-                      ),
-                      decoration: BoxDecoration(
-                        color: MarketingPalette.warn.withValues(alpha: 0.08),
-                        border: Border.all(
-                          color:
-                              MarketingPalette.warn.withValues(alpha: 0.65),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        'UNDER CONSTRUCTION',
-                        style: mktMono(
-                          narrow ? 11 : 13,
-                          color: MarketingPalette.warn,
-                          letterSpacing: 3.2,
-                          weight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: narrow ? 14 : 18),
-                    Text(
-                      'Live demo lands with v1.',
-                      style: mktMono(
-                        narrow ? 10 : 11,
-                        color: MarketingPalette.muted,
-                        letterSpacing: 1.8,
-                        weight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
               ),
             ),
             Positioned(

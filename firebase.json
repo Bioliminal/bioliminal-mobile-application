@@ -3,7 +3,7 @@
     "public": "build/web",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "predeploy": [
-      "mkdir -p build/web/deck/demo && cp showcase/showcase-day-noon-dry-run-deck.html build/web/deck/index.html && cp showcase/QR_code_Showcase_Day-Deck.png build/web/deck/ && cp showcase/PXL_20260420_145134008.TS.mp4 build/web/deck/ && cp showcase/slide1.png build/web/deck/ && cp showcase/Logo.png build/web/deck/ && cp showcase/arnold.webp build/web/deck/ && cp showcase/aaron.png build/web/deck/ && cp showcase/demo.html build/web/deck/demo/index.html"
+      "mkdir -p build/web/deck/demo && cp showcase/showcase-day-noon-dry-run-deck.html build/web/deck/index.html && cp showcase/QR_code_Showcase_Day-Deck.png build/web/deck/ && cp showcase/slide1.png build/web/deck/ && cp showcase/Logo.png build/web/deck/ && cp showcase/arnold.webp build/web/deck/ && cp showcase/aaron.png build/web/deck/ && cp showcase/demo.html build/web/deck/demo/index.html && cp showcase/demo-video.mp4 build/web/"
     ],
     "rewrites": [
       {"source": "/deck", "destination": "/deck/index.html"},
