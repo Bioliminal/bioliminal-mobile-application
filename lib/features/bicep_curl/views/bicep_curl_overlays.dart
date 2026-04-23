@@ -320,3 +320,70 @@ class StatusBadge extends StatelessWidget {
     );
   }
 }
+
+// ---------------------------------------------------------------------------
+// Garment status chip — POSE ONLY when BLE disconnected, GARMENT ON when
+// connected. Tapping an offline chip starts a scan. Kept visually neutral
+// (not red/error) because pose-only is a supported mode, not a failure.
+// ---------------------------------------------------------------------------
+
+class GarmentStatusChip extends StatelessWidget {
+  const GarmentStatusChip({
+    super.key,
+    required this.connected,
+    this.onTapWhenOffline,
+  });
+
+  final bool connected;
+  final VoidCallback? onTapWhenOffline;
+
+  @override
+  Widget build(BuildContext context) {
+    final label = connected ? 'GARMENT ON' : 'POSE ONLY';
+    final bg = connected
+        ? BioliminalTheme.accent.withValues(alpha: 0.85)
+        : Colors.white.withValues(alpha: 0.12);
+    final fg = connected ? Colors.black : Colors.white.withValues(alpha: 0.85);
+    final border = connected
+        ? null
+        : Border.all(
+            color: Colors.white.withValues(alpha: 0.28),
+            width: 1,
+          );
+
+    final chip = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(16),
+        border: border,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            connected ? Icons.bluetooth_connected : Icons.videocam_outlined,
+            size: 14,
+            color: fg,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: fg,
+              fontSize: 11,
+              letterSpacing: 1.6,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (connected || onTapWhenOffline == null) return chip;
+    return Tooltip(
+      message: 'Tap to pair Bioliminal Garment for EMG tracking',
+      child: GestureDetector(onTap: onTapWhenOffline, child: chip),
+    );
+  }
+}

@@ -56,6 +56,9 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
       });
     });
 
+    final hw = ref.watch(hardwareControllerProvider);
+    final connected = hw == HardwareConnectionState.connected;
+
     return Container(
       height: widget.height,
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -63,29 +66,55 @@ class _MuscleActivityOverlayState extends ConsumerState<MuscleActivityOverlay> {
         color: Colors.black.withValues(alpha: 0.35),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
-        children: [
-          Text(
-            'MUSCLE',
+      child: connected ? _sparklineRow() : _offlinePlaceholder(),
+    );
+  }
+
+  Widget _sparklineRow() {
+    return Row(
+      children: [
+        Text(
+          'MUSCLE',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 10,
+            letterSpacing: 2,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: CustomPaint(
+            painter: _SparklinePainter(
+              values: List<double>.from(_ring),
+              color: BioliminalTheme.accent,
+            ),
+            size: Size.infinite,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _offlinePlaceholder() {
+    final fg = Colors.white.withValues(alpha: 0.5);
+    return Row(
+      children: [
+        Icon(Icons.sensors_off, size: 16, color: fg),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(
+            'GARMENT OFFLINE  ·  VISION-ONLY MODE',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.7),
-              fontSize: 10,
-              letterSpacing: 2,
+              color: fg,
+              fontSize: 11,
+              letterSpacing: 1.6,
               fontWeight: FontWeight.w600,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: CustomPaint(
-              painter: _SparklinePainter(
-                values: List<double>.from(_ring),
-                color: BioliminalTheme.accent,
-              ),
-              size: Size.infinite,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

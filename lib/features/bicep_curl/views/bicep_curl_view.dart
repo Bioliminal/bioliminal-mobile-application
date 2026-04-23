@@ -304,21 +304,14 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
             builder: (context, ref, _) {
               final hw = ref.watch(hardwareControllerProvider);
               final connected = hw == HardwareConnectionState.connected;
-              return IconButton(
-                icon: Icon(
-                  connected
-                      ? Icons.bluetooth_connected
-                      : Icons.bluetooth_disabled,
-                  color: connected ? BioliminalTheme.accent : Colors.white54,
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: GarmentStatusChip(
+                  connected: connected,
+                  onTapWhenOffline: () => ref
+                      .read(hardwareControllerProvider.notifier)
+                      .startScan(),
                 ),
-                tooltip: connected
-                    ? 'Garment connected — EMG fatigue tracking on'
-                    : 'Optional: connect Bioliminal Garment for EMG fatigue tracking',
-                onPressed: connected
-                    ? null
-                    : () => ref
-                          .read(hardwareControllerProvider.notifier)
-                          .startScan(),
               );
             },
           ),
