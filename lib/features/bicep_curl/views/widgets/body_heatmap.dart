@@ -189,8 +189,8 @@ class _FormOverTimeStrip extends StatelessWidget {
 
     return _PanelLabeled(
       index: '01',
-      title: 'FORM OVER TIME',
-      subtitle: 'COMPENSATION PATTERNS · POSE-INFERRED',
+      title: 'COMPENSATION PATTERNS',
+      subtitle: 'POSE-INFERRED · PER REP',
       child: Padding(
         padding: const EdgeInsets.only(top: 4),
         child: Column(

@@ -67,7 +67,7 @@ void main() {
       await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
       await tester.pump();
 
-      expect(find.text('FORM OVER TIME'), findsOneWidget);
+      expect(find.text('COMPENSATION PATTERNS'), findsOneWidget);
       expect(find.text('SHOULDER RISE'), findsOneWidget);
       expect(find.text('FORWARD LEAN'), findsOneWidget);
       expect(find.text('trapezius · anterior deltoid'), findsOneWidget);
@@ -120,7 +120,7 @@ void main() {
       await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
       await tester.pump();
 
-      expect(find.text('FORM OVER TIME'), findsNothing);
+      expect(find.text('COMPENSATION PATTERNS'), findsNothing);
     });
   });
 
