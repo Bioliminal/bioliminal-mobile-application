@@ -299,6 +299,7 @@ class _RepTooFastBannerState extends State<RepTooFastBanner>
             opacity = 1 - u;
             offsetY = 0;
           }
+          opacity = opacity.clamp(0.0, 1.0);
           if (opacity == 0) return const SizedBox.shrink();
           return SafeArea(
             child: Padding(
@@ -428,6 +429,7 @@ class _FormBannerState extends State<FormBanner>
             opacity = 1 - u;
             offsetY = 0;
           }
+          opacity = opacity.clamp(0.0, 1.0);
           if (opacity == 0) return const SizedBox.shrink();
           final ev = _lastShown;
           if (ev == null) return const SizedBox.shrink();
