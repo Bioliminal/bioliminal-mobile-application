@@ -1,257 +1,29 @@
-import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme.dart';
 import '../../../landing/widgets/marketing_tokens.dart';
-import '../../models/compensation_reference.dart';
+import '../../models/cue_decision.dart';
 import '../../models/session_log.dart';
 
-/// Per-frame muscle engagement values, normalized to `[0, 1]`. Drives the
-/// brightness of each muscle region in [BodyHeatmapPanel].
-class MuscleActivations {
-  const MuscleActivations({
-    required this.bicep,
-    required this.shoulder,
-    required this.trap,
-    required this.erector,
-  });
-
-  final double bicep; // measured (real EMG)
-  final double shoulder; // inferred from pose
-  final double trap; // inferred from pose
-  final double erector; // inferred from pose
-
-  static const zero = MuscleActivations(
-    bicep: 0,
-    shoulder: 0,
-    trap: 0,
-    erector: 0,
-  );
-
-  /// Decodes an absolute sample index (0..log.reps.length*samplesPerRep-1)
-  /// into an activation snapshot. Measured bicep reads envelope samples
-  /// directly (or synthesizes a half-sine for legacy reps without
-  /// per-sample data); inferred channels step at rep boundaries off
-  /// per-rep pose drift. Bicep has a 0.4 visibility floor so the measured
-  /// panel never fully darkens mid-rep. Trap rides at 0.85× shoulder
-  /// because trap engagement is a synergist of shoulder drift.
-  static MuscleActivations fromLog({
-    required SessionLog log,
-    required int absoluteSample,
-    required double maxSampleValue,
-    int samplesPerRep = 50,
-  }) {
-    if (log.reps.isEmpty) return zero;
-    final repIdx = (absoluteSample ~/ samplesPerRep)
-        .clamp(0, log.reps.length - 1);
-    final within = absoluteSample % samplesPerRep;
-    final rep = log.reps[repIdx];
-
-    final samples = rep.envelopeSamples;
-    final rawBicep = samples != null && within < samples.length
-        ? samples[within]
-        : _syntheticSample(
-            peakEnv: rep.peakEnv,
-            withinRep: within,
-            samplesPerRep: samplesPerRep,
-          );
-    final bicepNorm = maxSampleValue > 0
-        ? (rawBicep / maxSampleValue).clamp(0.0, 1.0)
-        : 0.0;
-
-    final delta = rep.poseDelta;
-    final shoulder = delta == null
-        ? 0.0
-        : (delta.shoulderDriftDeg.abs() / 15.0).clamp(0.0, 1.0);
-    final erector = delta == null
-        ? 0.0
-        : (delta.torsoPitchDeltaDeg.abs() / 20.0).clamp(0.0, 1.0);
-
-    return MuscleActivations(
-      bicep: math.max(bicepNorm * 0.6 + 0.4, 0.4),
-      shoulder: shoulder,
-      trap: shoulder * 0.85,
-      erector: erector,
-    );
-  }
-
-  static double _syntheticSample({
-    required double peakEnv,
-    required int withinRep,
-    required int samplesPerRep,
-  }) {
-    final phase = (withinRep / (samplesPerRep - 1)) * math.pi;
-    return peakEnv * math.sin(phase);
-  }
-}
-
-enum HeatmapMode { measured, inferred }
-
-/// Side-by-side measured + inferred body heatmap with a continuous
-/// within-rep scrub bar. Auto-plays through the full session at ~14 ms
-/// per envelope sample (50 samples per rep ≈ 700 ms per rep visually).
+/// Debrief panel for bicep-curl form. Renders two per-rep signed bar charts
+/// (shoulder rise + forward lean) against the profile's compensation
+/// thresholds.
 ///
-/// Honest labeling is non-negotiable. The MEASURED panel shows real
-/// bicep EMG sample-by-sample within each rep (smooth concentric→peak→
-/// eccentric trajectory); the INFERRED panel shows kinematic estimates
-/// derived from per-rep pose drift, so it steps at rep boundaries
-/// rather than animating within a rep — which is the truth: we only
-/// have one pose summary per rep window.
-///
-/// Sessions saved before the continuous-heatmap commit have null
-/// envelopeSamples; debrief synthesizes a half-sine peaked mid-rep
-/// from the stored peakEnv so old sessions still animate.
-class BicepCurlHeatmapSection extends StatefulWidget {
-  const BicepCurlHeatmapSection({super.key, required this.log});
+/// Why a bar chart: the underlying pose data is one signed peak per rep
+/// per signal. A heatmap-style glow on a silhouette pretended to be
+/// spatial and continuous; it isn't. A bar chart reveals the sequence
+/// (fatigue-driven drift across reps, sporadic bad reps) that a per-frame
+/// glow hid.
+class BicepCurlFormSection extends StatelessWidget {
+  const BicepCurlFormSection({super.key, required this.log});
+
   final SessionLog log;
 
   @override
-  State<BicepCurlHeatmapSection> createState() =>
-      _BicepCurlHeatmapSectionState();
-}
-
-class _BicepCurlHeatmapSectionState extends State<BicepCurlHeatmapSection> {
-  static const int _samplesPerRep = 50;
-  static const Duration _frameInterval = Duration(milliseconds: 14);
-
-  int _absoluteSample = 0;
-  Timer? _autoPlay;
-  bool _playing = true;
-  late double _maxSampleValue;
-
-  @override
-  void initState() {
-    super.initState();
-    _maxSampleValue = _computeMaxSampleValue();
-    if (widget.log.reps.isNotEmpty) _startAutoPlay();
-  }
-
-  @override
-  void didUpdateWidget(covariant BicepCurlHeatmapSection oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.log != widget.log) {
-      _maxSampleValue = _computeMaxSampleValue();
-    }
-  }
-
-  @override
-  void dispose() {
-    _autoPlay?.cancel();
-    super.dispose();
-  }
-
-  int get _totalSamples =>
-      widget.log.reps.length * _samplesPerRep;
-
-  void _startAutoPlay() {
-    _autoPlay?.cancel();
-    _autoPlay = Timer.periodic(_frameInterval, (_) {
-      if (!mounted) return;
-      setState(() {
-        _absoluteSample = (_absoluteSample + 1) % _totalSamples;
-      });
-    });
-  }
-
-  void _togglePlay() {
-    setState(() {
-      _playing = !_playing;
-      if (_playing) {
-        _startAutoPlay();
-      } else {
-        _autoPlay?.cancel();
-      }
-    });
-  }
-
-  void _jumpTo(int absoluteSample) {
-    setState(() {
-      _absoluteSample = absoluteSample.clamp(0, _totalSamples - 1);
-      if (_playing) _startAutoPlay(); // restart timer from new position
-    });
-  }
-
-  double _computeMaxSampleValue() {
-    var max = 0.0;
-    for (final rep in widget.log.reps) {
-      final samples = rep.envelopeSamples;
-      if (samples != null) {
-        for (final v in samples) {
-          if (v > max) max = v;
-        }
-      } else if (rep.peakEnv > max) {
-        max = rep.peakEnv;
-      }
-    }
-    return max;
-  }
-
-  /// Decodes an absolute sample index into (rep index, within-rep index).
-  ({int rep, int within}) _decode(int absoluteSample) {
-    final repIdx = (absoluteSample ~/ _samplesPerRep)
-        .clamp(0, widget.log.reps.length - 1);
-    final within = absoluteSample % _samplesPerRep;
-    return (rep: repIdx, within: within);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.log.reps.isEmpty) {
-      return const SizedBox.shrink();
-    }
-    final activations = MuscleActivations.fromLog(
-      log: widget.log,
-      absoluteSample: _absoluteSample,
-      maxSampleValue: _maxSampleValue,
-      samplesPerRep: _samplesPerRep,
-    );
-    final (rep: currentRep, within: _) = _decode(_absoluteSample);
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            Expanded(
-              child: _PanelLabeled(
-                index: '01',
-                title: 'MEASURED',
-                subtitle: 'REAL EMG · BICEPS BRACHII',
-                child: BodyHeatmapPanel(
-                  activations: activations,
-                  mode: HeatmapMode.measured,
-                  armSide: widget.log.armSide,
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _PanelLabeled(
-                index: '02',
-                title: 'INFERRED',
-                subtitle: 'POSE SYNERGISTS · ESTIMATED',
-                child: BodyHeatmapPanel(
-                  activations: activations,
-                  mode: HeatmapMode.inferred,
-                  armSide: widget.log.armSide,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 14),
-        _ScrubRow(
-          totalSamples: _totalSamples,
-          currentSample: _absoluteSample,
-          repNumber: currentRep + 1,
-          repCount: widget.log.reps.length,
-          playing: _playing,
-          onTogglePlay: _togglePlay,
-          onJump: _jumpTo,
-        ),
-      ],
-    );
+    if (log.reps.isEmpty) return const SizedBox.shrink();
+    return _FormOverTimeStrip(log: log);
   }
 }
 
@@ -280,50 +52,9 @@ class _PanelLabeled extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  index,
-                  style: mktMono(
-                    10,
-                    color: MarketingPalette.signal,
-                    letterSpacing: 1.6,
-                    weight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 12,
-                  height: 1,
-                  color: MarketingPalette.signal,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    title,
-                    style: mktMono(
-                      11,
-                      color: MarketingPalette.text,
-                      letterSpacing: 2.6,
-                      weight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: mktMono(
-                8,
-                color: MarketingPalette.subtle,
-                letterSpacing: 1.6,
-                weight: FontWeight.w500,
-              ),
-            ),
+            _PanelHeader(index: index, title: title, subtitle: subtitle),
             const SizedBox(height: 10),
-            AspectRatio(aspectRatio: 0.7, child: child),
+            child,
           ],
         ),
       ),
@@ -331,82 +62,62 @@ class _PanelLabeled extends StatelessWidget {
   }
 }
 
-class _ScrubRow extends StatelessWidget {
-  const _ScrubRow({
-    required this.totalSamples,
-    required this.currentSample,
-    required this.repNumber,
-    required this.repCount,
-    required this.playing,
-    required this.onTogglePlay,
-    required this.onJump,
+class _PanelHeader extends StatelessWidget {
+  const _PanelHeader({
+    required this.index,
+    required this.title,
+    required this.subtitle,
   });
 
-  final int totalSamples;
-  final int currentSample;
-  final int repNumber;
-  final int repCount;
-  final bool playing;
-  final VoidCallback onTogglePlay;
-  final ValueChanged<int> onJump;
+  final String index;
+  final String title;
+  final String subtitle;
 
   @override
   Widget build(BuildContext context) {
-    final repStr = repNumber.toString().padLeft(2, '0');
-    final totalStr = repCount.toString().padLeft(2, '0');
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        IconButton(
-          icon: Icon(
-            playing ? Icons.pause : Icons.play_arrow,
-            color: MarketingPalette.text,
-            size: 18,
-          ),
-          onPressed: onTogglePlay,
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              index,
+              style: mktMono(
+                10,
+                color: MarketingPalette.signal,
+                letterSpacing: 1.6,
+                weight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              width: 12,
+              height: 1,
+              color: MarketingPalette.signal,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                title,
+                style: mktMono(
+                  11,
+                  color: MarketingPalette.text,
+                  letterSpacing: 2.6,
+                  weight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 10),
+        const SizedBox(height: 4),
         Text(
-          'REP',
+          subtitle,
           style: mktMono(
-            9,
+            8,
             color: MarketingPalette.subtle,
-            letterSpacing: 2.2,
-            weight: FontWeight.w600,
-          ),
-        ),
-        const SizedBox(width: 6),
-        Text(
-          '$repStr / $totalStr',
-          style: mktMono(
-            12,
-            color: MarketingPalette.text,
-            letterSpacing: 1.4,
+            letterSpacing: 1.6,
             weight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: SliderTheme(
-            data: SliderTheme.of(context).copyWith(
-              trackHeight: 1,
-              thumbShape:
-                  const RoundSliderThumbShape(enabledThumbRadius: 5),
-              activeTrackColor: BioliminalTheme.accent,
-              inactiveTrackColor: MarketingPalette.hairline,
-              thumbColor: BioliminalTheme.accent,
-              overlayShape: SliderComponentShape.noOverlay,
-            ),
-            child: Slider(
-              min: 0,
-              max: (totalSamples - 1).toDouble(),
-              value: currentSample.toDouble().clamp(
-                    0.0,
-                    (totalSamples - 1).toDouble(),
-                  ),
-              onChanged: (v) => onJump(v.round()),
-            ),
           ),
         ),
       ],
@@ -415,156 +126,349 @@ class _ScrubRow extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// BodyHeatmapPanel — the actual painter
+// Form-over-time strip — per-rep signed bar charts for pose compensation
 // ---------------------------------------------------------------------------
 
-class BodyHeatmapPanel extends StatelessWidget {
-  const BodyHeatmapPanel({
-    super.key,
-    required this.activations,
-    required this.mode,
-    required this.armSide,
-  });
+/// Pure classification for a single rep's signed peak delta against the
+/// profile threshold. Exposed so tests can exercise the bucketing
+/// directly without reaching into the painter.
+///
+/// Semantics: positive bars (compensation direction — shoulder up /
+/// torso forward) bucket by threshold multiplier. Negative bars (slump /
+/// back-lean) are never compensation; they bucket to [negative] and draw
+/// below the axis in muted grey regardless of magnitude.
+enum BarBucket {
+  /// No pose data for this rep (calibration window or frame gap).
+  missing,
 
-  final MuscleActivations activations;
-  final HeatmapMode mode;
-  final ArmSide armSide;
+  /// Negative signed delta — drawn downward in muted grey. Not scored.
+  negative,
+
+  /// `[0, 0.5×)` threshold. Clean; dim grey.
+  clean,
+
+  /// `[0.5×, 1×]` threshold. Approaching; amber.
+  amber,
+
+  /// `> 1×` threshold. Cue-firing range; red.
+  red,
+}
+
+BarBucket bucketFor(double? signed, double threshold) {
+  if (signed == null) return BarBucket.missing;
+  if (signed < 0) return BarBucket.negative;
+  if (signed > threshold) return BarBucket.red;
+  if (signed >= threshold * 0.5) return BarBucket.amber;
+  return BarBucket.clean;
+}
+
+class _FormOverTimeStrip extends StatelessWidget {
+  const _FormOverTimeStrip({required this.log});
+
+  final SessionLog log;
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _BodyHeatmapPainter(
-        activations: activations,
-        mode: mode,
-        armSide: armSide,
+    final shoulderSeries = <double?>[
+      for (final r in log.reps) r.poseDelta?.shoulderDriftDeg,
+    ];
+    final leanSeries = <double?>[
+      for (final r in log.reps) r.poseDelta?.torsoPitchDeltaDeg,
+    ];
+
+    final shoulderCueReps = <int>{
+      for (final e in log.cueEvents)
+        if (e.content == CueContent.shoulderHike) e.repNum - 1,
+    };
+    final leanCueReps = <int>{
+      for (final e in log.cueEvents)
+        if (e.content == CueContent.torsoSwing) e.repNum - 1,
+    };
+
+    final thresholds = log.profile.compensation;
+
+    return _PanelLabeled(
+      index: '01',
+      title: 'COMPENSATION PATTERNS',
+      subtitle: 'POSE-INFERRED · PER REP',
+      child: Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _SignedRepBarChart(
+              label: 'SHOULDER RISE',
+              muscles: 'trapezius · anterior deltoid',
+              signedValues: shoulderSeries,
+              threshold: thresholds.shoulderDriftDeg,
+              cueMarkerReps: shoulderCueReps,
+            ),
+            const SizedBox(height: 20),
+            _SignedRepBarChart(
+              label: 'FORWARD LEAN',
+              muscles: 'erector spinae · hip flexors',
+              signedValues: leanSeries,
+              threshold: thresholds.torsoPitchDeltaDeg,
+              cueMarkerReps: leanCueReps,
+            ),
+            const SizedBox(height: 12),
+            _RepAxisLabel(repCount: log.reps.length),
+          ],
+        ),
       ),
-      size: Size.infinite,
     );
   }
 }
 
-class _BodyHeatmapPainter extends CustomPainter {
-  _BodyHeatmapPainter({
-    required this.activations,
-    required this.mode,
-    required this.armSide,
+class _RepAxisLabel extends StatelessWidget {
+  const _RepAxisLabel({required this.repCount});
+
+  final int repCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = mktMono(
+      9,
+      color: MarketingPalette.subtle,
+      letterSpacing: 2.2,
+      weight: FontWeight.w500,
+    );
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('REP 01', style: style),
+        Text('REP ${repCount.toString().padLeft(2, '0')}', style: style),
+      ],
+    );
+  }
+}
+
+class _SignedRepBarChart extends StatelessWidget {
+  const _SignedRepBarChart({
+    required this.label,
+    required this.muscles,
+    required this.signedValues,
+    required this.threshold,
+    required this.cueMarkerReps,
   });
 
-  final MuscleActivations activations;
-  final HeatmapMode mode;
-  final ArmSide armSide;
+  final String label;
+  final String muscles;
+  final List<double?> signedValues;
+  final double threshold;
+  final Set<int> cueMarkerReps;
+
+  @override
+  Widget build(BuildContext context) {
+    final positiveValues = signedValues
+        .whereType<double>()
+        .where((v) => v > 0)
+        .toList();
+    final negativeValues = signedValues
+        .whereType<double>()
+        .where((v) => v < 0)
+        .toList();
+    final observedMaxPos = positiveValues.isEmpty
+        ? 0.0
+        : positiveValues.reduce(math.max);
+    final observedMaxNeg = negativeValues.isEmpty
+        ? 0.0
+        : negativeValues.map((v) => v.abs()).reduce(math.max);
+
+    final peakLabelValue = signedValues
+        .whereType<double>()
+        .fold<double>(0, (prev, v) => v > prev ? v : prev);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                label,
+                style: mktMono(
+                  10,
+                  color: MarketingPalette.text,
+                  letterSpacing: 2.4,
+                  weight: FontWeight.w700,
+                ),
+              ),
+            ),
+            Text(
+              'peak ${_formatDeg(peakLabelValue)}',
+              style: mktMono(
+                9,
+                color: MarketingPalette.muted,
+                letterSpacing: 1.8,
+                weight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          muscles,
+          style: mktMono(
+            8,
+            color: MarketingPalette.subtle,
+            letterSpacing: 1.4,
+            weight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return CustomPaint(
+              size: Size(constraints.maxWidth, 78),
+              painter: _RepBarPainter(
+                signedValues: signedValues,
+                threshold: threshold,
+                observedMaxPos: observedMaxPos,
+                observedMaxNeg: observedMaxNeg,
+                cueMarkerReps: cueMarkerReps,
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+String _formatDeg(double deg) {
+  if (deg == 0) return '0°';
+  final sign = deg > 0 ? '+' : '-';
+  return '$sign${deg.abs().toStringAsFixed(0)}°';
+}
+
+class _RepBarPainter extends CustomPainter {
+  _RepBarPainter({
+    required this.signedValues,
+    required this.threshold,
+    required this.observedMaxPos,
+    required this.observedMaxNeg,
+    required this.cueMarkerReps,
+  });
+
+  final List<double?> signedValues;
+  final double threshold;
+  final double observedMaxPos;
+  final double observedMaxNeg;
+  final Set<int> cueMarkerReps;
+
+  static const double _markerGutter = 10;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final outline = Paint()
-      ..color = Colors.white.withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5
-      ..strokeCap = StrokeCap.round;
+    if (signedValues.isEmpty) return;
 
-    _drawSilhouette(canvas, size, outline);
+    final posMax = math.max(threshold * 1.5, observedMaxPos);
+    final negMax = math.max(threshold * 0.5, observedMaxNeg);
+    final totalRange = posMax + negMax;
+    if (totalRange <= 0) return;
 
-    final isCurlingRight = armSide == ArmSide.right;
-    final mirror = isCurlingRight ? 1.0 : -1.0;
+    final chartTop = _markerGutter;
+    final chartBottom = size.height - 4;
+    final chartHeight = chartBottom - chartTop;
+    if (chartHeight <= 0) return;
 
-    // Region centers in normalized coords. Origin at top-left.
-    final bicep = Offset(0.5 + 0.18 * mirror, 0.42);
-    final shoulder = Offset(0.5 + 0.20 * mirror, 0.28);
-    final trap = Offset(0.5 + 0.10 * mirror, 0.22);
-    final erector = const Offset(0.5, 0.55);
+    final axisY = chartTop + chartHeight * (posMax / totalRange);
 
-    if (mode == HeatmapMode.measured) {
-      _drawGlow(canvas, size, bicep, activations.bicep, solid: true);
-    } else {
-      _drawGlow(canvas, size, shoulder, activations.shoulder, solid: false);
-      _drawGlow(canvas, size, trap, activations.trap, solid: false);
-      _drawGlow(canvas, size, erector, activations.erector, solid: false);
+    final thresholdY = axisY - (threshold / totalRange) * chartHeight;
+    final hairline = Paint()
+      ..color = MarketingPalette.hairline
+      ..strokeWidth = 1;
+    const dashLen = 4.0;
+    const dashGap = 3.0;
+    var x = 0.0;
+    while (x < size.width) {
+      canvas.drawLine(
+        Offset(x, thresholdY),
+        Offset(math.min(x + dashLen, size.width), thresholdY),
+        hairline,
+      );
+      x += dashLen + dashGap;
     }
-  }
 
-  void _drawSilhouette(Canvas canvas, Size size, Paint outline) {
-    Offset n(double x, double y) => Offset(x * size.width, y * size.height);
-
-    // Head
-    canvas.drawCircle(n(0.5, 0.10), size.width * 0.07, outline);
-    // Neck
-    canvas.drawLine(n(0.5, 0.135), n(0.5, 0.18), outline);
-    // Shoulders
-    canvas.drawLine(n(0.30, 0.22), n(0.70, 0.22), outline);
-    // Torso
-    canvas.drawLine(n(0.30, 0.22), n(0.34, 0.62), outline);
-    canvas.drawLine(n(0.70, 0.22), n(0.66, 0.62), outline);
-    // Hip line
-    canvas.drawLine(n(0.34, 0.62), n(0.66, 0.62), outline);
-    // Arms (down at sides)
-    canvas.drawLine(n(0.30, 0.22), n(0.22, 0.42), outline);
-    canvas.drawLine(n(0.22, 0.42), n(0.20, 0.62), outline);
-    canvas.drawLine(n(0.70, 0.22), n(0.78, 0.42), outline);
-    canvas.drawLine(n(0.78, 0.42), n(0.80, 0.62), outline);
-    // Legs
-    canvas.drawLine(n(0.40, 0.62), n(0.40, 0.92), outline);
-    canvas.drawLine(n(0.60, 0.62), n(0.60, 0.92), outline);
-  }
-
-  void _drawGlow(
-    Canvas canvas,
-    Size size,
-    Offset normalizedCenter,
-    double intensity, {
-    required bool solid,
-  }) {
-    if (intensity <= 0.05) return;
-    final center = Offset(
-      normalizedCenter.dx * size.width,
-      normalizedCenter.dy * size.height,
+    canvas.drawLine(
+      Offset(0, axisY),
+      Offset(size.width, axisY),
+      Paint()
+        ..color = MarketingPalette.hairline
+        ..strokeWidth = 1,
     );
-    final radius = (solid ? 0.13 : 0.10) * size.width;
 
-    final core = solid ? BioliminalTheme.accent : Colors.purpleAccent;
+    final reps = signedValues.length;
+    final gap = reps <= 8 ? 4.0 : (reps <= 16 ? 2.5 : 1.5);
+    final totalGap = gap * (reps - 1).clamp(0, reps - 1);
+    final barWidth = math.max(1.5, (size.width - totalGap) / reps);
 
-    // Outer halo
-    final halo = Paint()
-      ..color = core.withValues(alpha: intensity * 0.30)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
-    canvas.drawCircle(center, radius * 1.6, halo);
+    for (var i = 0; i < reps; i++) {
+      final bucket = bucketFor(signedValues[i], threshold);
+      if (bucket == BarBucket.missing) continue;
 
-    // Core
-    final coreFill = Paint()
-      ..color = core.withValues(alpha: intensity * (solid ? 0.85 : 0.55));
-    canvas.drawCircle(center, radius, coreFill);
+      final signed = signedValues[i]!;
+      final barX = i * (barWidth + gap);
 
-    // Inferred-mode dotted outer ring — distinct visual signature so
-    // viewers aren't confused which channel is actually measured.
-    if (!solid) {
-      final ringPaint = Paint()
-        ..color = core.withValues(alpha: 0.7)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5;
-      _drawDottedCircle(canvas, center, radius * 1.25, ringPaint);
+      final color = _colorFor(bucket);
+      final fill = Paint()..color = color;
+
+      if (bucket == BarBucket.negative) {
+        final mag = signed.abs();
+        final h = (mag / totalRange) * chartHeight;
+        canvas.drawRect(
+          Rect.fromLTWH(barX, axisY, barWidth, h),
+          fill,
+        );
+      } else {
+        final h = (signed / totalRange) * chartHeight;
+        canvas.drawRect(
+          Rect.fromLTWH(barX, axisY - h, barWidth, h),
+          fill,
+        );
+
+        if (cueMarkerReps.contains(i)) {
+          _drawCueMarker(canvas, barX + barWidth / 2, axisY - h - 2);
+        }
+      }
     }
   }
 
-  void _drawDottedCircle(
-    Canvas canvas,
-    Offset center,
-    double radius,
-    Paint paint,
-  ) {
-    const dashCount = 18;
-    const arcAngle = 2 * math.pi / dashCount * 0.6;
-    final rect = Rect.fromCircle(center: center, radius: radius);
-    for (var i = 0; i < dashCount; i++) {
-      final start = i * 2 * math.pi / dashCount;
-      canvas.drawArc(rect, start, arcAngle, false, paint);
+  Color _colorFor(BarBucket bucket) {
+    switch (bucket) {
+      case BarBucket.clean:
+        return MarketingPalette.subtle;
+      case BarBucket.amber:
+        return MarketingPalette.warn;
+      case BarBucket.red:
+        return MarketingPalette.error;
+      case BarBucket.negative:
+        return MarketingPalette.subtle.withValues(alpha: 0.55);
+      case BarBucket.missing:
+        return Colors.transparent;
     }
+  }
+
+  void _drawCueMarker(Canvas canvas, double cx, double tipY) {
+    const half = 3.0;
+    const height = 5.0;
+    final path = Path()
+      ..moveTo(cx, tipY)
+      ..lineTo(cx - half, tipY - height)
+      ..lineTo(cx + half, tipY - height)
+      ..close();
+    canvas.drawPath(
+      path,
+      Paint()..color = MarketingPalette.error,
+    );
   }
 
   @override
-  bool shouldRepaint(covariant _BodyHeatmapPainter old) =>
-      old.activations.bicep != activations.bicep ||
-      old.activations.shoulder != activations.shoulder ||
-      old.activations.trap != activations.trap ||
-      old.activations.erector != activations.erector ||
-      old.mode != mode ||
-      old.armSide != armSide;
+  bool shouldRepaint(covariant _RepBarPainter old) =>
+      old.signedValues != signedValues ||
+      old.threshold != threshold ||
+      old.observedMaxPos != observedMaxPos ||
+      old.observedMaxNeg != observedMaxNeg ||
+      old.cueMarkerReps != cueMarkerReps;
 }

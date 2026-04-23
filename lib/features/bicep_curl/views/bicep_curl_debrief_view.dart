@@ -119,13 +119,13 @@ class _DebriefBody extends StatelessWidget {
                 const SizedBox(height: 44),
                 _InstrumentSection(
                   index: '02',
-                  title: 'Muscle activity.',
-                  signal: 'HEATMAP',
+                  title: 'Compensation patterns.',
+                  signal: 'POSE · PER REP',
                   body:
-                      'Measured bicep envelope, sample-by-sample. Inferred '
-                      'synergists step at rep boundaries — that is the truth '
-                      'of what pose can tell us.',
-                  child: BicepCurlHeatmapSection(log: log),
+                      'Per-rep shoulder rise and forward lean. Bars colored '
+                      'by how far past threshold the deviation went; red '
+                      'markers flag reps where a cue fired.',
+                  child: BicepCurlFormSection(log: log),
                 ),
                 const SizedBox(height: 44),
                 _InstrumentSection(
@@ -140,17 +140,8 @@ class _DebriefBody extends StatelessWidget {
                   child: CueTimeline(events: log.cueEvents),
                 ),
                 const SizedBox(height: 44),
-                _InstrumentSection(
-                  index: '04',
-                  title: 'Compensation.',
-                  signal: 'POSE DELTA',
-                  body: 'Reps where shoulder or torso drift exceeded '
-                      'profile thresholds.',
-                  child: _CompensationList(log: log),
-                ),
-                const SizedBox(height: 44),
                 const _InstrumentSection(
-                  index: '05',
+                  index: '04',
                   title: 'Trajectory.',
                   signal: 'HISTORY',
                   body: 'Form, first-fade rep, and peak envelope across '
@@ -525,115 +516,6 @@ class _InstrumentSection extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Compensation list
-// ---------------------------------------------------------------------------
-
-class _CompensationList extends StatelessWidget {
-  const _CompensationList({required this.log});
-  final SessionLog log;
-
-  @override
-  Widget build(BuildContext context) {
-    final events = <Widget>[];
-    for (final r in log.reps) {
-      final d = r.poseDelta;
-      if (d == null) continue;
-      if (!d.exceedsThresholds(log.profile.compensation)) continue;
-      if (events.isNotEmpty) {
-        events.add(Container(
-          height: 1,
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          color: MarketingPalette.hairline,
-        ));
-      }
-      events.add(
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            SizedBox(
-              width: 52,
-              child: Text(
-                'REP ${r.repNum.toString().padLeft(2, '0')}',
-                style: mktMono(
-                  10,
-                  color: MarketingPalette.muted,
-                  letterSpacing: 1.8,
-                  weight: FontWeight.w600,
-                ),
-              ),
-            ),
-            Expanded(
-              child: RichText(
-                text: TextSpan(
-                  style: mktBody(
-                    13,
-                    color: MarketingPalette.text,
-                    height: 1.4,
-                  ),
-                  children: [
-                    const TextSpan(
-                      text: 'shoulder ',
-                      style: TextStyle(color: MarketingPalette.muted),
-                    ),
-                    TextSpan(
-                      text: '${d.shoulderDriftDeg.toStringAsFixed(1)}°',
-                      style: const TextStyle(
-                        fontFamily: 'IBMPlexMono',
-                        color: MarketingPalette.text,
-                      ),
-                    ),
-                    const TextSpan(
-                      text: '   torso ',
-                      style: TextStyle(color: MarketingPalette.muted),
-                    ),
-                    TextSpan(
-                      text: '${d.torsoPitchDeltaDeg.toStringAsFixed(1)}°',
-                      style: const TextStyle(
-                        fontFamily: 'IBMPlexMono',
-                        color: MarketingPalette.text,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    if (events.isEmpty) {
-      return Row(
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: const BoxDecoration(
-              color: MarketingPalette.signal,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Text(
-            'CLEAN FORM ACROSS THE SET',
-            style: mktMono(
-              10,
-              color: MarketingPalette.signal,
-              letterSpacing: 2.4,
-              weight: FontWeight.w600,
-            ),
-          ),
-        ],
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: events,
     );
   }
 }

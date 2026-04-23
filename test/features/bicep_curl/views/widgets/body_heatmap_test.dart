@@ -1,195 +1,161 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:bioliminal/core/theme.dart';
 import 'package:bioliminal/features/bicep_curl/models/compensation_reference.dart';
+import 'package:bioliminal/features/bicep_curl/models/cue_decision.dart';
+import 'package:bioliminal/features/bicep_curl/models/cue_event.dart';
 import 'package:bioliminal/features/bicep_curl/models/cue_profile.dart';
 import 'package:bioliminal/features/bicep_curl/models/pose_delta.dart';
 import 'package:bioliminal/features/bicep_curl/models/rep_record.dart';
 import 'package:bioliminal/features/bicep_curl/models/session_log.dart';
 import 'package:bioliminal/features/bicep_curl/views/widgets/body_heatmap.dart';
+import 'package:bioliminal/features/landing/widgets/marketing_tokens.dart';
 
-/// Guards the pure activation math inside the body-heatmap widget —
-/// the mapping that powers the MEASURED + INFERRED panels. The
-/// rendering itself (a CustomPainter) is validated on-device; here
-/// we lock in the logic that's most likely to regress silently:
-/// - rep window decoding from an absolute sample index
-/// - per-sample lookup vs half-sine fallback for legacy reps
-/// - bicep visibility floor (0.4)
-/// - pose-drift → [0,1] normalization for synergists
-/// - trap = 0.85 × shoulder (handshake's synergist coupling)
+/// Guards the pure logic and render contract of the bicep-curl form strip.
+///   1. [bucketFor] — per-rep signed-delta → bar color bucketing.
+///   2. Widget-level behavior — labels, muscle subtitles, peak labels,
+///      and cue-event filtering.
 void main() {
-  group('MuscleActivations.fromLog', () {
-    test('empty log returns zero activations', () {
+  group('bucketFor', () {
+    const threshold = 14.0;
+
+    test('null signed delta is missing', () {
+      expect(bucketFor(null, threshold), BarBucket.missing);
+    });
+
+    test('negative signed delta buckets to negative regardless of magnitude',
+        () {
+      expect(bucketFor(-0.5, threshold), BarBucket.negative);
+      expect(bucketFor(-30.0, threshold), BarBucket.negative);
+    });
+
+    test('small positive delta below 0.5× threshold is clean', () {
+      expect(bucketFor(3.0, threshold), BarBucket.clean);
+      expect(bucketFor(6.9, threshold), BarBucket.clean);
+    });
+
+    test('positive delta in [0.5×, 1×] threshold band is amber', () {
+      expect(bucketFor(7.0, threshold), BarBucket.amber);
+      expect(bucketFor(10.0, threshold), BarBucket.amber);
+      expect(bucketFor(14.0, threshold), BarBucket.amber);
+    });
+
+    test('positive delta past threshold is red', () {
+      expect(bucketFor(14.01, threshold), BarBucket.red);
+      expect(bucketFor(25.0, threshold), BarBucket.red);
+    });
+  });
+
+  group('BicepCurlFormSection widget', () {
+    testWidgets('renders both strips with muscle subtitles', (tester) async {
+      final log = _makeLog([
+        _rep(
+          poseDelta: const PoseDelta(
+            shoulderDriftDeg: 5,
+            torsoPitchDeltaDeg: 10,
+          ),
+        ),
+        _rep(
+          poseDelta: const PoseDelta(
+            shoulderDriftDeg: 18,
+            torsoPitchDeltaDeg: 25,
+          ),
+        ),
+      ]);
+
+      await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
+      await tester.pump();
+
+      expect(find.text('COMPENSATION PATTERNS'), findsOneWidget);
+      expect(find.text('SHOULDER RISE'), findsOneWidget);
+      expect(find.text('FORWARD LEAN'), findsOneWidget);
+      expect(find.text('trapezius · anterior deltoid'), findsOneWidget);
+      expect(find.text('erector spinae · hip flexors'), findsOneWidget);
+    });
+
+    testWidgets('peak label reflects max signed positive delta per strip',
+        (tester) async {
+      final log = _makeLog([
+        _rep(
+          poseDelta: const PoseDelta(
+            shoulderDriftDeg: 7,
+            torsoPitchDeltaDeg: 12,
+          ),
+        ),
+        _rep(
+          poseDelta: const PoseDelta(
+            shoulderDriftDeg: 21,
+            torsoPitchDeltaDeg: 3,
+          ),
+        ),
+      ]);
+
+      await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
+      await tester.pump();
+
+      expect(find.text('peak +21°'), findsOneWidget);
+      expect(find.text('peak +12°'), findsOneWidget);
+    });
+
+    testWidgets('peak label shows 0° when there are no positive deltas',
+        (tester) async {
+      final log = _makeLog([
+        _rep(
+          poseDelta: const PoseDelta(
+            shoulderDriftDeg: -5,
+            torsoPitchDeltaDeg: -8,
+          ),
+        ),
+      ]);
+
+      await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
+      await tester.pump();
+
+      expect(find.text('peak 0°'), findsNWidgets(2));
+    });
+
+    testWidgets('empty reps list renders nothing', (tester) async {
       final log = _makeLog([]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 1.0,
-      );
-      expect(a.bicep, 0);
-      expect(a.shoulder, 0);
-      expect(a.trap, 0);
-      expect(a.erector, 0);
+      await tester.pumpWidget(_wrap(BicepCurlFormSection(log: log)));
+      await tester.pump();
+
+      expect(find.text('COMPENSATION PATTERNS'), findsNothing);
     });
+  });
 
-    test('measured panel reads per-sample envelope when available', () {
-      final rep = _rep(peakEnv: 100, envelopeSamples: _ramp(50, peak: 100));
-      final log = _makeLog([rep]);
+  group('cue marker filtering', () {
+    test(
+        'only shoulderHike/torsoSwing surface on the strips; '
+        'compensationDetected and repTooFast are filtered out', () {
+      final events = <CueEvent>[
+        _event(repNum: 1, content: CueContent.shoulderHike),
+        _event(repNum: 2, content: CueContent.torsoSwing),
+        _event(repNum: 3, content: CueContent.compensationDetected),
+        _event(repNum: 4, content: CueContent.repTooFast),
+        _event(repNum: 5, content: CueContent.fatigueFade),
+      ];
 
-      // Sample 25 is the peak of the ramp (100), so normalized bicep
-      // should saturate to its upper branch: bicep = 1.0 * 0.6 + 0.4 = 1.0
-      final atPeak = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 25,
-        maxSampleValue: 100,
-      );
-      expect(atPeak.bicep, closeTo(1.0, 1e-9));
+      final shoulderReps = <int>{
+        for (final e in events)
+          if (e.content == CueContent.shoulderHike) e.repNum - 1,
+      };
+      final leanReps = <int>{
+        for (final e in events)
+          if (e.content == CueContent.torsoSwing) e.repNum - 1,
+      };
 
-      // Sample 0 is bottom of the ramp (0), bicep falls to the 0.4 floor.
-      final atBottom = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 100,
-      );
-      expect(atBottom.bicep, closeTo(0.4, 1e-9));
+      expect(shoulderReps, {0});
+      expect(leanReps, {1});
     });
+  });
 
-    test('falls back to half-sine for legacy reps with no envelopeSamples',
-        () {
-      final rep = _rep(peakEnv: 100, envelopeSamples: null);
-      final log = _makeLog([rep]);
-
-      // Half-sine peaks at the middle sample, so sample 25 of 50 ~= 1.0.
-      final mid = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 25,
-        maxSampleValue: 100,
-      );
-      expect(mid.bicep, closeTo(1.0, 1e-3));
-
-      // Edges of the half-sine are near zero → bicep at the 0.4 floor.
-      final edge = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 100,
-      );
-      expect(edge.bicep, closeTo(0.4, 1e-9));
-    });
-
-    test('bicep visibility floor is 0.4 even when maxSampleValue is 0',
-        () {
-      final rep = _rep(peakEnv: 100, envelopeSamples: _flat(50, 0));
-      final log = _makeLog([rep]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 10,
-        maxSampleValue: 0, // degenerate guard
-      );
-      expect(a.bicep, 0.4);
-    });
-
-    test('inferred shoulder scales pose drift into [0,1] with 15° saturation',
-        () {
-      final rep = _rep(
-        peakEnv: 0,
-        poseDelta: const PoseDelta(
-          shoulderDriftDeg: 7.5,
-          torsoPitchDeltaDeg: 0,
-        ),
-      );
-      final log = _makeLog([rep]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 100,
-      );
-      // 7.5° / 15° = 0.5
-      expect(a.shoulder, closeTo(0.5, 1e-9));
-      // Trap tracks shoulder at 0.85 (synergist coupling per handshake).
-      expect(a.trap, closeTo(0.5 * 0.85, 1e-9));
-    });
-
-    test('inferred erector saturates at 20° of torso pitch', () {
-      final rep = _rep(
-        peakEnv: 0,
-        poseDelta: const PoseDelta(
-          shoulderDriftDeg: 0,
-          // Past saturation point — clamp to 1.0.
-          torsoPitchDeltaDeg: 40,
-        ),
-      );
-      final log = _makeLog([rep]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 100,
-      );
-      expect(a.erector, 1.0);
-    });
-
-    test('null poseDelta (calibration rep) zeroes synergists', () {
-      final rep = _rep(peakEnv: 100, poseDelta: null);
-      final log = _makeLog([rep]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 0,
-        maxSampleValue: 100,
-      );
-      expect(a.shoulder, 0);
-      expect(a.trap, 0);
-      expect(a.erector, 0);
-    });
-
-    test('absoluteSample decodes into the correct rep window', () {
-      final rep1 = _rep(
-        peakEnv: 50,
-        poseDelta: const PoseDelta(
-          shoulderDriftDeg: 0,
-          torsoPitchDeltaDeg: 0,
-        ),
-      );
-      final rep2 = _rep(
-        peakEnv: 50,
-        poseDelta: const PoseDelta(
-          // Distinguishable drift so we know which rep we landed in.
-          shoulderDriftDeg: 15,
-          torsoPitchDeltaDeg: 0,
-        ),
-      );
-      final log = _makeLog([rep1, rep2]);
-
-      // Sample 49 is the final frame of rep 1.
-      final endOfRep1 = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 49,
-        maxSampleValue: 100,
-      );
-      expect(endOfRep1.shoulder, 0);
-
-      // Sample 50 is the first frame of rep 2.
-      final startOfRep2 = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 50,
-        maxSampleValue: 100,
-      );
-      expect(startOfRep2.shoulder, 1.0); // 15° / 15° = 1.0
-    });
-
-    test('absoluteSample past the end clamps to the last rep', () {
-      final rep = _rep(
-        peakEnv: 50,
-        poseDelta: const PoseDelta(
-          shoulderDriftDeg: 15,
-          torsoPitchDeltaDeg: 0,
-        ),
-      );
-      final log = _makeLog([rep]);
-      final a = MuscleActivations.fromLog(
-        log: log,
-        absoluteSample: 500,
-        maxSampleValue: 100,
-      );
-      // Still in rep 0's data — shoulder should be saturated at 1.0.
-      expect(a.shoulder, 1.0);
+  group('palette tokens (sanity)', () {
+    test('tokens resolve to the expected palette entries', () {
+      expect(MarketingPalette.error, const Color(0xFFF87171));
+      expect(MarketingPalette.warn, const Color(0xFFF59E0B));
+      expect(MarketingPalette.subtle, const Color(0xFF475569));
+      expect(BioliminalTheme.accent, const Color(0xFF38BDF8));
     });
   });
 }
@@ -198,19 +164,41 @@ void main() {
 // Builders
 // ---------------------------------------------------------------------------
 
+Widget _wrap(Widget child) => MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: child,
+          ),
+        ),
+      ),
+    );
+
 RepRecord _rep({
-  required double peakEnv,
-  List<double>? envelopeSamples,
+  double peakEnv = 50,
   PoseDelta? poseDelta,
+  int repNum = 1,
 }) {
   return RepRecord(
-    repNum: 1,
+    repNum: repNum,
     tStartUs: 0,
     tPeakUs: 500000,
     tEndUs: 1000000,
     peakEnv: peakEnv,
     poseDelta: poseDelta,
-    envelopeSamples: envelopeSamples,
+  );
+}
+
+CueEvent _event({
+  required int repNum,
+  required CueContent content,
+}) {
+  return CueEvent(
+    repNum: repNum,
+    content: content,
+    firedAt: DateTime(2026, 4, 18),
+    channelsFired: const {},
   );
 }
 
@@ -226,15 +214,3 @@ SessionLog _makeLog(List<RepRecord> reps) {
     bleDroppedDuringSet: false,
   );
 }
-
-/// Linear 0 → peak → 0 ramp over `count` samples, peak at the middle.
-List<double> _ramp(int count, {required double peak}) {
-  final mid = count ~/ 2;
-  return List<double>.generate(count, (i) {
-    final d = (i - mid).abs();
-    return peak * (1 - d / mid).clamp(0.0, 1.0);
-  });
-}
-
-List<double> _flat(int count, double v) =>
-    List<double>.filled(count, v);
