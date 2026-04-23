@@ -143,13 +143,38 @@ class _OnboardingSlide extends StatelessWidget {
   }
 }
 
-class _DisclaimerSlide extends StatelessWidget {
+class _DisclaimerSlide extends StatefulWidget {
   const _DisclaimerSlide({
     required this.onScrollToBottom,
     required this.hasScrolled,
   });
   final VoidCallback onScrollToBottom;
   final bool hasScrolled;
+
+  @override
+  State<_DisclaimerSlide> createState() => _DisclaimerSlideState();
+}
+
+class _DisclaimerSlideState extends State<_DisclaimerSlide> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (!_scrollController.hasClients ||
+          _scrollController.position.maxScrollExtent == 0) {
+        widget.onScrollToBottom();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -172,11 +197,12 @@ class _DisclaimerSlide extends StatelessWidget {
                 onNotification: (n) {
                   if (n.metrics.maxScrollExtent == 0 ||
                       n.metrics.pixels >= n.metrics.maxScrollExtent - 20) {
-                    onScrollToBottom();
+                    widget.onScrollToBottom();
                   }
                   return false;
                 },
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

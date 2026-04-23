@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io' show Platform;
 
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -102,6 +101,12 @@ class _BicepCurlViewState extends ConsumerState<BicepCurlView> {
       const Duration(milliseconds: 100),
       (_) => _maybeAdvanceFraming(),
     );
+
+    // CV is the base capability — start the session as soon as the camera
+    // is streaming, without waiting for a listener to observe the state
+    // transition. Garment is supplemental; its connection listener remains
+    // for the case where hardware connects mid-session.
+    _maybeStartSession();
   }
 
   /// Tries to advance Setup → Calibrating once the curling arm landmarks
@@ -486,16 +491,16 @@ class _CoverCameraPreview extends StatelessWidget {
     if (scale < 1) scale = 1 / scale;
     final isFront =
         controller.description.lensDirection == CameraLensDirection.front;
-    // Android camerax mirrors front-preview by default; iOS AVFoundation
-    // does not. Force-mirror on iOS so the selfie-style view is consistent
-    // across platforms and aligns with SkeletonOverlay's front-camera flip.
+    // Mirror the front camera preview so it behaves like a selfie view —
+    // moving right on-screen matches moving right in real life. Aligns
+    // with SkeletonOverlay's unconditional front-camera flip.
     final preview = ClipRect(
       child: Transform.scale(
         scale: scale,
         child: Center(child: CameraPreview(controller)),
       ),
     );
-    if (isFront && Platform.isIOS) {
+    if (isFront) {
       return Transform(
         alignment: Alignment.center,
         transform: Matrix4.diagonal3Values(-1.0, 1.0, 1.0),
