@@ -534,8 +534,16 @@ class BicepCurlController extends Notifier<BicepCurlState> {
             s.ref,
           );
     final peakPoseDelta = perRep?.asPeakPoseDelta();
-    final compensating =
-        peakPoseDelta?.exceedsThresholds(_profile.compensation) ?? false;
+    // Signed-peak thresholds: fire only when a signal went POSITIVE past
+    // its profile threshold (shoulder hiked up / leaned forward). Both
+    // cues can fire independently on the same rep — compensation isn't
+    // one thing, it's two different failure modes the user can make
+    // simultaneously.
+    final shoulderHike = perRep != null &&
+        perRep.peakShoulderRiseDeg > _profile.compensation.shoulderDriftDeg;
+    final torsoSwing = perRep != null &&
+        perRep.peakForwardLeanDeg > _profile.compensation.torsoPitchDeltaDeg;
+    final compensating = shoulderHike || torsoSwing;
 
     final record = RepRecord(
       repNum: repNum,
@@ -550,7 +558,10 @@ class BicepCurlController extends Notifier<BicepCurlState> {
     final peaks = [for (final r in reps) r.peakEnv];
 
     final emgOnline = !_bleDroppedDuringSet;
-    final decision = emgOnline
+    // Fatigue cues from the EMG envelope (only when BLE is live). The
+    // algorithm returns null while compensation is active on this rep so
+    // the form cues below aren't crowded out.
+    final fatigueDecision = emgOnline
         ? FatigueAlgorithm.evaluate(
             peaks: peaks,
             currentRepNum: repNum,
@@ -558,25 +569,36 @@ class BicepCurlController extends Notifier<BicepCurlState> {
             profile: _profile,
             compensationActive: compensating,
           )
-        : (compensating
-              ? CueDecision(
-                  content: CueContent.compensationDetected,
-                  repNum: repNum,
-                )
-              : null);
+        : null;
 
     final dropFraction = _latestDropFraction(peaks);
 
-    if (decision != null) {
-      _dispatcher?.dispatch(decision);
-      // Only fatigue cues bump cooldown; compensation events fire
-      // independently of the cooldown clock. fatigueStop is included so
-      // the stop event is logged exactly once per threshold crossing.
-      if (decision.content == CueContent.fatigueFade ||
-          decision.content == CueContent.fatigueUrgent ||
-          decision.content == CueContent.fatigueStop) {
+    if (fatigueDecision != null) {
+      _dispatcher?.dispatch(fatigueDecision);
+      // Only fatigue cues bump cooldown; form cues fire independently of
+      // the cooldown clock. fatigueStop is included so the stop event is
+      // logged exactly once per threshold crossing.
+      if (fatigueDecision.content == CueContent.fatigueFade ||
+          fatigueDecision.content == CueContent.fatigueUrgent ||
+          fatigueDecision.content == CueContent.fatigueStop) {
         _lastCueRep = repNum;
       }
+    }
+
+    // Form cues dispatched independently from the pose path. Both can
+    // fire on the same rep — the user may hike their shoulder AND lean
+    // forward simultaneously. No cooldown; the detector already only
+    // evaluates the rep's signed peak, not the whole window, so repeated
+    // firings across reps are intentional.
+    if (shoulderHike) {
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.shoulderHike, repNum: repNum),
+      );
+    }
+    if (torsoSwing) {
+      _dispatcher?.dispatch(
+        CueDecision(content: CueContent.torsoSwing, repNum: repNum),
+      );
     }
 
     state = s.copyWith(

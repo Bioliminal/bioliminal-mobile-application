@@ -47,16 +47,14 @@ class FatigueAlgorithm {
       );
     }
 
-    // Compensation overrides fatigue cues per haptic-cueing-handshake.md
-    // §"Compensation-cue semantics for v0" — silent suppression in v0;
-    // dispatcher handles the visual badge.
-    if (compensationActive) {
-      return CueDecision(
-        content: CueContent.compensationDetected,
-        repNum: currentRepNum,
-        meta: {'drop': drop, 'baseline': baseline},
-      );
-    }
+    // Compensation cues are dispatched INDEPENDENTLY by the controller
+    // (shoulderHike / torsoSwing, per signed peak thresholds) — the
+    // fatigue algorithm no longer synthesizes a combined compensation
+    // decision. We still short-circuit here so an active compensation
+    // suppresses the fatigue cue on the same rep, matching the original
+    // "compensation preempts fatigue" intent. The controller fires the
+    // form cue from the pose path; this path just stays quiet.
+    if (compensationActive) return null;
 
     if ((currentRepNum - lastCueRep) < profile.cooldownReps) return null;
 

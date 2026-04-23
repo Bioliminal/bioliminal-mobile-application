@@ -125,7 +125,14 @@ String _label(CueContent c) {
     case CueContent.fatigueStop:
       return 'STOP';
     case CueContent.compensationDetected:
-      return 'COMPENSATION';
+      // Deprecated — only reached when replaying sessions persisted before
+      // the form-cue split. Generic "FORM" keeps the old entry legible
+      // without pretending we can classify it as shoulder vs torso.
+      return 'FORM';
+    case CueContent.shoulderHike:
+      return 'SHOULDER HIKE';
+    case CueContent.torsoSwing:
+      return 'TORSO SWING';
     case CueContent.repTooFast:
       return 'TOO FAST';
     case CueContent.stabilizerWarning:
@@ -142,7 +149,13 @@ Color _cueColor(CueContent content) {
     case CueContent.fatigueStop:
       return Colors.redAccent;
     case CueContent.compensationDetected:
+      // Deprecated — grey for replayed legacy sessions so it reads as
+      // historical, not live form data.
+      return Colors.grey;
+    case CueContent.shoulderHike:
       return Colors.purpleAccent;
+    case CueContent.torsoSwing:
+      return Colors.deepPurpleAccent;
     case CueContent.repTooFast:
       return Colors.amberAccent;
     case CueContent.stabilizerWarning:

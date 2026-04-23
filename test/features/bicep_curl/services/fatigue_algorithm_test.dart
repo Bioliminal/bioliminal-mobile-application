@@ -86,7 +86,12 @@ void main() {
       expect(decision, isNull);
     });
 
-    test('compensation overrides fade (silent suppression in v0)', () {
+    test('compensationActive suppresses fatigue cue (form cue dispatches '
+        'independently from the pose path)', () {
+      // Rep 7 would otherwise fire FADE (16% drop from rolling-max
+      // baseline). With compensationActive=true, the controller will
+      // dispatch shoulderHike/torsoSwing on its own; the fatigue
+      // algorithm stays quiet so the form cue isn't crowded out.
       final peaks = [1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 840.0];
       final decision = FatigueAlgorithm.evaluate(
         peaks: peaks,
@@ -95,7 +100,7 @@ void main() {
         profile: intermediate,
         compensationActive: true,
       );
-      expect(decision!.content, CueContent.compensationDetected);
+      expect(decision, isNull);
     });
 
     test('beginner profile suppresses cues that would fire on intermediate', () {

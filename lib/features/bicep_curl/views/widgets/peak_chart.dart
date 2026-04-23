@@ -276,7 +276,12 @@ Color peakChartCueColor(CueContent content) {
     case CueContent.fatigueStop:
       return Colors.redAccent;
     case CueContent.compensationDetected:
+      // Deprecated — grey for legacy sessions replayed in the debrief.
+      return Colors.grey;
+    case CueContent.shoulderHike:
       return Colors.purpleAccent;
+    case CueContent.torsoSwing:
+      return Colors.deepPurpleAccent;
     case CueContent.repTooFast:
       return Colors.amberAccent;
     case CueContent.stabilizerWarning:

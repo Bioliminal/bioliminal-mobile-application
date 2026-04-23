@@ -28,9 +28,23 @@ enum CueContent {
   /// silent. Used by the controller to consider auto-end.
   fatigueStop,
 
-  /// Pose drift past CompensationThresholds. v0 suppresses haptic on this;
-  /// visual badge only. v1+ may fire a distinct FORM staccato burst.
+  /// DEPRECATED. Old combined compensation cue — the detector now fires
+  /// [shoulderHike] and [torsoSwing] independently based on their signed
+  /// peak deltas. Kept in the enum so persisted session logs predating the
+  /// split still deserialize. No new code path dispatches this value; all
+  /// exhaustive switches must still handle it, rendering a generic "form"
+  /// label for replayed old sessions.
   compensationDetected,
+
+  /// Shoulder-rise peak past the profile's shoulder threshold during the
+  /// concentric phase. Signed — only positive peaks (shoulder hiked up)
+  /// fire; a slumping user does not.
+  shoulderHike,
+
+  /// Forward-lean peak past the profile's torso threshold during the rep.
+  /// Signed — only positive peaks (leaned forward) fire; leaning back
+  /// does not.
+  torsoSwing,
 
   /// Rep completed faster than the momentum-gate floor (1.5 s per
   /// Wilk/Davies tempo review — reps under that are ballistic and don't

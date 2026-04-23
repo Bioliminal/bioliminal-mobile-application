@@ -72,6 +72,36 @@ void main() {
     expect(decoded.bleDroppedDuringSet, isFalse);
   });
 
+  test('CueEvent.fromJson parses new form cues AND deprecated '
+      'compensationDetected (persisted-log backward compat)', () {
+    // Deprecated combined cue must still deserialize — old session logs
+    // predating the form-cue split stored this value.
+    final legacy = CueEvent.fromJson({
+      'rep_num': 5,
+      'content': 'compensationDetected',
+      'fired_at': '2026-04-18T21:13:21.000Z',
+      'channels_fired': ['visual'],
+    });
+    expect(legacy.content, CueContent.compensationDetected);
+
+    // New independent cues must round-trip cleanly.
+    final hike = CueEvent.fromJson({
+      'rep_num': 7,
+      'content': 'shoulderHike',
+      'fired_at': '2026-04-18T21:13:21.000Z',
+      'channels_fired': ['visual', 'verbal'],
+    });
+    expect(hike.content, CueContent.shoulderHike);
+
+    final swing = CueEvent.fromJson({
+      'rep_num': 9,
+      'content': 'torsoSwing',
+      'fired_at': '2026-04-18T21:13:21.000Z',
+      'channels_fired': ['visual'],
+    });
+    expect(swing.content, CueContent.torsoSwing);
+  });
+
   test('SessionLog with no compensation ref roundtrips cleanly', () {
     final original = SessionLog(
       reps: const [],
